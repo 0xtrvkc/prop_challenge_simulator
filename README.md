@@ -4,8 +4,6 @@ https://0xtrvkc.github.io/prop_challenge_simulator/
 
 A single-file, client-side Monte Carlo simulator that estimates your odds of passing a prop-firm trading challenge (FTMO-style or any custom ruleset), given a win rate, reward:risk ratio, and position size. Built as a self-contained terminal-themed web app — no build step, no dependencies, no server.
 
-**File:** `prop_challenge_simulator.html`
-
 Open it in any modern browser and it runs entirely in-page.
 
 ## What it does
