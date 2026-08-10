@@ -699,6 +699,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     profitTarget: 10, maxLoss: 6, dailyLoss: 3,
     winRate: 65, rr: 1, risk: 1.0, tpd: 1, horizon: 30, simRuns: 10000
   };
+  const RUN_LABEL = './run_simulation.sh';
   const verdictText = document.getElementById('verdictText');
   const expectancyOut = document.getElementById('expectancyOut');
   const avgDaysOut = document.getElementById('avgDaysOut');
@@ -756,7 +757,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   maxLossEl.addEventListener('input', () => { valMaxLoss.textContent = parseFloat(maxLossEl.value).toFixed(1).replace(/\.0$/,'') + '%'; scheduleRun(); });
   dailyLossEl.addEventListener('input', () => { valDailyLoss.textContent = parseFloat(dailyLossEl.value).toFixed(1).replace(/\.0$/,'') + '%'; scheduleRun(); });
 
-  resetBtn.addEventListener('click', () => {
+  // Single source of truth: sets every control/label from DEFAULTS.
+  // Used both on initial load and on reset, so the two can never drift apart.
+  function applyDefaults(){
     profitTargetEl.value = DEFAULTS.profitTarget; valTarget.textContent = DEFAULTS.profitTarget + '%';
     maxLossEl.value = DEFAULTS.maxLoss; valMaxLoss.textContent = DEFAULTS.maxLoss + '%';
     dailyLossEl.value = DEFAULTS.dailyLoss; valDailyLoss.textContent = DEFAULTS.dailyLoss + '%';
@@ -765,14 +768,22 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     riskEl.value = DEFAULTS.risk; valRisk.textContent = DEFAULTS.risk.toFixed(1) + '%';
     tpdEl.value = DEFAULTS.tpd; valTPD.textContent = DEFAULTS.tpd;
     horizonEl.value = DEFAULTS.horizon; valHorizon.textContent = DEFAULTS.horizon;
+
     rrMode = DEFAULTS.rr;
     [...rrSeg.children].forEach(b => b.classList.remove('active'));
-    rrSeg.querySelector('[data-rr="1"]').classList.add('active');
+    const rrBtn = rrSeg.querySelector('[data-rr="' + DEFAULTS.rr + '"]');
+    if (rrBtn) rrBtn.classList.add('active');
     customRRWrap.classList.remove('show');
     updateRRLabel();
+
     simRuns = DEFAULTS.simRuns;
     [...runsSeg.children].forEach(b => b.classList.remove('active'));
-    runsSeg.querySelector('[data-runs="10000"]').classList.add('active');
+    const runsBtn = runsSeg.querySelector('[data-runs="' + DEFAULTS.simRuns + '"]');
+    if (runsBtn) runsBtn.classList.add('active');
+  }
+
+  resetBtn.addEventListener('click', () => {
+    applyDefaults();
     runSimulation();
   });
 
@@ -872,7 +883,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     setTimeout(() => {
       const res = simulate(p, RR, risk, tpd, horizon, simRuns, target, maxLoss, dailyLoss);
       renderResults(res, { p, RR, risk, tpd, horizon, target, maxLoss, dailyLoss });
-      runBtn.textContent = './run_simulation.sh';
+      runBtn.textContent = RUN_LABEL;
       runBtn.style.opacity = '1';
     }, 10);
   }
@@ -1029,7 +1040,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   });
 
   // ---------- INIT ----------
-  updateRRLabel();
+  // Initial control values come from DEFAULTS, not the HTML value="" attributes,
+  // so there is exactly one place to change a default.
+  applyDefaults();
   runSimulation();
 })();
 </script>
