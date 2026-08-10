@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>challenge_sim — pass-probability terminal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root[data-theme="dark"]{
+  --bg:#0a0a0b;
+  --bg-body:#000000;
+  --surface:#131315;
+  --surface-2:#18181b;
+  --border:#28282c;
+  --border-soft:#1c1c1f;
+  --text:#eaeae8;
+  --text-dim:#8c8c90;
+  --text-faint:#525256;
+  --green:#3ecf7e;
+  --green-dim:#1f5a3c;
+  --red:#ff5c5c;
+  --red-dim:#5c2323;
+  --amber:#ffb454;
+  --amber-dim:#5a4520;
+  --orange:#ff8a3d;
+  --orange-dim:#5a3418;
+  --yellow:#f0d43a;
+  --yellow-dim:#54491a;
+  --blue:#5ec8f8;
+  --gray:#6b6b70;
+  --shadow:0 30px 80px rgba(0,0,0,.55), 0 2px 0 rgba(255,255,255,.02) inset;
+  --glow:0 0 0 1px rgba(62,207,126,.15), 0 0 24px rgba(62,207,126,.08);
+}
+:root[data-theme="light"]{
+  --bg:#f6f6f4;
+  --bg-body:#eeeeec;
+  --surface:#ffffff;
+  --surface-2:#fbfbfa;
+  --border:#e1e1de;
+  --border-soft:#ebebe8;
+  --text:#161616;
+  --text-dim:#6a6a6d;
+  --text-faint:#a3a3a3;
+  --green:#1e9d5b;
+  --green-dim:#cdeedb;
+  --red:#d33f3f;
+  --red-dim:#f6d9d9;
+  --amber:#b5760f;
+  --amber-dim:#f3e2c3;
+  --orange:#c65a15;
+  --orange-dim:#f5ddc9;
+  --yellow:#a68a0a;
+  --yellow-dim:#f2ecc4;
+  --blue:#1670ac;
+  --gray:#8a8a8a;
+  --shadow:0 30px 70px rgba(0,0,0,.08), 0 2px 0 rgba(0,0,0,.02) inset;
+  --glow:0 0 0 1px rgba(30,157,91,.15), 0 0 24px rgba(30,157,91,.08);
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0;}
+body{
+  background:var(--bg-body);
+  color:var(--text);
+  font-family:'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:28px 14px 60px;
+  transition:background .25s ease, color .25s ease;
+}
+
+.app{width:100%; max-width:1180px;}
+
+.term-window{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+.term-bar{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 16px;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.dots{display:flex; gap:7px;}
+.dot{width:11px; height:11px; border-radius:50%; display:block;}
+.dot.red{background:#ff5f56;}
+.dot.amber{background:#ffbd2e;}
+.dot.green{background:#27c93f;}
+.term-title{
+  flex:1;
+  text-align:center;
+  font-size:12px;
+  color:var(--text-faint);
+  letter-spacing:.03em;
+}
+.theme-toggle{
+  border:1px solid var(--border);
+  background:var(--surface-2);
+  color:var(--text-dim);
+  width:30px; height:30px;
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:border-color .15s ease, color .15s ease, transform .15s ease;
+}
+.theme-toggle:hover{color:var(--text); border-color:var(--text-faint);}
+.theme-toggle:active{transform:scale(.92);}
+.theme-toggle svg{width:15px; height:15px;}
+
+.term-body{padding:28px clamp(16px,3vw,36px) 34px;}
+
+.intro{margin-bottom:26px;}
+.prompt{
+  margin:0 0 6px;
+  font-size:12px;
+  color:var(--green);
+}
+.prompt::before{content:"› "; color:var(--text-faint);}
+.intro h1{
+  margin:0 0 8px;
+  font-size:clamp(20px,3vw,26px);
+  font-weight:700;
+  letter-spacing:-.01em;
+  color:var(--text);
+}
+.intro .sub{
+  margin:0;
+  font-size:12.5px;
+  color:var(--text-dim);
+  line-height:1.5;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:300px 1fr;
+  gap:18px;
+  align-items:start;
+}
+@media (max-width:820px){
+  .grid{grid-template-columns:1fr;}
+}
+
+.panel{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:18px;
+}
+
+.panel-label{
+  font-size:11px;
+  letter-spacing:.08em;
+  color:var(--text-faint);
+  margin:0 0 16px;
+  text-transform:uppercase;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.panel-label::before{content:"#"; color:var(--text-faint);}
+
+.panel-label-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+.panel-label-row .panel-label{margin-bottom:0;}
+.reset-btn{
+  background:none;
+  border:none;
+  color:var(--text-faint);
+  font-family:inherit;
+  font-size:10px;
+  letter-spacing:.02em;
+  cursor:pointer;
+  padding:2px 0;
+  transition:color .15s ease;
+}
+.reset-btn:hover{color:var(--blue);}
+
+.rules-slider::-webkit-slider-thumb, .rules-slider::-moz-range-thumb{background:var(--blue); box-shadow:0 0 0 1px var(--blue);}
+
+.field{margin-bottom:20px;}
+.field:last-child{margin-bottom:0;}
+.field-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  margin-bottom:9px;
+}
+.field-name{
+  font-size:11.5px;
+  color:var(--text-dim);
+  letter-spacing:.04em;
+}
+.field-value{
+  font-size:13px;
+  font-weight:600;
+  color:var(--green);
+  min-width:52px;
+  text-align:right;
+}
+
+input[type="range"]{
+  -webkit-appearance:none;
+  appearance:none;
+  width:100%;
+  height:3px;
+  background:var(--border);
+  border-radius:2px;
+  outline:none;
+  cursor:pointer;
+  margin:6px 0;
+}
+input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:15px; height:15px;
+  border-radius:4px;
+  background:var(--green);
+  border:2px solid var(--bg);
+  box-shadow:0 0 0 1px var(--green);
+  cursor:pointer;
+  transition:transform .1s ease;
+}
+input[type="range"]::-webkit-slider-thumb:active{transform:scale(1.15);}
+input[type="range"]::-moz-range-thumb{
+  width:13px; height:13px;
+  border-radius:4px;
+  background:var(--green);
+  border:2px solid var(--bg);
+  box-shadow:0 0 0 1px var(--green);
+  cursor:pointer;
+}
+input[type="range"]::-moz-range-track{
+  height:3px; background:var(--border); border-radius:2px;
+}
+
+.risk-slider::-webkit-slider-thumb, .risk-slider::-moz-range-thumb{background:var(--amber); box-shadow:0 0 0 1px var(--amber);}
+
+.hint{font-size:10.5px; color:var(--text-faint); margin-top:5px; line-height:1.4;}
+
+.preset-row{
+  display:flex;
+  gap:6px;
+  margin-top:10px;
+}
+.preset-btn{
+  flex:1;
+  background:transparent;
+  border:1px solid var(--preset-color, var(--border));
+  color:var(--preset-color, var(--text-dim));
+  font-family:inherit;
+  font-size:10.5px;
+  font-weight:600;
+  padding:7px 4px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:background .15s ease, color .15s ease, transform .1s ease;
+  line-height:1.3;
+}
+.preset-btn span{display:block; font-weight:400; opacity:.75; font-size:9.5px; margin-top:1px;}
+.preset-btn:hover{background:var(--preset-dim, var(--surface-2));}
+.preset-btn:active{transform:scale(.96);}
+.preset-btn.active{background:var(--preset-dim, var(--surface-2));}
+.preset-btn.red{--preset-color:var(--red); --preset-dim:var(--red-dim);}
+.preset-btn.orange{--preset-color:var(--orange); --preset-dim:var(--orange-dim);}
+.preset-btn.yellow{--preset-color:var(--yellow); --preset-dim:var(--yellow-dim);}
+
+.seg{
+  display:flex;
+  border:1px solid var(--border);
+  border-radius:7px;
+  overflow:hidden;
+}
+.seg-btn{
+  flex:1;
+  background:var(--surface-2);
+  color:var(--text-dim);
+  border:none;
+  border-right:1px solid var(--border);
+  font-family:inherit;
+  font-size:11.5px;
+  padding:8px 4px;
+  cursor:pointer;
+  transition:background .15s ease, color .15s ease;
+}
+.seg-btn:last-child{border-right:none;}
+.seg-btn.active{background:var(--green-dim); color:var(--green); font-weight:600;}
+:root[data-theme="light"] .seg-btn.active{background:var(--green); color:#fff;}
+
+.custom-rr{
+  margin-top:10px;
+  display:none;
+}
+.custom-rr.show{display:block;}
+.custom-rr input[type="number"]{
+  width:100%;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:inherit;
+  font-size:12.5px;
+  padding:8px 10px;
+  border-radius:6px;
+  outline:none;
+}
+.custom-rr input[type="number"]:focus{border-color:var(--green);}
+
+.run-btn{
+  width:100%;
+  margin-top:22px;
+  background:var(--green);
+  color:#06170e;
+  border:none;
+  border-radius:8px;
+  font-family:inherit;
+  font-weight:700;
+  font-size:12.5px;
+  padding:12px;
+  cursor:pointer;
+  letter-spacing:.02em;
+  transition:filter .15s ease, transform .1s ease;
+}
+.run-btn:hover{filter:brightness(1.08);}
+.run-btn:active{transform:scale(.985);}
+.run-btn::before{content:"▸ ";}
+
+.stat-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-bottom:18px;
+}
+@media (max-width:520px){.stat-grid{grid-template-columns:1fr 1fr;}}
+
+.stat{
+  background:var(--surface-2);
+  border:1px solid var(--border-soft);
+  border-radius:8px;
+  padding:13px 14px;
+}
+.stat-label{
+  font-size:10px;
+  letter-spacing:.06em;
+  color:var(--text-faint);
+  text-transform:uppercase;
+  margin-bottom:7px;
+}
+.stat-value{
+  font-size:22px;
+  font-weight:700;
+  line-height:1;
+}
+.stat-sub{
+  font-size:10.5px;
+  color:var(--text-dim);
+  margin-top:6px;
+}
+.stat.pass .stat-value{color:var(--green);}
+.stat.faildaily .stat-value{color:var(--amber);}
+.stat.failmax .stat-value{color:var(--red);}
+.stat.neutral .stat-value{color:var(--text);}
+
+.chart-wrap{
+  background:var(--surface-2);
+  border:1px solid var(--border-soft);
+  border-radius:8px;
+  padding:14px 14px 10px;
+  margin-bottom:16px;
+}
+.chart-title-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.chart-title{font-size:11px; color:var(--text-dim); letter-spacing:.04em;}
+.legend{display:flex; gap:12px; flex-wrap:wrap;}
+.legend-item{display:flex; align-items:center; gap:5px; font-size:10.5px; color:var(--text-dim);}
+.legend-swatch{width:8px; height:8px; border-radius:2px;}
+canvas{width:100%; display:block;}
+
+.verdict{
+  background:var(--surface-2);
+  border:1px solid var(--border-soft);
+  border-radius:8px;
+  padding:16px;
+}
+.verdict-line{font-size:12px; color:var(--text-dim); margin:0 0 8px;}
+.verdict-line::before{content:"$ "; color:var(--text-faint);}
+.verdict-text{
+  font-size:13px;
+  line-height:1.6;
+  color:var(--text);
+  margin:0;
+}
+.cursor{
+  display:inline-block;
+  width:7px; height:14px;
+  background:var(--green);
+  margin-left:2px;
+  vertical-align:middle;
+  animation:blink 1s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0;}}
+
+.footnote{
+  margin-top:20px;
+  padding-top:16px;
+  border-top:1px solid var(--border-soft);
+  font-size:10.5px;
+  line-height:1.7;
+  color:var(--text-faint);
+}
+.footnote b{color:var(--text-dim);}
+
+.kelly-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:var(--text-dim);
+  padding:8px 0;
+  border-top:1px solid var(--border-soft);
+  margin-top:6px;
+}
+.kelly-row span:last-child{color:var(--blue); font-weight:600;}
+
+@media (prefers-reduced-motion:reduce){
+  .cursor{animation:none;}
+}
+
+::selection{background:var(--green-dim); color:var(--text);}
+button:focus-visible, input:focus-visible{outline:2px solid var(--green); outline-offset:2px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="term-window">
+    <div class="term-bar">
+      <div class="dots"><span class="dot red"></span><span class="dot amber"></span><span class="dot green"></span></div>
+      <div class="term-title">challenge_sim — monte-carlo — 120×32</div>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle day/night theme">
+        <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path></svg>
+      </button>
+    </div>
+
+    <div class="term-body">
+      <div class="intro">
+        <p class="prompt">whoami --strategy</p>
+        <h1>Prop Challenge Pass-Probability Simulator</h1>
+        <p class="sub">Monte-Carlo engine · win-rate × R:R vs. whatever drawdown rules you set below. Defaults match a typical FTMO-style challenge (10% target / 6% max loss / 3% daily loss) — edit them to model any firm's ruleset.</p>
+      </div>
+
+      <div class="grid">
+        <!-- CONTROLS -->
+        <aside class="panel controls">
+          <div class="panel-label-row">
+            <p class="panel-label">challenge rules</p>
+            <button class="reset-btn" id="resetBtn">↺ reset defaults</button>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">PROFIT_TARGET</span>
+              <span class="field-value" id="valTarget">10%</span>
+            </div>
+            <input type="range" class="rules-slider" id="profitTarget" min="2" max="20" step="0.5" value="10">
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">MAX_LOSS</span>
+              <span class="field-value" id="valMaxLoss">6%</span>
+            </div>
+            <input type="range" class="rules-slider" id="maxLoss" min="2" max="20" step="0.5" value="6">
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">DAILY_LOSS</span>
+              <span class="field-value" id="valDailyLoss">3%</span>
+            </div>
+            <input type="range" class="rules-slider" id="dailyLoss" min="1" max="10" step="0.5" value="3">
+            <p class="hint">These three defaults match a typical FTMO-style challenge. Change them to model any firm's rules — or your own personal risk limits.</p>
+          </div>
+
+          <p class="panel-label" style="margin-top:24px;">your strategy</p>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">WIN_RATE</span>
+              <span class="field-value" id="valWinRate">65%</span>
+            </div>
+            <input type="range" id="winRate" min="40" max="85" step="1" value="65">
+            <div class="preset-row" id="winRatePresets">
+              <button class="preset-btn red" data-wr="55">1σ edge<span>55%</span></button>
+              <button class="preset-btn orange active" data-wr="65">2σ edge<span>65%</span></button>
+              <button class="preset-btn yellow" data-wr="75">3σ edge<span>75%</span></button>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">REWARD : RISK</span>
+              <span class="field-value" id="valRR">1 : 1</span>
+            </div>
+            <div class="seg" id="rrSeg">
+              <button class="seg-btn active" data-rr="1">1 : 1</button>
+              <button class="seg-btn" data-rr="2">1 : 2</button>
+              <button class="seg-btn" data-rr="custom">Custom</button>
+            </div>
+            <div class="custom-rr" id="customRRWrap">
+              <input type="number" id="customRR" min="0.3" max="5" step="0.1" value="1.5" placeholder="e.g. 1.5">
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">RISK_PER_TRADE</span>
+              <span class="field-value" id="valRisk">1.0%</span>
+            </div>
+            <input type="range" class="risk-slider" id="riskPerTrade" min="0.1" max="1.0" step="0.1" value="1.0">
+            <p class="hint">FTMO's own guidance caps this near 1%. Slide down to see how sizing alone changes survival odds.</p>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">TRADES_PER_DAY</span>
+              <span class="field-value" id="valTPD">1</span>
+            </div>
+            <input type="range" id="tradesPerDay" min="1" max="10" step="1" value="1">
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">HORIZON (days)</span>
+              <span class="field-value" id="valHorizon">30</span>
+            </div>
+            <input type="range" id="horizon" min="10" max="200" step="5" value="30">
+            <p class="hint">Trading days simulated before a run is marked timeout — match to your challenge's time limit, if any.</p>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">SIM_RUNS</span>
+            </div>
+            <div class="seg" id="runsSeg">
+              <button class="seg-btn" data-runs="2000">2,000</button>
+              <button class="seg-btn" data-runs="5000">5,000</button>
+              <button class="seg-btn active" data-runs="10000">10,000</button>
+            </div>
+          </div>
+
+          <button class="run-btn" id="runBtn">./run_simulation.sh</button>
+        </aside>
+
+        <!-- OUTPUT -->
+        <section class="panel output">
+          <p class="panel-label">simulation output</p>
+
+          <div class="stat-grid">
+            <div class="stat pass">
+              <div class="stat-label">Pass probability</div>
+              <div class="stat-value" id="statPass">—</div>
+              <div class="stat-sub" id="statPassSub">hits target before any breach</div>
+            </div>
+            <div class="stat failmax">
+              <div class="stat-label">Fail · max loss</div>
+              <div class="stat-value" id="statFailMax">—</div>
+              <div class="stat-sub" id="statFailMaxSub">equity ≤ max loss floor</div>
+            </div>
+            <div class="stat faildaily">
+              <div class="stat-label">Fail · daily loss</div>
+              <div class="stat-value" id="statFailDaily">—</div>
+              <div class="stat-sub" id="statFailDailySub">single day exceeds limit</div>
+            </div>
+            <div class="stat neutral">
+              <div class="stat-label">Timeout</div>
+              <div class="stat-value" id="statTimeout">—</div>
+              <div class="stat-sub">no breach, no target yet</div>
+            </div>
+          </div>
+
+          <div class="chart-wrap">
+            <div class="chart-title-row">
+              <span class="chart-title">sample equity paths (40 of N runs)</span>
+              <div class="legend">
+                <span class="legend-item"><span class="legend-swatch" style="background:var(--green)"></span>pass</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:var(--red)"></span>max loss</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span>daily loss</span>
+                <span class="legend-item"><span class="legend-swatch" style="background:var(--gray)"></span>timeout</span>
+              </div>
+            </div>
+            <canvas id="chart" height="260"></canvas>
+          </div>
+
+          <div class="verdict">
+            <p class="verdict-line">./verdict.sh</p>
+            <p class="verdict-text" id="verdictText">Awaiting first run<span class="cursor"></span></p>
+            <div class="kelly-row">
+              <span>Expectancy / trade</span>
+              <span id="expectancyOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>Avg. days to target (passes only)</span>
+              <span id="avgDaysOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>Full-Kelly optimal risk (reference only)</span>
+              <span id="kellyOut">—</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="footnote">
+        <b>Assumptions:</b> trades are modeled as independent Bernoulli outcomes at the stated win rate — no streak clustering, no correlation between setups. Max loss and daily loss are static thresholds measured from initial balance / start-of-day equity — this matches most standard (non-trailing) prop-firm challenge rules; check your own firm's account type if it uses a trailing drawdown instead, since that would need a different model. Position size is held constant at the chosen risk-per-trade throughout (no compounding of lot size with equity, no martingale). Challenge rules (target / max loss / daily loss) are fully editable above — the defaults shown just reflect one common structure. This is a probabilistic estimate from simulated randomness, not a guarantee of live trading outcomes — real markets add slippage, spread, execution risk, and behavioral error that this model does not.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- THEME ----------
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const iconMoon = document.getElementById('iconMoon');
+  const iconSun = document.getElementById('iconSun');
+  let theme = 'dark';
+
+  function applyTheme(t){
+    theme = t;
+    root.setAttribute('data-theme', t);
+    iconMoon.style.display = t === 'dark' ? 'block' : 'none';
+    iconSun.style.display = t === 'dark' ? 'none' : 'block';
+    drawChart(lastCurves, lastConfig);
+  }
+  themeToggle.addEventListener('click', () => applyTheme(theme === 'dark' ? 'light' : 'dark'));
+
+  // respect OS preference on first load
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches){
+    theme = 'light';
+    root.setAttribute('data-theme', 'light');
+    iconMoon.style.display = 'none';
+    iconSun.style.display = 'block';
+  }
+
+  // ---------- ELEMENTS ----------
+  const profitTargetEl = document.getElementById('profitTarget');
+  const maxLossEl = document.getElementById('maxLoss');
+  const dailyLossEl = document.getElementById('dailyLoss');
+  const resetBtn = document.getElementById('resetBtn');
+  const valTarget = document.getElementById('valTarget');
+  const valMaxLoss = document.getElementById('valMaxLoss');
+  const valDailyLoss = document.getElementById('valDailyLoss');
+
+  const winRateEl = document.getElementById('winRate');
+  const winRatePresets = document.getElementById('winRatePresets');
+  const riskEl = document.getElementById('riskPerTrade');
+  const tpdEl = document.getElementById('tradesPerDay');
+  const horizonEl = document.getElementById('horizon');
+  const rrSeg = document.getElementById('rrSeg');
+  const customRRWrap = document.getElementById('customRRWrap');
+  const customRREl = document.getElementById('customRR');
+  const runsSeg = document.getElementById('runsSeg');
+  const runBtn = document.getElementById('runBtn');
+
+  const valWinRate = document.getElementById('valWinRate');
+  const valRisk = document.getElementById('valRisk');
+  const valTPD = document.getElementById('valTPD');
+  const valHorizon = document.getElementById('valHorizon');
+  const valRR = document.getElementById('valRR');
+
+  const statPass = document.getElementById('statPass');
+  const statFailMax = document.getElementById('statFailMax');
+  const statFailDaily = document.getElementById('statFailDaily');
+  const statTimeout = document.getElementById('statTimeout');
+  const statPassSub = document.getElementById('statPassSub');
+  const statFailMaxSub = document.getElementById('statFailMaxSub');
+  const statFailDailySub = document.getElementById('statFailDailySub');
+
+  const DEFAULTS = {
+    profitTarget: 10, maxLoss: 6, dailyLoss: 3,
+    winRate: 65, rr: 1, risk: 1.0, tpd: 1, horizon: 30, simRuns: 10000
+  };
+  const verdictText = document.getElementById('verdictText');
+  const expectancyOut = document.getElementById('expectancyOut');
+  const avgDaysOut = document.getElementById('avgDaysOut');
+  const kellyOut = document.getElementById('kellyOut');
+
+  let rrMode = 1; // number or 'custom'
+  let simRuns = 10000;
+  let lastCurves = [];
+  let lastConfig = {};
+
+  // ---------- SEGMENTED CONTROLS ----------
+  rrSeg.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    [...rrSeg.children].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const rr = btn.dataset.rr;
+    if (rr === 'custom'){
+      customRRWrap.classList.add('show');
+      rrMode = parseFloat(customREl_value());
+    } else {
+      customRRWrap.classList.remove('show');
+      rrMode = parseFloat(rr);
+    }
+    updateRRLabel();
+    scheduleRun();
+  });
+
+  function customREl_value(){
+    return customRREl.value || 1.5;
+  }
+
+  customRREl.addEventListener('input', () => {
+    rrMode = parseFloat(customRREl.value) || 1;
+    updateRRLabel();
+    scheduleRun();
+  });
+
+  function updateRRLabel(){
+    const v = typeof rrMode === 'number' ? rrMode : parseFloat(rrMode);
+    valRR.textContent = '1 : ' + (Number.isInteger(v) ? v : v.toFixed(1));
+  }
+
+  runsSeg.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    [...runsSeg.children].forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    simRuns = parseInt(btn.dataset.runs, 10);
+    scheduleRun();
+  });
+
+  // ---------- RULES SLIDERS ----------
+  profitTargetEl.addEventListener('input', () => { valTarget.textContent = parseFloat(profitTargetEl.value).toFixed(1).replace(/\.0$/,'') + '%'; scheduleRun(); });
+  maxLossEl.addEventListener('input', () => { valMaxLoss.textContent = parseFloat(maxLossEl.value).toFixed(1).replace(/\.0$/,'') + '%'; scheduleRun(); });
+  dailyLossEl.addEventListener('input', () => { valDailyLoss.textContent = parseFloat(dailyLossEl.value).toFixed(1).replace(/\.0$/,'') + '%'; scheduleRun(); });
+
+  resetBtn.addEventListener('click', () => {
+    profitTargetEl.value = DEFAULTS.profitTarget; valTarget.textContent = DEFAULTS.profitTarget + '%';
+    maxLossEl.value = DEFAULTS.maxLoss; valMaxLoss.textContent = DEFAULTS.maxLoss + '%';
+    dailyLossEl.value = DEFAULTS.dailyLoss; valDailyLoss.textContent = DEFAULTS.dailyLoss + '%';
+    winRateEl.value = DEFAULTS.winRate; valWinRate.textContent = DEFAULTS.winRate + '%';
+    syncPresetActive();
+    riskEl.value = DEFAULTS.risk; valRisk.textContent = DEFAULTS.risk.toFixed(1) + '%';
+    tpdEl.value = DEFAULTS.tpd; valTPD.textContent = DEFAULTS.tpd;
+    horizonEl.value = DEFAULTS.horizon; valHorizon.textContent = DEFAULTS.horizon;
+    rrMode = DEFAULTS.rr;
+    [...rrSeg.children].forEach(b => b.classList.remove('active'));
+    rrSeg.querySelector('[data-rr="1"]').classList.add('active');
+    customRRWrap.classList.remove('show');
+    updateRRLabel();
+    simRuns = DEFAULTS.simRuns;
+    [...runsSeg.children].forEach(b => b.classList.remove('active'));
+    runsSeg.querySelector('[data-runs="10000"]').classList.add('active');
+    runSimulation();
+  });
+
+  // ---------- SLIDERS ----------
+  winRateEl.addEventListener('input', () => { valWinRate.textContent = winRateEl.value + '%'; syncPresetActive(); scheduleRun(); });
+
+  winRatePresets.addEventListener('click', (e) => {
+    const btn = e.target.closest('.preset-btn');
+    if (!btn) return;
+    winRateEl.value = btn.dataset.wr;
+    valWinRate.textContent = btn.dataset.wr + '%';
+    syncPresetActive();
+    scheduleRun();
+  });
+
+  function syncPresetActive(){
+    const v = winRateEl.value;
+    [...winRatePresets.children].forEach(b => b.classList.toggle('active', b.dataset.wr === v));
+  }
+  riskEl.addEventListener('input', () => { valRisk.textContent = parseFloat(riskEl.value).toFixed(1) + '%'; scheduleRun(); });
+  tpdEl.addEventListener('input', () => { valTPD.textContent = tpdEl.value; scheduleRun(); });
+  horizonEl.addEventListener('input', () => { valHorizon.textContent = horizonEl.value; scheduleRun(); });
+  runBtn.addEventListener('click', () => runSimulation());
+
+  let debounceTimer = null;
+  function scheduleRun(){
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(runSimulation, 300);
+  }
+
+  // ---------- MONTE CARLO ENGINE ----------
+  const INITIAL = 100;
+  const MAX_SAMPLE_CURVES = 40;
+
+  function simulate(p, RR, riskPct, tradesPerDay, horizonDays, iterations, targetPct, maxLossPct, dailyLossPct){
+    const profitTarget = INITIAL + targetPct;
+    const maxLossFloor = INITIAL - maxLossPct;
+    let pass = 0, failMax = 0, failDaily = 0, timeout = 0;
+    const daysToPass = [];
+    const curves = [];
+
+    for (let i = 0; i < iterations; i++){
+      let equity = INITIAL;
+      let outcome = 'timeout';
+      let passDay = null;
+      const keep = i < MAX_SAMPLE_CURVES;
+      const curve = keep ? [equity] : null;
+
+      outer:
+      for (let day = 1; day <= horizonDays; day++){
+        const dayStart = equity;
+        for (let t = 0; t < tradesPerDay; t++){
+          const win = Math.random() < p;
+          equity += win ? riskPct * RR : -riskPct;
+          if (curve) curve.push(equity);
+
+          if (equity <= maxLossFloor){ outcome = 'failMax'; break outer; }
+          if (equity <= dayStart - dailyLossPct){ outcome = 'failDaily'; break outer; }
+          if (equity >= profitTarget){ outcome = 'pass'; passDay = day; break outer; }
+        }
+      }
+
+      if (outcome === 'pass'){ pass++; daysToPass.push(passDay); }
+      else if (outcome === 'failMax') failMax++;
+      else if (outcome === 'failDaily') failDaily++;
+      else timeout++;
+
+      if (keep) curves.push({ points: curve, outcome: outcome });
+    }
+
+    const avgDays = daysToPass.length ? daysToPass.reduce((a,b)=>a+b,0) / daysToPass.length : null;
+
+    return {
+      pass: pass / iterations * 100,
+      failMax: failMax / iterations * 100,
+      failDaily: failDaily / iterations * 100,
+      timeout: timeout / iterations * 100,
+      avgDays: avgDays,
+      curves: curves
+    };
+  }
+
+  function runSimulation(){
+    const p = parseFloat(winRateEl.value) / 100;
+    const RR = typeof rrMode === 'number' ? rrMode : parseFloat(customREl_value());
+    const risk = parseFloat(riskEl.value);
+    const tpd = parseInt(tpdEl.value, 10);
+    const horizon = parseInt(horizonEl.value, 10);
+    const target = parseFloat(profitTargetEl.value);
+    const maxLoss = parseFloat(maxLossEl.value);
+    const dailyLoss = parseFloat(dailyLossEl.value);
+
+    runBtn.textContent = '';
+    runBtn.style.opacity = '0.6';
+
+    // slight timeout so UI paints the "running" state on very large runs
+    setTimeout(() => {
+      const res = simulate(p, RR, risk, tpd, horizon, simRuns, target, maxLoss, dailyLoss);
+      renderResults(res, { p, RR, risk, tpd, horizon, target, maxLoss, dailyLoss });
+      runBtn.textContent = './run_simulation.sh';
+      runBtn.style.opacity = '1';
+    }, 10);
+  }
+
+  // ---------- RENDER ----------
+  function renderResults(res, cfg){
+    statPass.textContent = res.pass.toFixed(1) + '%';
+    statFailMax.textContent = res.failMax.toFixed(1) + '%';
+    statFailDaily.textContent = res.failDaily.toFixed(1) + '%';
+    statTimeout.textContent = res.timeout.toFixed(1) + '%';
+
+    statPassSub.textContent = 'hits +' + cfg.target + '% before any breach';
+    statFailMaxSub.textContent = 'equity ≤ −' + cfg.maxLoss + '% from start';
+    statFailDailySub.textContent = 'single day ≤ −' + cfg.dailyLoss + '%';
+
+    avgDaysOut.textContent = res.avgDays ? res.avgDays.toFixed(1) + ' days' : '—';
+
+    const expR = cfg.p * cfg.RR - (1 - cfg.p);
+    const expPct = expR * cfg.risk;
+    expectancyOut.textContent = expR.toFixed(2) + 'R  (' + (expPct >= 0 ? '+' : '') + expPct.toFixed(3) + '% / trade)';
+
+    const kelly = cfg.p - (1 - cfg.p) / cfg.RR;
+    kellyOut.textContent = kelly > 0 ? (kelly * 100).toFixed(1) + '%' : 'negative — no edge at this R:R';
+
+    verdictText.innerHTML = buildVerdict(res, cfg) + '<span class="cursor"></span>';
+
+    lastCurves = res.curves;
+    lastConfig = cfg;
+    drawChart(res.curves, cfg);
+  }
+
+  function buildVerdict(res, cfg){
+    const pass = res.pass;
+    let lead;
+    if (pass >= 70) lead = 'Strong statistical footing.';
+    else if (pass >= 45) lead = 'Positive but fragile.';
+    else if (pass >= 20) lead = 'Edge is real, sizing is the problem.';
+    else lead = 'This combination does not survive the drawdown rules.';
+
+    const riskNote = cfg.risk >= 0.8
+      ? 'At this risk level a short losing streak alone can burn through the max-loss cap before your edge has room to compound.'
+      : cfg.risk <= 0.3
+      ? 'This is conservative sizing — slower to hit target, but it gives your edge many more trades to play out before a drawdown limit can end the run.'
+      : 'This is a middle-ground size — reasonable speed toward target without stacking too much risk into any single streak.';
+
+    return lead + ' At ' + (cfg.p*100).toFixed(0) + '% win rate, 1:' + cfg.RR + ' R:R and ' + cfg.risk.toFixed(1) + '% risk/trade, '
+      + pass.toFixed(1) + '% of simulated runs hit the +' + cfg.target + '% target before breaching either drawdown rule ('
+      + res.failMax.toFixed(1) + '% blow the ' + cfg.maxLoss + '% max loss, ' + res.failDaily.toFixed(1) + '% blow the ' + cfg.dailyLoss + '% daily limit). '
+      + riskNote;
+  }
+
+  // ---------- CHART ----------
+  const canvas = document.getElementById('chart');
+  const ctx = canvas.getContext('2d');
+
+  function cssVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  function drawChart(curves, cfg){
+    if (!curves || !curves.length) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = 260;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    const padL = 44, padR = 12, padT = 14, padB = 22;
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+
+    const target = 100 + (cfg.target || 10);
+    const floor = 100 - (cfg.maxLoss || 6);
+
+    let maxLen = 0, dataMin = 100, dataMax = 100;
+    curves.forEach(c => {
+      maxLen = Math.max(maxLen, c.points.length);
+      c.points.forEach(v => { if (v < dataMin) dataMin = v; if (v > dataMax) dataMax = v; });
+    });
+    const yMin = Math.min(floor - 2, dataMin - 1);
+    const yMax = Math.max(target + 2, dataMax + 1);
+
+    function X(i){ return padL + (i / Math.max(1, maxLen - 1)) * plotW; }
+    function Y(v){ return padT + (1 - (v - yMin) / (yMax - yMin)) * plotH; }
+
+    const border = cssVar('--border-soft');
+    const textFaint = cssVar('--text-faint');
+
+    // gridlines
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1;
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillStyle = textFaint;
+    const mid1 = 100 + (target - 100) / 2;
+    const mid2 = 100 - (100 - floor) / 2;
+    const gridVals = Array.from(new Set([floor, mid2, 100, mid1, target].map(v => Math.round(v * 10) / 10)))
+      .filter(v => v >= yMin && v <= yMax)
+      .sort((a,b) => a - b);
+    gridVals.forEach(v => {
+      const y = Y(v);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(w - padR, y);
+      ctx.stroke();
+      ctx.fillText(v + '%', 4, y + 3);
+    });
+
+    // reference lines
+    function refLine(v, color, label){
+      const y = Y(v);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.setLineDash([4, 4]);
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(w - padR, y);
+      ctx.stroke();
+      ctx.restore();
+    }
+    refLine(target, cssVar('--green'));
+    refLine(floor, cssVar('--red'));
+    refLine(100, textFaint);
+
+    // curves
+    const colorMap = {
+      pass: cssVar('--green'),
+      failMax: cssVar('--red'),
+      failDaily: cssVar('--amber'),
+      timeout: cssVar('--gray')
+    };
+
+    curves.forEach(c => {
+      ctx.beginPath();
+      ctx.strokeStyle = colorMap[c.outcome] || textFaint;
+      ctx.globalAlpha = 0.55;
+      ctx.lineWidth = 1.3;
+      c.points.forEach((v, i) => {
+        const x = X(i), y = Y(v);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 1;
+  }
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window.__rzt);
+    window.__rzt = setTimeout(() => drawChart(lastCurves, lastConfig), 150);
+  });
+
+  // ---------- INIT ----------
+  updateRRLabel();
+  runSimulation();
+})();
+</script>
+</body>
+</html>
