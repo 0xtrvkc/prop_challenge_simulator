@@ -468,6 +468,27 @@ input[type="range"]::-moz-range-track{
 .stat.pass .stat-value{color:var(--green);}
 .stat.faildaily .stat-value{color:var(--amber);}
 .stat.failmax .stat-value{color:var(--red);}
+
+.dot-row{display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-top:9px;}
+.dd-dot{width:6px; height:6px; border-radius:50%; background:var(--border); flex:none;}
+.dot-row.daily .dd-dot.filled{background:var(--amber);}
+.dot-row.max .dd-dot.filled{background:var(--red);}
+.dot-row.derisk .dd-dot.filled{background:var(--green);}
+.dot-row-more{font-size:9px; color:var(--text-faint); margin-left:2px;}
+.dot-row-caption{font-size:9.5px; color:var(--text-faint); margin-top:6px; display:flex; align-items:center; gap:5px;}
+.dot-row-caption .dd-dot{width:6px; height:6px;}
+
+.risk-bar-wrap{margin:4px 0 20px;}
+.risk-bar-head{display:flex; justify-content:space-between; align-items:baseline; font-size:11px; color:var(--text-dim); margin-bottom:7px;}
+.risk-bar-head .risk-bar-title::before{content:"# "; color:var(--text-faint);}
+.risk-bar-head span:last-child{font-weight:700; font-size:12.5px;}
+.risk-bar-track{position:relative; height:9px; border-radius:5px; background:var(--surface-2); border:1px solid var(--border-soft); overflow:hidden;}
+.risk-bar-fill{height:100%; width:0%; border-radius:4px; background:var(--green); transition:width .3s ease, background .3s ease;}
+.risk-bar-fill.amber{background:var(--amber);}
+.risk-bar-fill.red{background:var(--red);}
+.risk-bar-marker{position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--text-faint); opacity:.6;}
+.risk-bar-sub{font-size:10px; color:var(--text-faint); margin-top:7px; line-height:1.4;}
+.risk-bar-ticks{display:flex; justify-content:space-between; font-size:8.5px; color:var(--text-faint); margin-top:5px; letter-spacing:.02em;}
 .stat.neutral .stat-value{color:var(--text);}
 
 .chart-wrap{
@@ -1047,16 +1068,38 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             <div class="lot-hero-sub" id="lotOutSub">risking — per trade</div>
           </div>
 
+          <div class="risk-bar-wrap adv-block" id="riskBarWrap">
+            <div class="risk-bar-head">
+              <span class="risk-bar-title">risk budget vs. full kelly</span>
+              <span id="riskBarPct">—</span>
+            </div>
+            <div class="risk-bar-track">
+              <div class="risk-bar-fill" id="riskBarFill"></div>
+              <div class="risk-bar-marker" id="riskBarMarker" style="display:none;"></div>
+            </div>
+            <div class="risk-bar-sub" id="riskBarSub">Set win rate &amp; R:R above to compare your risk % against the theoretical optimum.</div>
+            <div class="risk-bar-ticks" id="riskBarTicks" style="display:none;">
+              <span>0%</span><span>½ Kelly</span><span>Full Kelly</span>
+            </div>
+          </div>
+
           <div class="dd-grid">
             <div class="stat faildaily">
               <div class="stat-label">Losers before daily DD</div>
               <div class="stat-value" id="statLossesDaily">—</div>
               <div class="stat-sub" id="statLossesDailySub">at this risk %, in a row</div>
+              <div class="dot-row daily" id="dotsLossesDaily"></div>
+              <div class="dot-row-caption adv-block" id="dotsDeriskCaption" style="display:none;">
+                <span class="dd-dot filled" style="background:var(--green);"></span>
+                with step-down rule
+              </div>
+              <div class="dot-row derisk adv-block" id="dotsLossesDailyDerisk" style="display:none;"></div>
             </div>
             <div class="stat failmax">
               <div class="stat-label">Losers before max DD</div>
               <div class="stat-value" id="statLossesMax">—</div>
               <div class="stat-sub" id="statLossesMaxSub">at this risk %, in a row</div>
+              <div class="dot-row max" id="dotsLossesMax"></div>
             </div>
           </div>
 
@@ -1120,6 +1163,67 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
           <p class="warn-line" id="lotWarn">⚠ Rounded lot size is below your broker's minimum (0.01) — either widen the stop, raise risk %, or accept a slightly higher risk than targeted.</p>
           <p class="warn-line adv-block" id="lotKellyWarn">⚠ Your risk per trade exceeds full Kelly for this win-rate/R:R — that's oversized even by aggressive standards.</p>
+
+          <div id="lotChartsBasicSection">
+            <p class="panel-label" style="margin-top:24px;">balance &amp; recovery charts</p>
+
+            <div class="chart-wrap">
+              <div class="chart-title-row">
+                <span class="chart-title">balance decay by consecutive losers</span>
+                <div class="legend">
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span>fixed size</span>
+                  <span class="legend-item" id="legendDerisk" style="display:none;"><span class="legend-swatch" style="background:var(--green)"></span>with step-down</span>
+                </div>
+              </div>
+              <canvas id="chartRiskDecay"></canvas>
+            </div>
+
+            <div class="chart-wrap">
+              <div class="chart-title-row">
+                <span class="chart-title">recovery needed vs. % lost</span>
+                <div class="legend">
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span>daily DD</span>
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--red)"></span>max DD</span>
+                </div>
+              </div>
+              <canvas id="chartRecovery"></canvas>
+            </div>
+          </div>
+
+          <div class="adv-block" id="lotChartsSection">
+            <p class="panel-label" style="margin-top:24px;">risk &amp; survival charts<span class="adv-badge">advanced</span></p>
+
+            <div class="chart-wrap">
+              <div class="chart-title-row">
+                <span class="chart-title">P(N consecutive losses) at your win rate</span>
+                <div class="legend">
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span>daily DD count</span>
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--red)"></span>max DD count</span>
+                </div>
+              </div>
+              <canvas id="chartStreakProb"></canvas>
+            </div>
+
+            <div class="chart-wrap">
+              <div class="chart-title-row">
+                <span class="chart-title">kelly growth curve</span>
+                <span class="chart-title" id="chartKellyEmptyNote" style="display:none;">no positive edge — curve unavailable</span>
+                <div class="legend" id="chartKellyLegend">
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--green)"></span>growth rate g(f)</span>
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--blue)"></span>your risk %</span>
+                  <span class="legend-item"><span class="legend-swatch" style="background:var(--text-faint)"></span>full Kelly</span>
+                </div>
+              </div>
+              <canvas id="chartKelly"></canvas>
+            </div>
+
+            <div class="chart-wrap">
+              <div class="chart-title-row">
+                <span class="chart-title">cost drag: $ risk at this lot size by spread</span>
+              </div>
+              <canvas id="chartCostDrag"></canvas>
+            </div>
+          </div>
         </section>
       </div>
 
@@ -1534,7 +1638,10 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
   window.addEventListener('resize', () => {
     clearTimeout(window.__rzt);
-    window.__rzt = setTimeout(() => drawChart(lastCurves, lastConfig), 150);
+    window.__rzt = setTimeout(() => {
+      drawChart(lastCurves, lastConfig);
+      if (typeof calcLot === 'function') calcLot();
+    }, 150);
   });
 
   // ---------- TABS ----------
@@ -1549,6 +1656,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     tabBtnLot.classList.toggle('active', !toSim);
     tabSim.classList.toggle('active', toSim);
     tabLot.classList.toggle('active', !toSim);
+    if (!toSim){
+      requestAnimationFrame(() => { if (typeof calcLot === 'function') calcLot(); });
+    }
   }
   tabBtnSim.addEventListener('click', () => switchTab('sim'));
   tabBtnLot.addEventListener('click', () => switchTab('lot'));
@@ -1566,6 +1676,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   lotAdvToggle.addEventListener('click', () => {
     lotAdvancedOn = !lotAdvancedOn;
     applyLotAdvancedState();
+    requestAnimationFrame(() => { if (typeof calcLot === 'function') calcLot(); });
   });
 
   applyLotAdvancedState();
@@ -1647,6 +1758,356 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const lotDeriskOut = document.getElementById('lotDeriskOut');
   const lotWarn = document.getElementById('lotWarn');
   const lotKellyWarn = document.getElementById('lotKellyWarn');
+  const dotsLossesDaily = document.getElementById('dotsLossesDaily');
+  const dotsLossesMax = document.getElementById('dotsLossesMax');
+  const dotsLossesDailyDerisk = document.getElementById('dotsLossesDailyDerisk');
+  const dotsDeriskCaption = document.getElementById('dotsDeriskCaption');
+  const riskBarFill = document.getElementById('riskBarFill');
+  const riskBarPct = document.getElementById('riskBarPct');
+  const riskBarSub = document.getElementById('riskBarSub');
+  const riskBarMarker = document.getElementById('riskBarMarker');
+  const riskBarTicks = document.getElementById('riskBarTicks');
+  const chartRiskDecayEl = document.getElementById('chartRiskDecay');
+  const chartStreakProbEl = document.getElementById('chartStreakProb');
+  const chartKellyEl = document.getElementById('chartKelly');
+  const chartCostDragEl = document.getElementById('chartCostDrag');
+  const chartRecoveryEl = document.getElementById('chartRecovery');
+  const chartKellyEmptyNote = document.getElementById('chartKellyEmptyNote');
+  const chartKellyLegend = document.getElementById('chartKellyLegend');
+  const legendDerisk = document.getElementById('legendDerisk');
+
+  function lotChartSetup(canvas, height){
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(rect.width, 60);
+    const h = height;
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    canvas.style.height = h + 'px';
+    const c = canvas.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, w, h);
+    return { ctx: c, w, h };
+  }
+
+  function lotChartGrid(ctx, w, h, padL, padR, padT, padB, yMin, yMax, gridVals, fmtLabel){
+    const border = cssVar('--border-soft');
+    const textFaint = cssVar('--text-faint');
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1;
+    ctx.font = '9.5px JetBrains Mono, monospace';
+    ctx.fillStyle = textFaint;
+    const Y = v => padT + (1 - (v - yMin) / (yMax - yMin)) * (h - padT - padB);
+    gridVals.forEach(v => {
+      const y = Y(v);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(w - padR, y);
+      ctx.stroke();
+      ctx.fillText(fmtLabel(v), 3, y + 3);
+    });
+    return Y;
+  }
+
+  function lotDashedLine(ctx, w, padL, padR, y, color, label){
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.moveTo(padL, y);
+    ctx.lineTo(w - padR, y);
+    ctx.stroke();
+    ctx.restore();
+    if (label){
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = '9px JetBrains Mono, monospace';
+      ctx.fillText(label, w - padR - ctx.measureText(label).width - 2, y - 3);
+      ctx.restore();
+    }
+  }
+
+  // ---- Chart: balance decay by consecutive losers ----
+  function drawRiskDecayChart(riskPctEff, dailyPct, maxPct, deriskEnabled, deriskAfter, deriskCutPct, lossesMax, deriskLossesDaily){
+    const { ctx, w, h } = lotChartSetup(chartRiskDecayEl, 160);
+    const padL = 34, padR = 10, padT = 10, padB = 18;
+    const N = Math.max(5, Math.min(30, (deriskLossesDaily || lossesMax || 5) + 3));
+
+    const fixedPts = [];
+    for (let n = 0; n <= N; n++) fixedPts.push(Math.max(0, 100 - n * riskPctEff));
+
+    let deriskPts = null;
+    if (deriskEnabled){
+      deriskPts = [];
+      let bal = 100;
+      for (let n = 0; n <= N; n++){
+        deriskPts.push(Math.max(0, bal));
+        const step = n < deriskAfter ? riskPctEff : riskPctEff * (1 - deriskCutPct / 100);
+        bal -= step;
+      }
+    }
+    legendDerisk.style.display = deriskEnabled ? 'flex' : 'none';
+
+    const floorDaily = 100 - dailyPct;
+    const floorMax = 100 - maxPct;
+    const allPts = fixedPts.concat(deriskPts || []);
+    const yMin = Math.min(floorMax - 2, Math.min(...allPts) - 1);
+    const yMax = 101;
+
+    const gridVals = Array.from(new Set([Math.round(yMin), Math.round((yMin + 100) / 2), 100].filter(v => v >= yMin && v <= yMax)));
+    const Y = lotChartGrid(ctx, w, h, padL, padR, padT, padB, yMin, yMax, gridVals, v => v + '%');
+    const X = n => padL + (n / N) * (w - padL - padR);
+
+    lotDashedLine(ctx, w, padL, padR, Y(floorDaily), cssVar('--amber'), 'daily DD');
+    lotDashedLine(ctx, w, padL, padR, Y(floorMax), cssVar('--red'), 'max DD');
+
+    function plot(pts, color){
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.6;
+      pts.forEach((v, n) => { const x = X(n), y = Y(v); n === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+      ctx.stroke();
+    }
+    plot(fixedPts, cssVar('--amber'));
+    if (deriskPts) plot(deriskPts, cssVar('--green'));
+
+    ctx.fillStyle = cssVar('--text-faint');
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillText('0', padL - 2, h - 4);
+    ctx.fillText(N + ' losers', w - padR - 34, h - 4);
+  }
+
+  // ---- Chart: streak probability bars ----
+  function drawStreakProbChart(lossRate, lossesDaily, lossesMax){
+    const { ctx, w, h } = lotChartSetup(chartStreakProbEl, 140);
+    const padL = 6, padR = 6, padT = 10, padB = 16;
+    const N = Math.max(6, Math.min(20, Math.max(lossesDaily, lossesMax) + 4));
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    const barGap = 3;
+    const barW = Math.max(2, (plotW - barGap * (N - 1)) / N);
+
+    const blue = cssVar('--blue'), amber = cssVar('--amber'), red = cssVar('--red'), textFaint = cssVar('--text-faint');
+    ctx.font = '8px JetBrains Mono, monospace';
+
+    for (let n = 1; n <= N; n++){
+      const prob = Math.pow(lossRate, n) * 100;
+      const frac = Math.sqrt(Math.max(0, Math.min(100, prob)) / 100);
+      const barH = frac * plotH;
+      const x = padL + (n - 1) * (barW + barGap);
+      const y = padT + plotH - barH;
+      let color = blue, alpha = 0.55;
+      if (n === lossesDaily){ color = amber; alpha = 1; }
+      if (n === lossesMax){ color = red; alpha = 1; }
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, barW, Math.max(1, barH));
+      ctx.globalAlpha = 1;
+      if (n === lossesDaily || n === lossesMax){
+        ctx.fillStyle = color;
+        const label = (prob < 0.01 ? '<0.01' : prob.toFixed(prob < 1 ? 2 : 1)) + '%';
+        ctx.fillText(label, x + barW / 2 - ctx.measureText(label).width / 2, Math.max(9, y - 3));
+      }
+    }
+    ctx.fillStyle = textFaint;
+    ctx.fillText('n=1', padL, h - 4);
+    ctx.fillText('n=' + N, w - padR - 18, h - 4);
+  }
+
+  // ---- Chart: Kelly growth curve ----
+  function drawKellyChart(W, R, kellyFrac, riskFrac){
+    if (kellyFrac <= 0){
+      chartKellyEl.style.display = 'none';
+      chartKellyEmptyNote.style.display = 'inline';
+      chartKellyLegend.style.display = 'none';
+      return;
+    }
+    chartKellyEl.style.display = 'block';
+    chartKellyEmptyNote.style.display = 'none';
+    chartKellyLegend.style.display = 'flex';
+
+    const { ctx, w, h } = lotChartSetup(chartKellyEl, 140);
+    const padL = 34, padR = 10, padT = 10, padB = 18;
+    const fMax = Math.min(0.92, Math.max(kellyFrac * 2.2, riskFrac * 1.4, 0.05));
+    const steps = 80;
+    const pts = [];
+    let gMax = -Infinity, gMin = Infinity;
+    for (let i = 0; i <= steps; i++){
+      const f = (i / steps) * fMax;
+      const g = W * Math.log(1 + f * R) + (1 - W) * Math.log(Math.max(1e-6, 1 - f));
+      pts.push([f, g]);
+      if (g > gMax) gMax = g;
+      if (g < gMin) gMin = g;
+    }
+    const yMin = gMin, yMax = gMax + (gMax - gMin) * 0.08;
+    const X = f => padL + (f / fMax) * (w - padL - padR);
+    const Y = g => padT + (1 - (g - yMin) / (yMax - yMin || 1)) * (h - padT - padB);
+
+    ctx.strokeStyle = cssVar('--border-soft');
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padL, Y(0));
+    ctx.lineTo(w - padR, Y(0));
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle = cssVar('--green');
+    ctx.lineWidth = 1.6;
+    pts.forEach(([f, g], i) => { const x = X(f), y = Y(g); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.stroke();
+
+    // vertical marker: your risk
+    const xRisk = X(Math.min(riskFrac, fMax));
+    ctx.save();
+    ctx.strokeStyle = cssVar('--blue');
+    ctx.setLineDash([3, 3]);
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.moveTo(xRisk, padT);
+    ctx.lineTo(xRisk, h - padB);
+    ctx.stroke();
+    ctx.restore();
+
+    // vertical marker: kelly peak
+    const xKelly = X(Math.min(kellyFrac, fMax));
+    ctx.save();
+    ctx.strokeStyle = cssVar('--text-faint');
+    ctx.setLineDash([2, 3]);
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.moveTo(xKelly, padT);
+    ctx.lineTo(xKelly, h - padB);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = cssVar('--text-faint');
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillText('0%', padL - 2, h - 4);
+    ctx.fillText((fMax * 100).toFixed(0) + '% risk', w - padR - 40, h - 4);
+  }
+
+  // ---- Chart: cost drag by spread scenario ----
+  function drawCostDragChart(pipDollarAtLot, slPips, spreadPips, commDollarAtLot){
+    const { ctx, w, h } = lotChartSetup(chartCostDragEl, 120);
+    const padL = 54, padR = 10, padT = 10, padB = 30;
+    const scenarios = [
+      { label: '0 spread', spread: 0 },
+      { label: spreadPips.toFixed(0) + 'p (current)', spread: spreadPips },
+      { label: (spreadPips * 2).toFixed(0) + 'p (2×)', spread: spreadPips * 2 }
+    ];
+    const values = scenarios.map(s => pipDollarAtLot * (slPips + s.spread) + commDollarAtLot);
+    const maxV = Math.max(...values, 1) * 1.15;
+    const plotW = w - padL - padR, plotH = h - padT - padB;
+    const barGap = 26;
+    const barW = (plotW - barGap * (scenarios.length - 1)) / scenarios.length;
+
+    const colors = [cssVar('--green'), cssVar('--amber'), cssVar('--red')];
+    scenarios.forEach((s, i) => {
+      const v = values[i];
+      const barH = (v / maxV) * plotH;
+      const x = padL + i * (barW + barGap);
+      const y = padT + plotH - barH;
+      ctx.fillStyle = colors[i];
+      ctx.globalAlpha = 0.8;
+      ctx.fillRect(x, y, barW, Math.max(1, barH));
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = cssVar('--text');
+      ctx.font = '10px JetBrains Mono, monospace';
+      const vLabel = '$' + v.toFixed(0);
+      ctx.fillText(vLabel, x + barW / 2 - ctx.measureText(vLabel).width / 2, y - 4);
+      ctx.fillStyle = cssVar('--text-faint');
+      ctx.font = '8.5px JetBrains Mono, monospace';
+      ctx.fillText(s.label, x + barW / 2 - ctx.measureText(s.label).width / 2, h - 6);
+    });
+  }
+
+  // ---- Chart: recovery needed vs. % lost ----
+  function drawRecoveryChart(dailyPct, maxPct){
+    const { ctx, w, h } = lotChartSetup(chartRecoveryEl, 140);
+    const padL = 40, padR = 10, padT = 10, padB = 18;
+    const xMax = Math.max(50, maxPct * 1.6);
+    const steps = 60;
+    const pts = [];
+    for (let i = 0; i <= steps; i++){
+      const loss = (i / steps) * xMax;
+      const need = loss / (100 - loss) * 100;
+      pts.push([loss, need]);
+    }
+    const yMax = Math.max(...pts.map(p => p[1])) * 1.05;
+    const X = loss => padL + (loss / xMax) * (w - padL - padR);
+    const Y = need => padT + (1 - need / yMax) * (h - padT - padB);
+
+    const gridVals = [0, Math.round(yMax / 2), Math.round(yMax)];
+    lotChartGrid(ctx, w, h, padL, padR, padT, padB, 0, yMax, gridVals, v => v + '%');
+
+    ctx.beginPath();
+    ctx.strokeStyle = cssVar('--blue');
+    ctx.lineWidth = 1.6;
+    pts.forEach(([loss, need], i) => { const x = X(loss), y = Y(need); i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); });
+    ctx.stroke();
+
+    function marker(pct, color, label){
+      const need = pct / (100 - pct) * 100;
+      const x = X(pct), y = Y(need);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.setLineDash([3, 3]);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, padT);
+      ctx.lineTo(x, h - padB);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '8.5px JetBrains Mono, monospace';
+      ctx.fillText(label, Math.min(x + 4, w - padR - 30), Math.max(padT + 8, y - 5));
+    }
+    marker(dailyPct, cssVar('--amber'), dailyPct.toFixed(1) + '% lost');
+    marker(maxPct, cssVar('--red'), maxPct.toFixed(1) + '% lost');
+
+    ctx.fillStyle = cssVar('--text-faint');
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.fillText('0%', padL - 2, h - 4);
+    ctx.fillText(xMax.toFixed(0) + '% lost', w - padR - 40, h - 4);
+  }
+
+  function drawLotCharts(vars){
+    if (!tabLot.classList.contains('active')) return;
+    const riskPctEff = vars.balance > 0 ? (vars.actualRiskDollar / vars.balance) * 100 : 0;
+    drawRiskDecayChart(riskPctEff, vars.dailyPct, vars.maxPct, vars.deriskEnabled, vars.deriskAfter, vars.deriskCutPct, vars.lossesMax, vars.deriskLossesDaily);
+    drawRecoveryChart(vars.dailyPct, vars.maxPct);
+    if (tabLot.classList.contains('lot-adv-hidden')) return;
+    drawStreakProbChart(vars.lossRate, vars.lossesDaily, vars.lossesMax);
+    drawKellyChart(vars.W, vars.RR, vars.kellyFrac, vars.riskPct / 100);
+    const commDollarAtLot = vars.roundedLot * vars.commPerLot;
+    drawCostDragChart(vars.pipDollarAtLot, vars.slPips, vars.spreadPips, commDollarAtLot);
+  }
+
+
+  function renderDotRow(el, count, maxDots){
+    el.innerHTML = '';
+    if (count <= 0) return;
+    const capped = Math.min(count, maxDots);
+    for (let i = 0; i < capped; i++){
+      const d = document.createElement('span');
+      d.className = 'dd-dot filled';
+      el.appendChild(d);
+    }
+    for (let i = capped; i < maxDots; i++){
+      const d = document.createElement('span');
+      d.className = 'dd-dot';
+      el.appendChild(d);
+    }
+    if (count > maxDots){
+      const more = document.createElement('span');
+      more.className = 'dot-row-more';
+      more.textContent = '+' + (count - maxDots);
+      el.appendChild(more);
+    }
+  }
 
   let lotStep = LOT_DEFAULTS.step;
   let lotRR = LOT_DEFAULTS.rr; // 1, 2, or 'custom'
@@ -1752,6 +2213,8 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const lossesMax = actualRiskDollar > 0 ? Math.floor(maxDollar / actualRiskDollar) : 0;
     statLossesDaily.textContent = actualRiskDollar > 0 ? lossesDaily : '—';
     statLossesMax.textContent = actualRiskDollar > 0 ? lossesMax : '—';
+    renderDotRow(dotsLossesDaily, lossesDaily, 20);
+    renderDotRow(dotsLossesMax, lossesMax, 20);
 
     // ---- streak probability: chance of N consecutive losses at this win rate ----
     const lossRate = 1 - (winRatePct / 100);
@@ -1789,6 +2252,46 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       }
       deriskLossesDaily = count;
     }
+    if (deriskLossesDaily !== null){
+      dotsDeriskCaption.style.display = 'flex';
+      dotsLossesDailyDerisk.style.display = 'flex';
+      renderDotRow(dotsLossesDailyDerisk, deriskLossesDaily, 25);
+    } else {
+      dotsDeriskCaption.style.display = 'none';
+      dotsLossesDailyDerisk.style.display = 'none';
+    }
+
+    // ---- risk budget bar: risk% vs full Kelly ----
+    if (kellyPct <= 0){
+      riskBarFill.style.width = '100%';
+      riskBarFill.className = 'risk-bar-fill red';
+      riskBarPct.textContent = 'no edge';
+      riskBarSub.textContent = 'At a ' + winRatePct.toFixed(0) + '% win rate and ' + RR.toFixed(2) + ':1 R:R, full Kelly is 0% — this setup has no positive edge to size against.';
+      riskBarMarker.style.display = 'none';
+      riskBarTicks.style.display = 'none';
+    } else {
+      const ratio = riskPct / kellyPct;
+      const widthPct = Math.min(ratio, 1) * 100;
+      riskBarFill.style.width = widthPct.toFixed(1) + '%';
+      let cls = 'risk-bar-fill';
+      let note;
+      if (ratio <= 0.5){
+        cls += ' green';
+        note = 'Conservative — at or under half-Kelly, the low end of what most funded traders run.';
+      } else if (ratio <= 1){
+        cls += ' amber';
+        note = 'Getting close to full Kelly — fine short-term, but full-Kelly variance is brutal over many trades.';
+      } else {
+        cls += ' red';
+        note = 'Over full Kelly (' + ratio.toFixed(1) + '×) — sized beyond the theoretical optimum for this edge.';
+      }
+      riskBarFill.className = cls;
+      riskBarPct.textContent = riskPct.toFixed(1) + '% of ' + kellyPct.toFixed(1) + '% (' + (ratio * 100).toFixed(0) + '%)';
+      riskBarSub.textContent = note;
+      riskBarMarker.style.display = 'block';
+      riskBarMarker.style.left = '50%';
+      riskBarTicks.style.display = 'flex';
+    }
 
     lotRiskDollarOut.textContent = fmtUSD(actualRiskDollar);
     lotEffSLOut.textContent = effSLPips.toFixed(0) + ' (' + slPips.toFixed(0) + ' + ' + spreadPips.toFixed(0) + ' spread)';
@@ -1816,6 +2319,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
         + (deriskLossesDaily !== null ? '. With the step-down rule active, that daily-DD cushion stretches to ' + deriskLossesDaily + ' losers' : '') + '.';
     }
     lotVerdictText.innerHTML = verdict + '<span class="cursor"></span>';
+
+    drawLotCharts({
+      balance, actualRiskDollar, dailyPct, maxPct, deriskEnabled, deriskAfter, deriskCutPct,
+      lossesMax, lossesDaily, deriskLossesDaily, lossRate, W, RR, kellyFrac, riskPct,
+      roundedLot, commPerLot, pipDollarAtLot, slPips, spreadPips
+    });
   }
 
   function syncLotStepActive(){
