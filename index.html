@@ -133,6 +133,88 @@ body{
 .theme-toggle:active{transform:scale(.92);}
 .theme-toggle svg{width:15px; height:15px;}
 
+/* Advanced mode switch */
+.adv-toggle-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-top:14px;
+  padding:11px 14px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:9px;
+}
+.adv-toggle-copy{display:flex; flex-direction:column; gap:2px;}
+.adv-toggle-title{font-size:12px; font-weight:600; color:var(--text); letter-spacing:.02em;}
+.adv-toggle-desc{font-size:10.5px; color:var(--text-faint); line-height:1.4;}
+.adv-switch{
+  position:relative;
+  flex:none;
+  width:40px; height:22px;
+  border-radius:999px;
+  background:var(--border);
+  border:1px solid var(--border);
+  cursor:pointer;
+  transition:background .18s ease, border-color .18s ease;
+  padding:0;
+}
+.adv-switch::after{
+  content:"";
+  position:absolute;
+  top:2px; left:2px;
+  width:16px; height:16px;
+  border-radius:50%;
+  background:var(--text-dim);
+  transition:transform .18s ease, background .18s ease;
+}
+.adv-switch.on{background:var(--green-dim); border-color:var(--green);}
+.adv-switch.on::after{transform:translateX(18px); background:var(--green);}
+.adv-badge{
+  font-size:9.5px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  border:1px solid var(--border-soft);
+  border-radius:5px;
+  padding:1px 6px;
+  margin-left:7px;
+  vertical-align:1px;
+}
+#tabLot.lot-adv-hidden .adv-block{display:none !important;}
+
+.tab-bar{
+  display:flex;
+  gap:4px;
+  padding:10px clamp(16px,3vw,36px) 0;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+}
+.tab-btn{
+  background:transparent;
+  border:1px solid transparent;
+  border-bottom:none;
+  color:var(--text-faint);
+  font-family:inherit;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.02em;
+  padding:9px 16px;
+  border-radius:8px 8px 0 0;
+  cursor:pointer;
+  transition:color .15s ease, background .15s ease;
+}
+.tab-btn::before{content:"› "; color:var(--text-faint);}
+.tab-btn:hover{color:var(--text-dim);}
+.tab-btn.active{
+  color:var(--green);
+  background:var(--bg);
+  border-color:var(--border);
+}
+.tab-btn.active::before{color:var(--green);}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
 .term-body{padding:28px clamp(16px,3vw,36px) 34px;}
 
 .intro{margin-bottom:26px;}
@@ -458,6 +540,92 @@ canvas{width:100%; display:block;}
   .cursor{animation:none;}
 }
 
+.note-box{
+  background:var(--surface-2);
+  border:1px solid var(--border-soft);
+  border-radius:8px;
+  padding:12px 14px;
+  font-size:10.5px;
+  line-height:1.6;
+  color:var(--text-faint);
+  margin-top:16px;
+}
+.note-box b{color:var(--text-dim);}
+
+.lot-hero{
+  background:var(--surface-2);
+  border:1px solid var(--border-soft);
+  border-radius:8px;
+  padding:18px 16px;
+  margin-bottom:14px;
+  text-align:center;
+}
+.lot-hero-label{font-size:10.5px; letter-spacing:.08em; color:var(--text-faint); text-transform:uppercase; margin-bottom:8px;}
+.lot-hero-value{font-size:38px; font-weight:700; color:var(--green); line-height:1;}
+.lot-hero-sub{font-size:11px; color:var(--text-dim); margin-top:8px;}
+
+.dd-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:16px;
+}
+@media (max-width:520px){.dd-grid{grid-template-columns:1fr;}}
+
+.balance-preset-row{
+  flex-wrap:wrap;
+}
+.balance-preset-row .preset-btn{
+  flex:1 1 calc(33.333% - 4px);
+  min-width:0;
+  --preset-color:var(--blue);
+}
+.balance-preset-row .preset-btn:hover{background:var(--surface-2);}
+.balance-preset-row .preset-btn.active{background:var(--blue); color:#06170e;}
+:root[data-theme="light"] .balance-preset-row .preset-btn.active{color:#fff;}
+
+.input-field{
+  width:100%;
+  background:var(--surface-2);
+  border:1px solid var(--border);
+  color:var(--text);
+  font-family:inherit;
+  font-size:13px;
+  padding:9px 11px;
+  border-radius:6px;
+  outline:none;
+}
+.input-field:focus{border-color:var(--green);}
+
+.field-row{display:flex; gap:12px;}
+.field-row .field{flex:1;}
+
+.checklist{display:flex; flex-direction:column; gap:10px;}
+.check-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  font-size:11px;
+  color:var(--text-dim);
+  cursor:pointer;
+  line-height:1.4;
+}
+.check-row input[type="checkbox"]{
+  width:15px; height:15px;
+  accent-color:var(--green);
+  cursor:pointer;
+  flex-shrink:0;
+}
+.check-row:has(input:checked) span{color:var(--text); text-decoration:line-through; text-decoration-color:var(--text-faint);}
+
+.warn-line{
+  font-size:11px;
+  color:var(--red);
+  margin-top:10px;
+  display:none;
+}
+.warn-line.show{display:block;}
+
 ::selection{background:var(--green-dim); color:var(--text);}
 button:focus-visible, input:focus-visible{outline:2px solid var(--green); outline-offset:2px;}
 </style>
@@ -474,7 +642,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       </button>
     </div>
 
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabBtnSim" data-tab="sim">pass_probability.sh</button>
+      <button class="tab-btn" id="tabBtnLot" data-tab="lot">lot_sizing.sh</button>
+    </div>
+
     <div class="term-body">
+    <div class="tab-panel active" id="tabSim">
       <div class="intro">
         <p class="prompt">whoami --strategy</p>
         <h1>Prop Challenge Pass-Probability Simulator</h1>
@@ -646,6 +820,313 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       <div class="footnote">
         <b>Assumptions:</b> trades are modeled as independent Bernoulli outcomes at the stated win rate — no streak clustering, no correlation between setups. Max loss and daily loss are static thresholds measured from initial balance / start-of-day equity — this matches most standard (non-trailing) prop-firm challenge rules; check your own firm's account type if it uses a trailing drawdown instead, since that would need a different model. Position size is held constant at the chosen risk-per-trade throughout (no compounding of lot size with equity, no martingale). Challenge rules (target / max loss / daily loss) are fully editable above — the defaults shown just reflect one common structure. This is a probabilistic estimate from simulated randomness, not a guarantee of live trading outcomes — real markets add slippage, spread, execution risk, and behavioral error that this model does not.
       </div>
+    </div>
+
+    <!-- LOT SIZING TAB -->
+    <div class="tab-panel lot-adv-hidden" id="tabLot">
+      <div class="intro">
+        <p class="prompt">whoami --position-size</p>
+        <h1>XAU/USD Lot Size Calculator</h1>
+        <p class="sub">Risk-based position sizing plus the survival math prop-firm evaluations actually hinge on: streak odds, Kelly cross-check, trading costs, and a derisk rule. Enter your numbers below.</p>
+        <div class="adv-toggle-row">
+          <div class="adv-toggle-copy">
+            <span class="adv-toggle-title">Advanced mode</span>
+            <span class="adv-toggle-desc">Adds trading costs, win-rate/R:R edge, streak &amp; Kelly math, DD type, portfolio exposure cap, risk step-down, and the pre-trade checklist.</span>
+          </div>
+          <button type="button" class="adv-switch" id="lotAdvToggle" role="switch" aria-checked="false" aria-label="Toggle advanced mode"></button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- CONTROLS -->
+        <aside class="panel controls">
+          <div class="panel-label-row">
+            <p class="panel-label">account &amp; risk</p>
+            <button class="reset-btn" id="lotResetBtn">↺ reset defaults</button>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">ACCOUNT_BALANCE</span>
+            </div>
+            <input type="text" inputmode="decimal" class="input-field" id="lotBalance" value="10000">
+            <div class="preset-row balance-preset-row" id="balancePresets">
+              <button class="preset-btn" data-bal="5000">5K</button>
+              <button class="preset-btn" data-bal="10000">10K</button>
+              <button class="preset-btn" data-bal="25000">25K</button>
+              <button class="preset-btn" data-bal="50000">50K</button>
+              <button class="preset-btn" data-bal="100000">100K</button>
+              <button class="preset-btn" data-bal="200000">200K</button>
+            </div>
+            <p class="hint">Current equity, not the funded/initial size — sizing should track equity as it moves.</p>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">RISK_PER_TRADE</span>
+              <span class="field-value" id="valLotRisk">0.5%</span>
+            </div>
+            <input type="range" class="risk-slider" id="lotRisk" min="0.1" max="1.0" step="0.1" value="0.5">
+            <p class="hint">Keep this at or below your firm's per-trade risk guidance (often ~1%).</p>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">STOP_LOSS (pips)</span>
+              <span class="field-value" id="valLotSL">1250</span>
+            </div>
+            <input type="range" id="lotSL" min="10" max="2500" step="10" value="1250">
+            <p class="hint">Distance from entry to stop, in pips (1 pip = $0.01 move on XAU/USD).</p>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">PIP_VALUE (per 0.01 lot)</span>
+              <span class="field-value" id="valPipVal">$0.01</span>
+            </div>
+            <input type="range" id="lotPipValue" min="0.005" max="0.05" step="0.005" value="0.01">
+            <p class="hint">Default matches the common XAU convention (0.01 lot × 1000 pips = $10). Check your broker's contract spec.</p>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">LOT_STEP</span>
+            </div>
+            <div class="seg" id="lotStepSeg">
+              <button class="seg-btn active" data-step="0.01">0.01</button>
+              <button class="seg-btn" data-step="0.1">0.10</button>
+              <button class="seg-btn" data-step="1">1.00</button>
+            </div>
+            <p class="hint">Minimum lot increment your broker allows. Result rounds down to this step.</p>
+          </div>
+
+          <div class="adv-block">
+          <p class="panel-label" style="margin-top:24px;">trading costs<span class="adv-badge">advanced</span></p>
+
+          <div class="field-row">
+            <div class="field">
+              <div class="field-head">
+                <span class="field-name">SPREAD (pips)</span>
+                <span class="field-value" id="valLotSpread">20</span>
+              </div>
+              <input type="range" id="lotSpread" min="0" max="100" step="1" value="20">
+            </div>
+            <div class="field">
+              <div class="field-head">
+                <span class="field-name">COMMISSION ($/lot)</span>
+                <span class="field-value" id="valLotComm">0</span>
+              </div>
+              <input type="range" id="lotComm" min="0" max="14" step="0.5" value="0">
+            </div>
+          </div>
+          <p class="hint">Round-turn cost per 1.00 lot. A real stop-out costs stop distance + spread + commission — the sizer accounts for this so actual risk still lands on target.</p>
+          </div>
+
+          <div class="adv-block">
+          <p class="panel-label" style="margin-top:24px;">strategy edge<span class="adv-badge">advanced</span></p>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">WIN_RATE</span>
+              <span class="field-value" id="valLotWR">65%</span>
+            </div>
+            <input type="range" id="lotWinRate" min="30" max="90" step="1" value="65">
+            <div class="preset-row" id="lotWRPresets">
+              <button class="preset-btn red" data-wr="55">1σ edge<span>55%</span></button>
+              <button class="preset-btn orange active" data-wr="65">2σ edge<span>65%</span></button>
+              <button class="preset-btn yellow" data-wr="75">3σ edge<span>75%</span></button>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">REWARD : RISK</span>
+              <span class="field-value" id="valLotRR">1 : 1</span>
+            </div>
+            <div class="seg" id="lotRRSeg">
+              <button class="seg-btn active" data-rr="1">1 : 1</button>
+              <button class="seg-btn" data-rr="2">1 : 2</button>
+              <button class="seg-btn" data-rr="custom">Custom</button>
+            </div>
+            <div class="custom-rr" id="lotCustomRRWrap">
+              <input type="number" id="lotCustomRR" min="0.3" max="5" step="0.1" value="1.5" placeholder="e.g. 1.5">
+            </div>
+            <p class="hint">Used for the Kelly cross-check and streak-probability estimate below — not for lot sizing itself.</p>
+          </div>
+          </div>
+
+          <p class="panel-label" style="margin-top:24px;">drawdown limits</p>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">DAILY_LOSS</span>
+              <span class="field-value" id="valLotDaily">3%</span>
+            </div>
+            <input type="range" class="rules-slider" id="lotDailyLoss" min="1" max="10" step="0.5" value="3">
+          </div>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">MAX_LOSS</span>
+              <span class="field-value" id="valLotMax">6%</span>
+            </div>
+            <input type="range" class="rules-slider" id="lotMaxLoss" min="2" max="20" step="0.5" value="6">
+          </div>
+
+          <div class="adv-block">
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">DD_TYPE<span class="adv-badge">advanced</span></span>
+            </div>
+            <div class="seg" id="lotDDTypeSeg">
+              <button class="seg-btn active" data-ddtype="static">Static</button>
+              <button class="seg-btn" data-ddtype="trailing">Trailing</button>
+            </div>
+            <p class="hint" id="ddTypeHint">Static: max loss measured from the initial balance and never moves. Most beginner-friendly challenges use this.</p>
+          </div>
+          </div>
+
+          <div class="adv-block">
+          <p class="panel-label" style="margin-top:24px;">portfolio risk<span class="adv-badge">advanced</span></p>
+
+          <div class="field">
+            <div class="field-head">
+              <span class="field-name">MAX_CONCURRENT_RISK</span>
+              <span class="field-value" id="valLotConcurrent">2.0%</span>
+            </div>
+            <input type="range" id="lotConcurrentCap" min="0.5" max="10" step="0.5" value="2.0">
+            <p class="hint">Total risk you'll allow open across all positions at once — caps correlated exposure (e.g. XAU + a correlated USD pair) instead of just one trade at a time.</p>
+          </div>
+          </div>
+
+          <div class="adv-block">
+          <p class="panel-label" style="margin-top:24px;">risk step-down rule<span class="adv-badge">advanced</span></p>
+
+          <div class="field">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:11.5px; color:var(--text-dim);">
+              <input type="checkbox" id="lotDeriskEnabled" style="width:15px;height:15px;accent-color:var(--green);cursor:pointer;">
+              Cut risk after consecutive losses
+            </label>
+          </div>
+          <div class="field-row" id="lotDeriskFields" style="opacity:.4; pointer-events:none;">
+            <div class="field">
+              <div class="field-head">
+                <span class="field-name">AFTER (losses)</span>
+                <span class="field-value" id="valDeriskAfter">2</span>
+              </div>
+              <input type="range" id="lotDeriskAfter" min="1" max="6" step="1" value="2">
+            </div>
+            <div class="field">
+              <div class="field-head">
+                <span class="field-name">CUT BY</span>
+                <span class="field-value" id="valDeriskCut">50%</span>
+              </div>
+              <input type="range" id="lotDeriskCut" min="10" max="90" step="10" value="50">
+            </div>
+          </div>
+          <p class="hint">A common prop-desk rule: halve size after 2 losers in a row. Stretches your daily/max DD budget considerably — see the output panel.</p>
+          </div>
+
+          <div class="adv-block">
+          <p class="panel-label" style="margin-top:24px;">pre-trade checklist<span class="adv-badge">advanced</span></p>
+          <div class="checklist" id="preTradeChecklist">
+            <label class="check-row"><input type="checkbox"><span>No high-impact news in the next 30 min</span></label>
+            <label class="check-row"><input type="checkbox"><span>Risk % matches the plan, not "feel"</span></label>
+            <label class="check-row"><input type="checkbox"><span>Checked correlated/open exposure</span></label>
+          </div>
+          </div>
+        </aside>
+
+        <!-- OUTPUT -->
+        <section class="panel output">
+          <p class="panel-label">position size output</p>
+
+          <div class="lot-hero">
+            <div class="lot-hero-label">Recommended lot size</div>
+            <div class="lot-hero-value" id="lotOut">—</div>
+            <div class="lot-hero-sub" id="lotOutSub">risking — per trade</div>
+          </div>
+
+          <div class="dd-grid">
+            <div class="stat faildaily">
+              <div class="stat-label">Losers before daily DD</div>
+              <div class="stat-value" id="statLossesDaily">—</div>
+              <div class="stat-sub" id="statLossesDailySub">at this risk %, in a row</div>
+            </div>
+            <div class="stat failmax">
+              <div class="stat-label">Losers before max DD</div>
+              <div class="stat-value" id="statLossesMax">—</div>
+              <div class="stat-sub" id="statLossesMaxSub">at this risk %, in a row</div>
+            </div>
+          </div>
+
+          <div class="dd-grid adv-block">
+            <div class="stat neutral">
+              <div class="stat-label">P(that streak happens)</div>
+              <div class="stat-value" id="statStreakProbDaily">—</div>
+              <div class="stat-sub">chance of hitting daily DD losers in a row, at your win rate</div>
+            </div>
+            <div class="stat neutral">
+              <div class="stat-label">P(that streak happens)</div>
+              <div class="stat-value" id="statStreakProbMax">—</div>
+              <div class="stat-sub">chance of hitting max DD losers in a row, at your win rate</div>
+            </div>
+          </div>
+
+          <div class="verdict">
+            <p class="verdict-line">./calc.sh</p>
+            <p class="verdict-text" id="lotVerdictText">Awaiting input<span class="cursor"></span></p>
+            <div class="kelly-row">
+              <span>Risk per trade ($, incl. costs)</span>
+              <span id="lotRiskDollarOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>Effective stop (pips, incl. spread)</span>
+              <span id="lotEffSLOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>Daily loss budget ($)</span>
+              <span id="lotDailyDollarOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>Max loss budget ($)</span>
+              <span id="lotMaxDollarOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>$ value per pip at this lot size</span>
+              <span id="lotPipDollarOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>Recovery needed after daily DD hit</span>
+              <span id="lotRecoveryDailyOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>Recovery needed after max DD hit</span>
+              <span id="lotRecoveryMaxOut">—</span>
+            </div>
+            <div class="kelly-row adv-block">
+              <span>Full-Kelly optimal risk (reference only)</span>
+              <span id="lotKellyOut">—</span>
+            </div>
+            <div class="kelly-row adv-block">
+              <span>Concurrent trades allowed (exposure cap)</span>
+              <span id="lotConcurrentOut">—</span>
+            </div>
+            <div class="kelly-row adv-block" id="lotDeriskRow" style="display:none;">
+              <span>Losers before daily DD, with step-down rule</span>
+              <span id="lotDeriskOut">—</span>
+            </div>
+          </div>
+
+          <p class="warn-line" id="lotWarn">⚠ Rounded lot size is below your broker's minimum (0.01) — either widen the stop, raise risk %, or accept a slightly higher risk than targeted.</p>
+          <p class="warn-line adv-block" id="lotKellyWarn">⚠ Your risk per trade exceeds full Kelly for this win-rate/R:R — that's oversized even by aggressive standards.</p>
+        </section>
+      </div>
+
+      <div class="footnote">
+        <b>Assumptions:</b> lot size = (balance × risk%) ÷ (effective stop pips × pip value per standard lot), where effective stop = stop-loss + spread, rounded down to your lot step, with commission added on top so realized risk still lands on target. "Losers before DD" counts consecutive full-stop losses at fixed size and ignores anything beyond spread/commission (no slippage). Streak probability uses (1 − win rate)<sup>n</sup> as a simplified independent-Bernoulli estimate — it ignores any edge decay or correlation between trades. Kelly is the theoretical full-Kelly optimum (f* = W − (1−W)/R); most funded traders run at a fraction of it (¼–½ Kelly) because full Kelly has brutal variance. "Static" vs "trailing" DD only matters once winning trades occur — mid-losing-streak the two behave identically, since neither has moved the equity peak. This is a planning aid, not financial advice — verify every number against your own firm's actual rulebook before risking a real evaluation.
+      </div>
+    </div>
     </div>
   </div>
 </div>
@@ -1056,11 +1537,414 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     window.__rzt = setTimeout(() => drawChart(lastCurves, lastConfig), 150);
   });
 
+  // ---------- TABS ----------
+  const tabBtnSim = document.getElementById('tabBtnSim');
+  const tabBtnLot = document.getElementById('tabBtnLot');
+  const tabSim = document.getElementById('tabSim');
+  const tabLot = document.getElementById('tabLot');
+
+  function switchTab(name){
+    const toSim = name === 'sim';
+    tabBtnSim.classList.toggle('active', toSim);
+    tabBtnLot.classList.toggle('active', !toSim);
+    tabSim.classList.toggle('active', toSim);
+    tabLot.classList.toggle('active', !toSim);
+  }
+  tabBtnSim.addEventListener('click', () => switchTab('sim'));
+  tabBtnLot.addEventListener('click', () => switchTab('lot'));
+
+  // ---------- LOT SIZING: ADVANCED MODE ----------
+  const lotAdvToggle = document.getElementById('lotAdvToggle');
+  let lotAdvancedOn = false;
+
+  function applyLotAdvancedState(){
+    tabLot.classList.toggle('lot-adv-hidden', !lotAdvancedOn);
+    lotAdvToggle.classList.toggle('on', lotAdvancedOn);
+    lotAdvToggle.setAttribute('aria-checked', String(lotAdvancedOn));
+  }
+
+  lotAdvToggle.addEventListener('click', () => {
+    lotAdvancedOn = !lotAdvancedOn;
+    applyLotAdvancedState();
+  });
+
+  applyLotAdvancedState();
+
+  // ---------- LOT SIZE CALCULATOR ----------
+  const LOT_DEFAULTS = {
+    balance: 10000,
+    risk: 0.5,
+    sl: 1250,
+    pipValue: 0.01,
+    step: 0.01,
+    spread: 20,
+    comm: 0,
+    winRate: 65,
+    rr: 1,
+    dailyLoss: 3,
+    maxLoss: 6,
+    ddType: 'static',
+    concurrentCap: 2.0,
+    deriskEnabled: false,
+    deriskAfter: 2,
+    deriskCut: 50
+  };
+
+  const lotBalanceEl = document.getElementById('lotBalance');
+  const balancePresets = document.getElementById('balancePresets');
+  const lotRiskEl = document.getElementById('lotRisk');
+  const lotSLEl = document.getElementById('lotSL');
+  const lotPipValueEl = document.getElementById('lotPipValue');
+  const lotStepSeg = document.getElementById('lotStepSeg');
+  const lotSpreadEl = document.getElementById('lotSpread');
+  const lotCommEl = document.getElementById('lotComm');
+  const lotWinRateEl = document.getElementById('lotWinRate');
+  const lotWRPresets = document.getElementById('lotWRPresets');
+  const lotRRSeg = document.getElementById('lotRRSeg');
+  const lotCustomRRWrap = document.getElementById('lotCustomRRWrap');
+  const lotCustomRREl = document.getElementById('lotCustomRR');
+  const lotDailyLossEl = document.getElementById('lotDailyLoss');
+  const lotMaxLossEl = document.getElementById('lotMaxLoss');
+  const lotDDTypeSeg = document.getElementById('lotDDTypeSeg');
+  const ddTypeHint = document.getElementById('ddTypeHint');
+  const lotConcurrentCapEl = document.getElementById('lotConcurrentCap');
+  const lotDeriskEnabledEl = document.getElementById('lotDeriskEnabled');
+  const lotDeriskFields = document.getElementById('lotDeriskFields');
+  const lotDeriskAfterEl = document.getElementById('lotDeriskAfter');
+  const lotDeriskCutEl = document.getElementById('lotDeriskCut');
+  const lotResetBtn = document.getElementById('lotResetBtn');
+
+  const valLotRisk = document.getElementById('valLotRisk');
+  const valLotSL = document.getElementById('valLotSL');
+  const valPipVal = document.getElementById('valPipVal');
+  const valLotSpread = document.getElementById('valLotSpread');
+  const valLotComm = document.getElementById('valLotComm');
+  const valLotWR = document.getElementById('valLotWR');
+  const valLotRR = document.getElementById('valLotRR');
+  const valLotDaily = document.getElementById('valLotDaily');
+  const valLotMax = document.getElementById('valLotMax');
+  const valLotConcurrent = document.getElementById('valLotConcurrent');
+  const valDeriskAfter = document.getElementById('valDeriskAfter');
+  const valDeriskCut = document.getElementById('valDeriskCut');
+
+  const lotOut = document.getElementById('lotOut');
+  const lotOutSub = document.getElementById('lotOutSub');
+  const statLossesDaily = document.getElementById('statLossesDaily');
+  const statLossesMax = document.getElementById('statLossesMax');
+  const statStreakProbDaily = document.getElementById('statStreakProbDaily');
+  const statStreakProbMax = document.getElementById('statStreakProbMax');
+  const lotVerdictText = document.getElementById('lotVerdictText');
+  const lotRiskDollarOut = document.getElementById('lotRiskDollarOut');
+  const lotEffSLOut = document.getElementById('lotEffSLOut');
+  const lotDailyDollarOut = document.getElementById('lotDailyDollarOut');
+  const lotMaxDollarOut = document.getElementById('lotMaxDollarOut');
+  const lotPipDollarOut = document.getElementById('lotPipDollarOut');
+  const lotRecoveryDailyOut = document.getElementById('lotRecoveryDailyOut');
+  const lotRecoveryMaxOut = document.getElementById('lotRecoveryMaxOut');
+  const lotKellyOut = document.getElementById('lotKellyOut');
+  const lotConcurrentOut = document.getElementById('lotConcurrentOut');
+  const lotDeriskRow = document.getElementById('lotDeriskRow');
+  const lotDeriskOut = document.getElementById('lotDeriskOut');
+  const lotWarn = document.getElementById('lotWarn');
+  const lotKellyWarn = document.getElementById('lotKellyWarn');
+
+  let lotStep = LOT_DEFAULTS.step;
+  let lotRR = LOT_DEFAULTS.rr; // 1, 2, or 'custom'
+  let lotDDType = LOT_DEFAULTS.ddType;
+
+  function fmtUSD(n){
+    return '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  function parseBalance(){
+    const raw = (lotBalanceEl.value || '').replace(/[^0-9.]/g, '');
+    const n = parseFloat(raw);
+    return isFinite(n) && n > 0 ? n : 0;
+  }
+
+  function currentRRValue(){
+    if (lotRR === 'custom'){
+      const v = parseFloat(lotCustomRREl.value);
+      return isFinite(v) && v > 0 ? v : 1;
+    }
+    return lotRR;
+  }
+
+  function calcLot(){
+    const balance = parseBalance();
+    const riskPct = parseFloat(lotRiskEl.value);
+    const slPips = parseFloat(lotSLEl.value);
+    const pipValue001 = parseFloat(lotPipValueEl.value); // $ per pip per 0.01 lot
+    const spreadPips = parseFloat(lotSpreadEl.value);
+    const commPerLot = parseFloat(lotCommEl.value);
+    const winRatePct = parseFloat(lotWinRateEl.value);
+    const RR = currentRRValue();
+    const dailyPct = parseFloat(lotDailyLossEl.value);
+    const maxPct = parseFloat(lotMaxLossEl.value);
+    const concurrentPct = parseFloat(lotConcurrentCapEl.value);
+    const deriskEnabled = lotDeriskEnabledEl.checked;
+    const deriskAfter = parseInt(lotDeriskAfterEl.value, 10);
+    const deriskCutPct = parseFloat(lotDeriskCutEl.value);
+
+    valLotRisk.textContent = riskPct.toFixed(1) + '%';
+    valLotSL.textContent = slPips.toFixed(0);
+    valPipVal.textContent = '$' + pipValue001.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+    valLotSpread.textContent = spreadPips.toFixed(0);
+    valLotComm.textContent = commPerLot.toFixed(1).replace(/\.0$/, '');
+    valLotWR.textContent = winRatePct.toFixed(0) + '%';
+    valLotRR.textContent = lotRR === 'custom' ? ('1 : ' + RR.toFixed(1)) : ('1 : ' + RR);
+    valLotDaily.textContent = dailyPct.toFixed(1) + '%';
+    valLotMax.textContent = maxPct.toFixed(1) + '%';
+    valLotConcurrent.textContent = concurrentPct.toFixed(1) + '%';
+    valDeriskAfter.textContent = deriskAfter;
+    valDeriskCut.textContent = deriskCutPct.toFixed(0) + '%';
+
+    lotDeriskFields.style.opacity = deriskEnabled ? '1' : '.4';
+    lotDeriskFields.style.pointerEvents = deriskEnabled ? 'auto' : 'none';
+    lotDeriskRow.style.display = deriskEnabled ? 'flex' : 'none';
+
+    if (!balance || !slPips || !pipValue001){
+      lotOut.textContent = '—';
+      lotOutSub.textContent = 'enter a valid balance and stop-loss';
+      statLossesDaily.textContent = '—';
+      statLossesMax.textContent = '—';
+      statStreakProbDaily.textContent = '—';
+      statStreakProbMax.textContent = '—';
+      lotVerdictText.innerHTML = 'Awaiting valid input<span class="cursor"></span>';
+      [lotRiskDollarOut, lotEffSLOut, lotDailyDollarOut, lotMaxDollarOut, lotPipDollarOut,
+       lotRecoveryDailyOut, lotRecoveryMaxOut, lotKellyOut, lotConcurrentOut, lotDeriskOut]
+        .forEach(el => el.textContent = '—');
+      lotWarn.classList.remove('show');
+      lotKellyWarn.classList.remove('show');
+      return;
+    }
+
+    const riskDollar = balance * (riskPct / 100);
+    const dailyDollar = balance * (dailyPct / 100);
+    const maxDollar = balance * (maxPct / 100);
+
+    // pip value per 1.00 (standard) lot = pipValue001 * 100
+    const pipValuePerStdLot = pipValue001 * 100;
+    const effSLPips = slPips + spreadPips;
+
+    // size off effective stop (incl spread) so realized risk lands on target
+    const rawLot = riskDollar / (effSLPips * pipValuePerStdLot + commPerLot);
+
+    // round DOWN to the chosen lot step, so actual risk never exceeds target
+    const steps = Math.floor(rawLot / lotStep + 1e-9);
+    const roundedLot = Math.max(0, steps * lotStep);
+    const decimals = lotStep < 1 ? (lotStep < 0.1 ? 2 : 1) : 0;
+
+    const actualRiskDollar = roundedLot * (effSLPips * pipValuePerStdLot + commPerLot);
+    const pipDollarAtLot = roundedLot * pipValuePerStdLot;
+
+    if (roundedLot <= 0){
+      lotOut.textContent = '0.00';
+      lotOutSub.textContent = 'below broker minimum — widen stop or raise risk %';
+      lotWarn.classList.add('show');
+    } else {
+      lotOut.textContent = roundedLot.toFixed(decimals);
+      lotOutSub.textContent = 'risking ' + fmtUSD(actualRiskDollar) + ' (' + ((actualRiskDollar/balance)*100).toFixed(2) + '% of balance)';
+      lotWarn.classList.remove('show');
+    }
+
+    const lossesDaily = actualRiskDollar > 0 ? Math.floor(dailyDollar / actualRiskDollar) : 0;
+    const lossesMax = actualRiskDollar > 0 ? Math.floor(maxDollar / actualRiskDollar) : 0;
+    statLossesDaily.textContent = actualRiskDollar > 0 ? lossesDaily : '—';
+    statLossesMax.textContent = actualRiskDollar > 0 ? lossesMax : '—';
+
+    // ---- streak probability: chance of N consecutive losses at this win rate ----
+    const lossRate = 1 - (winRatePct / 100);
+    const streakProbDaily = lossesDaily > 0 ? Math.pow(lossRate, lossesDaily) * 100 : 100;
+    const streakProbMax = lossesMax > 0 ? Math.pow(lossRate, lossesMax) * 100 : 100;
+    statStreakProbDaily.textContent = (streakProbDaily < 0.01 ? '<0.01' : streakProbDaily.toFixed(streakProbDaily < 1 ? 2 : 1)) + '%';
+    statStreakProbMax.textContent = (streakProbMax < 0.01 ? '<0.01' : streakProbMax.toFixed(streakProbMax < 1 ? 2 : 1)) + '%';
+
+    // ---- recovery needed after a drawdown hit ----
+    const recoveryDaily = dailyPct / (100 - dailyPct) * 100;
+    const recoveryMax = maxPct / (100 - maxPct) * 100;
+
+    // ---- Kelly cross-check: f* = W - (1-W)/R ----
+    const W = winRatePct / 100;
+    const kellyFrac = W - (1 - W) / RR;
+    const kellyPct = kellyFrac * 100;
+
+    // ---- concurrent trades allowed under exposure cap ----
+    const concurrentTrades = riskPct > 0 ? Math.floor(concurrentPct / riskPct + 1e-9) : 0;
+
+    // ---- derisk rule: step down risk after N consecutive losses, recompute losers-before-daily-DD ----
+    let deriskLossesDaily = null;
+    if (deriskEnabled && actualRiskDollar > 0){
+      const cutDollar = actualRiskDollar * (1 - deriskCutPct / 100);
+      let budget = dailyDollar;
+      let count = 0;
+      let n = 0;
+      while (true){
+        const spend = n < deriskAfter ? actualRiskDollar : cutDollar;
+        if (budget - spend < -1e-9) break;
+        budget -= spend;
+        count++;
+        n++;
+        if (count > 500) break; // safety
+      }
+      deriskLossesDaily = count;
+    }
+
+    lotRiskDollarOut.textContent = fmtUSD(actualRiskDollar);
+    lotEffSLOut.textContent = effSLPips.toFixed(0) + ' (' + slPips.toFixed(0) + ' + ' + spreadPips.toFixed(0) + ' spread)';
+    lotDailyDollarOut.textContent = fmtUSD(dailyDollar);
+    lotMaxDollarOut.textContent = fmtUSD(maxDollar);
+    lotPipDollarOut.textContent = '$' + pipDollarAtLot.toFixed(4) + ' / pip';
+    lotRecoveryDailyOut.textContent = '+' + recoveryDaily.toFixed(2) + '%';
+    lotRecoveryMaxOut.textContent = '+' + recoveryMax.toFixed(2) + '%';
+    lotKellyOut.textContent = kellyPct > 0 ? kellyPct.toFixed(1) + '%' : '0% (no edge at this R:R)';
+    lotConcurrentOut.textContent = concurrentTrades > 0 ? (concurrentTrades + ' trade' + (concurrentTrades === 1 ? '' : 's') + ' @ ' + riskPct.toFixed(1) + '% each') : '0 — cap smaller than one trade';
+    if (deriskLossesDaily !== null){
+      lotDeriskOut.textContent = deriskLossesDaily + ' (vs ' + lossesDaily + ' without step-down)';
+    }
+
+    lotKellyWarn.classList.toggle('show', kellyPct > 0 && riskPct > kellyPct);
+
+    let verdict;
+    if (roundedLot <= 0){
+      verdict = 'This combination of stop-loss and risk % rounds down to below your broker\'s minimum lot. Widen the stop, raise risk %, or pick a smaller lot step if your broker supports it.';
+    } else {
+      verdict = 'At ' + roundedLot.toFixed(decimals) + ' lots with a ' + slPips.toFixed(0) + '-pip stop (' + effSLPips.toFixed(0) + ' effective incl. spread), a full loser costs ' + fmtUSD(actualRiskDollar)
+        + '. You can absorb ' + lossesDaily + ' losing trade' + (lossesDaily === 1 ? '' : 's') + ' in a row before breaching your ' + dailyPct.toFixed(1) + '% daily limit ('
+        + (streakProbDaily < 0.01 ? '<0.01' : streakProbDaily.toFixed(1)) + '% chance of that at a ' + winRatePct.toFixed(0) + '% win rate), and '
+        + lossesMax + ' before breaching your ' + maxPct.toFixed(1) + '% max drawdown'
+        + (deriskLossesDaily !== null ? '. With the step-down rule active, that daily-DD cushion stretches to ' + deriskLossesDaily + ' losers' : '') + '.';
+    }
+    lotVerdictText.innerHTML = verdict + '<span class="cursor"></span>';
+  }
+
+  function syncLotStepActive(){
+    lotStepSeg.querySelectorAll('.seg-btn').forEach(b => {
+      b.classList.toggle('active', parseFloat(b.dataset.step) === lotStep);
+    });
+  }
+
+  lotStepSeg.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    lotStep = parseFloat(btn.dataset.step);
+    syncLotStepActive();
+    calcLot();
+  });
+
+  function syncBalancePresetActive(){
+    const current = parseBalance();
+    balancePresets.querySelectorAll('.preset-btn').forEach(b => {
+      b.classList.toggle('active', parseFloat(b.dataset.bal) === current);
+    });
+  }
+
+  balancePresets.addEventListener('click', (e) => {
+    const btn = e.target.closest('.preset-btn');
+    if (!btn) return;
+    lotBalanceEl.value = btn.dataset.bal;
+    syncBalancePresetActive();
+    calcLot();
+  });
+
+  function syncLotWRPresetActive(){
+    const current = parseFloat(lotWinRateEl.value);
+    lotWRPresets.querySelectorAll('.preset-btn').forEach(b => {
+      b.classList.toggle('active', parseFloat(b.dataset.wr) === current);
+    });
+  }
+
+  lotWRPresets.addEventListener('click', (e) => {
+    const btn = e.target.closest('.preset-btn');
+    if (!btn) return;
+    lotWinRateEl.value = btn.dataset.wr;
+    syncLotWRPresetActive();
+    calcLot();
+  });
+
+  lotWinRateEl.addEventListener('input', () => {
+    syncLotWRPresetActive();
+    calcLot();
+  });
+
+  function syncLotRRActive(){
+    lotRRSeg.querySelectorAll('.seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.rr === String(lotRR));
+    });
+    lotCustomRRWrap.classList.toggle('show', lotRR === 'custom');
+  }
+
+  lotRRSeg.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    lotRR = btn.dataset.rr === 'custom' ? 'custom' : parseFloat(btn.dataset.rr);
+    syncLotRRActive();
+    calcLot();
+  });
+
+  lotCustomRREl.addEventListener('input', calcLot);
+
+  function syncDDTypeActive(){
+    lotDDTypeSeg.querySelectorAll('.seg-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.ddtype === lotDDType);
+    });
+    ddTypeHint.textContent = lotDDType === 'static'
+      ? 'Static: max loss measured from the initial balance and never moves. Most beginner-friendly challenges use this.'
+      : 'Trailing: max loss floor rises with your equity high (locks in profit). Mid-losing-streak the math is identical to static — it only diverges after a win pushes a new peak.';
+  }
+
+  lotDDTypeSeg.addEventListener('click', (e) => {
+    const btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    lotDDType = btn.dataset.ddtype;
+    syncDDTypeActive();
+    calcLot();
+  });
+
+  lotDeriskEnabledEl.addEventListener('change', calcLot);
+
+  [lotBalanceEl, lotRiskEl, lotSLEl, lotPipValueEl, lotSpreadEl, lotCommEl,
+   lotDailyLossEl, lotMaxLossEl, lotConcurrentCapEl, lotDeriskAfterEl, lotDeriskCutEl].forEach(el => {
+    el.addEventListener('input', () => {
+      if (el === lotBalanceEl) syncBalancePresetActive();
+      calcLot();
+    });
+  });
+
+  function applyLotDefaults(){
+    lotBalanceEl.value = LOT_DEFAULTS.balance;
+    lotRiskEl.value = LOT_DEFAULTS.risk;
+    lotSLEl.value = LOT_DEFAULTS.sl;
+    lotPipValueEl.value = LOT_DEFAULTS.pipValue;
+    lotSpreadEl.value = LOT_DEFAULTS.spread;
+    lotCommEl.value = LOT_DEFAULTS.comm;
+    lotWinRateEl.value = LOT_DEFAULTS.winRate;
+    lotRR = LOT_DEFAULTS.rr;
+    lotCustomRREl.value = 1.5;
+    lotDailyLossEl.value = LOT_DEFAULTS.dailyLoss;
+    lotMaxLossEl.value = LOT_DEFAULTS.maxLoss;
+    lotDDType = LOT_DEFAULTS.ddType;
+    lotConcurrentCapEl.value = LOT_DEFAULTS.concurrentCap;
+    lotDeriskEnabledEl.checked = LOT_DEFAULTS.deriskEnabled;
+    lotDeriskAfterEl.value = LOT_DEFAULTS.deriskAfter;
+    lotDeriskCutEl.value = LOT_DEFAULTS.deriskCut;
+    lotStep = LOT_DEFAULTS.step;
+    syncLotStepActive();
+    syncBalancePresetActive();
+    syncLotWRPresetActive();
+    syncLotRRActive();
+    syncDDTypeActive();
+    calcLot();
+  }
+
+  lotResetBtn.addEventListener('click', applyLotDefaults);
+
   // ---------- INIT ----------
   // Initial control values come from DEFAULTS, not the HTML value="" attributes,
   // so there is exactly one place to change a default.
   applyDefaults();
   runSimulation();
+  applyLotDefaults();
 })();
 </script>
 </body>
