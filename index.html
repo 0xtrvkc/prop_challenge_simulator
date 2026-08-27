@@ -649,6 +649,107 @@ canvas{width:100%; display:block;}
 
 ::selection{background:var(--green-dim); color:var(--text);}
 button:focus-visible, input:focus-visible{outline:2px solid var(--green); outline-offset:2px;}
+/* ---------- secret cyberpunk popup ---------- */
+.cyberpunk-popup{
+  position:fixed;
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  z-index:99999;
+  background:#0a0014;
+  border:1px solid #ff00c8;
+  padding:26px 52px;
+  border-radius:2px;
+  font-family:'JetBrains Mono', ui-monospace, monospace;
+  box-shadow:0 0 2px #ff00c8, 0 0 24px rgba(255,0,200,.55), 0 0 48px rgba(0,255,249,.25), inset 0 0 26px rgba(255,0,200,.12);
+  pointer-events:none;
+  opacity:0;
+  animation:cp-blink-in .12s steps(1) 5 forwards, cp-flicker 2.4s linear .6s forwards;
+}
+.cyberpunk-popup::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 3px);
+  mix-blend-mode:overlay;
+  pointer-events:none;
+}
+.cyberpunk-popup .cp-tag{
+  display:block;
+  font-size:9.5px;
+  letter-spacing:.25em;
+  color:#00fff9;
+  text-align:center;
+  margin-bottom:6px;
+  opacity:.85;
+}
+.cyberpunk-popup.cp-fadeout{
+  opacity:0 !important;
+  transition:opacity .45s ease;
+  animation:none;
+}
+.cp-glitch{
+  position:relative;
+  display:block;
+  font-size:26px;
+  font-weight:700;
+  letter-spacing:.14em;
+  color:#e9fbff;
+  text-align:center;
+  text-shadow:0 0 6px #0ff, 0 0 16px rgba(0,255,249,.6), 0 0 2px #fff;
+  animation:cp-textflicker 1.6s infinite;
+}
+.cp-glitch::before,
+.cp-glitch::after{
+  content:attr(data-text);
+  position:absolute;
+  left:0; top:0;
+  width:100%;
+  overflow:hidden;
+  background:#0a0014;
+}
+.cp-glitch::before{
+  color:#ff00c8;
+  clip-path:inset(0 0 55% 0);
+  animation:cp-glitch-1 2.6s infinite linear alternate-reverse;
+}
+.cp-glitch::after{
+  color:#00fff9;
+  clip-path:inset(55% 0 0 0);
+  animation:cp-glitch-2 2.1s infinite linear alternate-reverse;
+}
+@keyframes cp-glitch-1{
+  0%{transform:translate(0,0);}
+  20%{transform:translate(-3px,-1px);}
+  40%{transform:translate(3px,1px);}
+  60%{transform:translate(-2px,1px);}
+  80%{transform:translate(2px,-1px);}
+  100%{transform:translate(0,0);}
+}
+@keyframes cp-glitch-2{
+  0%{transform:translate(0,0);}
+  25%{transform:translate(3px,0);}
+  50%{transform:translate(-3px,1px);}
+  75%{transform:translate(2px,-1px);}
+  100%{transform:translate(0,0);}
+}
+@keyframes cp-textflicker{
+  0%,19%,21%,23%,80%,100%{opacity:1;}
+  20%,22%,24%,26%{opacity:.25;}
+}
+@keyframes cp-flicker{
+  0%{opacity:1;}
+  4%{opacity:.2;}
+  8%{opacity:1;}
+  10%{opacity:.15;}
+  13%{opacity:1;}
+  70%{opacity:1;}
+  74%{opacity:.2;}
+  78%{opacity:1;}
+  100%{opacity:1;}
+}
+@keyframes cp-blink-in{
+  from{opacity:0;} to{opacity:1;}
+}
 </style>
 </head>
 <body>
@@ -2447,6 +2548,45 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   }
 
   lotResetBtn.addEventListener('click', applyLotDefaults);
+
+  // ---------- SECRET COMMAND: 'iii' on lot_sizing.sh tab ----------
+  (function(){
+    let iStreak = 0;
+
+    function showWelcomeBackPopup(){
+      const popup = document.createElement('div');
+      popup.className = 'cyberpunk-popup';
+      popup.innerHTML =
+        '<span class="cp-tag">// override_authenticated</span>' +
+        '<span class="cp-glitch" data-text="WELCOME BACK">WELCOME BACK</span>';
+      document.body.appendChild(popup);
+      setTimeout(() => {
+        popup.classList.add('cp-fadeout');
+        setTimeout(() => popup.remove(), 500);
+      }, 2200);
+    }
+
+    function triggerSecretCommand(){
+      lotBalanceEl.value = 100000;
+      lotRiskEl.value = 0.4;
+      syncBalancePresetActive();
+      calcLot();
+      showWelcomeBackPopup();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!tabLot.classList.contains('active')){ iStreak = 0; return; }
+      if (e.key && e.key.toLowerCase() === 'i' && !e.ctrlKey && !e.metaKey && !e.altKey){
+        iStreak++;
+        if (iStreak >= 3){
+          iStreak = 0;
+          triggerSecretCommand();
+        }
+      } else {
+        iStreak = 0;
+      }
+    });
+  })();
 
   // ---------- INIT ----------
   // Initial control values come from DEFAULTS, not the HTML value="" attributes,
