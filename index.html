@@ -268,7 +268,24 @@ body{
 .pace-evidence{margin-top:12px;font-size:9.5px;line-height:1.55;color:var(--text-faint)}
 .checkpoint-row{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
 .checkpoint-note{font-size:9.5px;color:var(--text-faint);line-height:1.5;margin-top:9px;}
+.audit-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:10px 11px;border:1px solid var(--border);border-radius:7px;background:var(--surface-2);}
+.audit-tools-copy{display:flex;flex-direction:column;gap:2px}.audit-tools-title{font-size:10.5px;color:var(--text);font-weight:600}.audit-tools-sub{font-size:8.5px;color:var(--text-faint)}
+.audit-print-btn{width:100%;margin-top:8px;border:1px solid var(--blue);border-radius:6px;background:transparent;color:var(--blue);font:600 10.5px inherit;padding:9px 10px;cursor:pointer}.audit-print-btn:hover{background:var(--surface)}.audit-print-btn:disabled{opacity:.35;cursor:not-allowed}
+.audit-private .privacy-absolute{display:none!important}
 .audit-empty{padding:38px 18px;text-align:center;color:var(--text-faint);font-size:11px;line-height:1.7;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);}
+.audit-print-report{display:none;color:#111;background:#fff;font-family:Arial,Helvetica,sans-serif;}
+.print-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #244a73;padding-bottom:5px;margin-bottom:5px}.print-brand{font-size:17pt;font-weight:700;color:#244a73;letter-spacing:.02em}.print-subtitle{font-size:7.5pt;color:#555;margin-top:2px}.print-meta{text-align:right;font-size:7pt;line-height:1.4;color:#444}
+.print-status{display:flex;justify-content:space-between;align-items:center;background:#eaf0f6;border:1px solid #9fb2c5;padding:5px 7px;margin-bottom:5px}.print-status strong{font-size:10pt;color:#173b61}.print-status span{font-size:7pt;color:#444}
+.print-section{margin-top:5px;break-inside:avoid}.print-section-title{background:#244a73;color:#fff;font-size:7.5pt;font-weight:700;padding:3px 5px;text-transform:uppercase;letter-spacing:.04em}
+.print-table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.2pt}.print-table th,.print-table td{border:1px solid #b8c0c8;padding:3px 4px;vertical-align:top}.print-table th{background:#e8edf2;color:#23384d;text-align:left;font-weight:700}.print-table td.value{text-align:right;font-weight:700}.print-table tr:nth-child(even) td{background:#f7f8fa}
+.print-two-col{display:grid;grid-template-columns:1fr 1fr;gap:5px}.print-equity{height:62px;border:1px solid #b8c0c8;background:#fbfcfd;padding:3px}.print-equity svg{display:block;width:100%;height:100%}.print-pace{border:1px solid #9fb2c5;background:#f5f8fb;padding:6px}.print-pace-head{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:4px}.print-pace-head strong{font-size:9pt;color:#173b61}.print-pace-badge{font-size:7pt;font-weight:700;border:1px solid #244a73;padding:2px 5px}.print-pace p{font-size:7.2pt;line-height:1.35;margin:3px 0}.print-actions{margin:3px 0 0;padding-left:15px;font-size:6.8pt;line-height:1.35}.print-foot{margin-top:5px;border-top:1px solid #9aa6b2;padding-top:3px;font-size:6.2pt;line-height:1.3;color:#555}
+@page{size:A4 portrait;margin:7mm}
+@media print{
+  html,body{width:210mm;height:297mm;background:#fff!important;margin:0!important;padding:0!important;overflow:hidden!important}
+  body *{visibility:hidden!important}
+  #auditPrintReport,#auditPrintReport *{visibility:visible!important}
+  #auditPrintReport{display:block!important;position:absolute;left:0;top:0;width:196mm;max-height:283mm;overflow:hidden;color:#111!important;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 @media(max-width:800px){.audit-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.pace-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}}
 @media(max-width:430px){.audit-metrics{grid-template-columns:1fr 1fr}}
 
@@ -1076,6 +1093,11 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             <button class="reset-btn" id="clearCheckpointBtn">clear checkpoint</button>
           </div>
           <p class="checkpoint-note" id="checkpointNote">No previous weekly checkpoint saved on this device.</p>
+          <div class="audit-tools">
+            <div class="audit-tools-copy"><span class="audit-tools-title">Privacy mode</span><span class="audit-tools-sub">Hide money and lot values · show percentages</span></div>
+            <button type="button" class="adv-switch" id="auditPrivacyToggle" role="switch" aria-checked="false" aria-label="Toggle percentage-only privacy mode"></button>
+          </div>
+          <button class="audit-print-btn" id="auditPrintBtn" disabled>▣ print / save one-page A4 PDF</button>
           <div class="audit-sizer">
             <div class="panel-label-row">
               <p class="panel-label">XAU/USD sizing setup</p>
@@ -1085,11 +1107,11 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
               <div class="field-head"><span class="field-name">RISK_PER_TRADE</span><span class="field-value" id="auditRiskValue">0.5%</span></div>
               <input type="range" class="risk-slider" id="auditRisk" min="0.1" max="1" step="0.1" value="0.5">
             </div>
-            <div class="field">
+            <div class="field privacy-absolute">
               <div class="field-head"><span class="field-name">STOP_LOSS (pips)</span><span class="field-value" id="auditSLValue">1250</span></div>
               <input type="range" id="auditSL" min="10" max="2500" step="10" value="1250">
             </div>
-            <div class="field-row">
+            <div class="field-row privacy-absolute">
               <div class="field">
                 <div class="field-head"><span class="field-name">SPREAD</span><span class="field-value" id="auditSpreadValue">20 pips</span></div>
                 <input type="range" id="auditSpread" min="0" max="100" step="1" value="20">
@@ -1099,11 +1121,11 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
                 <input type="range" id="auditComm" min="0" max="14" step="0.5" value="0">
               </div>
             </div>
-            <div class="field">
+            <div class="field privacy-absolute">
               <div class="field-head"><span class="field-name">PIP_VALUE (per 0.01 lot)</span><span class="field-value" id="auditPipValueValue">$0.01</span></div>
               <input type="range" id="auditPipValue" min="0.005" max="0.05" step="0.005" value="0.01">
             </div>
-            <div class="field">
+            <div class="field privacy-absolute">
               <div class="field-head"><span class="field-name">LOT_STEP</span></div>
               <div class="seg" id="auditLotStepSeg">
                 <button class="seg-btn active" data-audit-step="0.01">0.01</button>
@@ -1140,6 +1162,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
         </section>
       </div>
       <div class="footnote"><b>Status language:</b> “No failure found” means the imported closed-trade history has not crossed a calculated FTMO floor. “Cannot fully verify” means the file lacks tick-by-tick floating equity, so it is not proof of official compliance. “Failed” is shown only when the CSV itself contains a clear breach.</div>
+      <section class="audit-print-report" id="auditPrintReport" aria-hidden="true"></section>
     </div>
 
     <!-- LOT SIZING TAB -->
@@ -3138,6 +3161,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const paceGrid = document.getElementById('paceGrid');
   const paceActions = document.getElementById('paceActions');
   const paceEvidence = document.getElementById('paceEvidence');
+  const auditPrivacyToggle = document.getElementById('auditPrivacyToggle');
+  const auditPrintBtn = document.getElementById('auditPrintBtn');
+  const auditPrintReport = document.getElementById('auditPrintReport');
   const AUDIT_CHECKPOINT_KEY = 'challenge_sim_ftmo_weekly_checkpoint_v1';
   const AUDIT_PRESETS = {
     ftmo1:{name:'FTMO 1-Step',target:10,daily:3,max:10,trailing:true,minDays:0,bestDay:true},
@@ -3148,6 +3174,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   let auditLotStep = 0.01;
   let auditRows = null;
   let currentAudit = null;
+  let currentPacePlan = null;
+  let auditPrivacy = false;
+  let auditFileName = '';
 
   function parseCSV(text){
     const rows=[]; let row=[], field='', quoted=false;
@@ -3180,10 +3209,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   function money(n){return (n<0?'−':'')+'$'+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
   function signedMoney(n){return (n>=0?'+':'−')+'$'+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
   function pct(n,digits=2){return Number.isFinite(n)?n.toFixed(digits)+'%':'—';}
+  function auditAmount(n,base,digits=2){return auditPrivacy?pct(n/base*100,digits):money(n);}
+  function auditSignedAmount(n,base){return auditPrivacy?(n>=0?'+':'')+pct(n/base*100,2):signedMoney(n);}
   function checkpoint(){try{return JSON.parse(localStorage.getItem(AUDIT_CHECKPOINT_KEY)||'null');}catch(e){return null;}}
   function refreshCheckpointNote(){
     const cp=checkpoint();
-    checkpointNote.textContent=cp?'Previous checkpoint: '+new Date(cp.savedAt).toLocaleString()+' · '+cp.trades+' trades · '+money(cp.balance):'No previous weekly checkpoint saved on this device.';
+    checkpointNote.textContent=cp?'Previous checkpoint: '+new Date(cp.savedAt).toLocaleString()+' · '+cp.trades+' trades · '+(auditPrivacy?pct((cp.balance/cp.initial-1)*100)+' return':money(cp.balance)):'No previous weekly checkpoint saved on this device.';
   }
 
   function analyzeJourney(rows,presetKey){
@@ -3204,6 +3235,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const groups=new Map();
     trades.forEach(t=>{const k=dayKey(t.close);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(t);});
     let balance=initial,peakEod=initial,peakClosed=initial,maxClosedDD=0,worstDayExcursion=0;
+    const balancePath=[initial];
     let breachDaily=null,breachMax=null,positiveDays=0,positiveDaysProfit=0,bestDay=0;
     for(const [day,dayTrades] of groups){
       const dayStart=balance, dailyFloor=dayStart-initial*p.daily/100;
@@ -3211,6 +3243,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       let dayLow=0;
       for(const t of dayTrades){
         balance+=t.net;
+        balancePath.push(balance);
         dayLow=Math.min(dayLow,balance-dayStart);
         peakClosed=Math.max(peakClosed,balance);
         maxClosedDD=Math.min(maxClosedDD,balance-peakClosed);
@@ -3246,7 +3279,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     return {presetKey,preset:p.name,initial,balance,net:balance-initial,returnPct:(balance/initial-1)*100,trades:trades.length,tradingDays,
       firstDate:trades[0].open.toISOString(),lastDate:trades[trades.length-1].close.toISOString(),peakEod,maxClosedDD,worstDayExcursion,
       breachDaily,breachMax,positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed,
-      wins:wins.length,losses:losses.length,winRate:wins.length/trades.length*100,profitFactor,recentProfitFactor,currentLossStreak,medianObservedLot};
+      wins:wins.length,losses:losses.length,winRate:wins.length/trades.length*100,profitFactor,recentProfitFactor,currentLossStreak,medianObservedLot,balancePath};
   }
 
   function metric(label,value,sub){return '<div class="audit-metric"><div class="audit-metric-label">'+label+'</div><div class="audit-metric-value">'+value+'</div><div class="audit-metric-sub">'+sub+'</div></div>';}
@@ -3302,7 +3335,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     auditPipValueEl.value=lotPipValueEl.value;
     auditLotStep=lotStep;
     updateAuditSizingLabels();
-    if(currentAudit)renderPaceCoach(currentAudit);
+    if(currentAudit){renderPaceCoach(currentAudit);renderPrintReport(currentAudit);}
   }
 
   function renderPaceCoach(a){
@@ -3339,6 +3372,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const dailyStop=Math.min(a.initial*.01,actualRecRisk*2);
     const decimals=lotDecimals(auditLotStep);
     const unlockTrades=Math.max(0,50-a.trades);
+    currentPacePlan={mode,riskLow,riskHigh,recLot,selectedLot,actualRecRisk,dailyStop,selectedRisk,sl,spread,commission,pip001,decimals,reasons};
 
     paceCoach.className='pace-coach '+mode;
     paceBadge.textContent=mode==='stop'?'STOP':mode==='slow'?'SLOW DOWN':mode==='accelerate'?'CAUTIOUS +0.1%':'MAINTAIN';
@@ -3350,25 +3384,74 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
           ? 'A small increase is supportable, but only one 0.1% risk step—never a direct lot-size jump.'
           : 'Keep the present pace. There is no evidence-based reason to increase or sharply reduce risk yet.';
     paceGrid.innerHTML=paceStat('Suggested risk',mode==='stop'?'0%':riskLow.toFixed(1)+'–'+riskHigh.toFixed(1)+'%')+
-      paceStat('Suggested max lot',mode==='stop'?'0.00':recLot.toFixed(decimals))+
-      paceStat('Daily stop',mode==='stop'?'No trading':money(dailyStop));
+      paceStat('Suggested max lot',mode==='stop'?'0% risk':auditPrivacy?riskHigh.toFixed(1)+'% cap':recLot.toFixed(decimals))+
+      paceStat('Daily stop',mode==='stop'?'No trading':auditAmount(dailyStop,a.initial));
     const actions=[];
     if(mode==='slow'){
-      actions.push('Set risk to '+riskHigh.toFixed(1)+'% maximum. With this stop and cost setup, cap XAU/USD at '+recLot.toFixed(decimals)+' lots.');
-      actions.push('Stop the session after two full-stop losses or '+money(dailyStop)+', whichever happens first.');
+      actions.push('Set risk to '+riskHigh.toFixed(1)+'% maximum.'+(auditPrivacy?' Keep absolute lot size hidden in privacy mode.':' With this stop and cost setup, cap XAU/USD at '+recLot.toFixed(decimals)+' lots.'));
+      actions.push('Stop the session after two full-stop losses or '+auditAmount(dailyStop,a.initial)+', whichever happens first.');
       actions.push('Do not accelerate until at least 50 trades and a recent-10 profit factor of 1.20 or better; '+unlockTrades+' more trades are currently needed for the sample gate.');
     }else if(mode==='accelerate'){
       actions.push('Increase risk by only 0.1 percentage point, never by jumping directly to a desired lot size.');
-      actions.push('Cap XAU/USD at '+recLot.toFixed(decimals)+' lots with the current '+sl.toFixed(0)+'-pip stop. Recalculate whenever the stop changes.');
+      actions.push(auditPrivacy?'Keep the increased risk at or below '+riskHigh.toFixed(1)+'%. Recalculate whenever the stop changes.':'Cap XAU/USD at '+recLot.toFixed(decimals)+' lots with the current '+sl.toFixed(0)+'-pip stop. Recalculate whenever the stop changes.');
       actions.push('Return to 0.3% risk if recent-10 profit factor falls below 1.00 or a three-loss streak appears.');
     }else if(mode==='maintain'){
-      actions.push('Keep risk within '+riskLow.toFixed(1)+'–'+riskHigh.toFixed(1)+'%; the current setup sizes to '+selectedLot.toFixed(decimals)+' lots at '+selectedRisk.toFixed(1)+'%.');
-      actions.push('Use '+money(dailyStop)+' as the session stop and do not increase size to chase the remaining target.');
+      actions.push('Keep risk within '+riskLow.toFixed(1)+'–'+riskHigh.toFixed(1)+'%; '+(auditPrivacy?'absolute lot size is hidden.':'the current setup sizes to '+selectedLot.toFixed(decimals)+' lots at '+selectedRisk.toFixed(1)+'%.'));
+      actions.push('Use '+auditAmount(dailyStop,a.initial)+' as the session stop and do not increase size to chase the remaining target.');
       actions.push('Acceleration unlocks only after 60+ trades, full profit factor ≥1.30, recent-10 profit factor ≥1.15, and both loss budgets below 35% used.');
     }else actions.push('Review the dated breach in Objective Audit and start a clean evaluation dataset before using a new size.');
     actions.push('Keep the stop technically valid; change lot size to fit the stop, never widen the stop to fit the lot.');
     paceActions.innerHTML=actions.map(x=>'<li>'+x+'</li>').join('');
-    paceEvidence.textContent='Evidence: '+a.trades+' trades · '+pct(a.winRate,1)+' win rate · PF '+pfText(a.profitFactor)+' · recent-10 PF '+pfText(a.recentProfitFactor)+' · '+a.currentLossStreak+' current losses · median observed lot '+a.medianObservedLot.toFixed(2)+' · selected setup '+selectedRisk.toFixed(1)+'% = '+selectedLot.toFixed(decimals)+' lots. Educational planning aid; floating equity and execution conditions are not available in the CSV.';
+    paceEvidence.textContent='Evidence: '+a.trades+' trades · '+pct(a.winRate,1)+' win rate · PF '+pfText(a.profitFactor)+' · recent-10 PF '+pfText(a.recentProfitFactor)+' · '+a.currentLossStreak+' current losses · '+(auditPrivacy?'lot values hidden · selected risk '+selectedRisk.toFixed(1)+'%.':'median observed lot '+a.medianObservedLot.toFixed(2)+' · selected setup '+selectedRisk.toFixed(1)+'% = '+selectedLot.toFixed(decimals)+' lots.')+' Educational planning aid; floating equity and execution conditions are not available in the CSV.';
+  }
+
+  function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function reportRow(a,b,c,d){return '<tr><th>'+a+'</th><td class="value">'+b+'</td><th>'+c+'</th><td class="value">'+d+'</td></tr>';}
+  function equitySVG(a){
+    const values=a.balancePath.map(v=>(v/a.initial-1)*100);
+    const min=Math.min(...values),max=Math.max(...values),span=Math.max(.25,max-min),w=640,h=70,pad=5;
+    const pts=values.map((v,i)=>{const x=pad+(w-pad*2)*(i/Math.max(1,values.length-1));const y=h-pad-(h-pad*2)*((v-min)/span);return x.toFixed(1)+','+y.toFixed(1);}).join(' ');
+    const zeroY=h-pad-(h-pad*2)*((0-min)/span);
+    return '<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Closed balance return curve"><line x1="'+pad+'" x2="'+(w-pad)+'" y1="'+zeroY.toFixed(1)+'" y2="'+zeroY.toFixed(1)+'" stroke="#b8c0c8" stroke-dasharray="3 3"/><polyline points="'+pts+'" fill="none" stroke="#244a73" stroke-width="2"/><text x="'+pad+'" y="10" font-size="8" fill="#555">'+pct(max,2)+'</text><text x="'+pad+'" y="'+(h-2)+'" font-size="8" fill="#555">'+pct(min,2)+'</text></svg>';
+  }
+
+  function renderPrintReport(a){
+    if(!a||!currentPacePlan)return;
+    const p=AUDIT_PRESETS[a.presetKey],plan=currentPacePlan;
+    const dailyAllowance=a.initial*p.daily/100,dailyUsed=Math.abs(Math.min(0,a.worstDayExcursion));
+    const dailyUse=dailyUsed/dailyAllowance*100;
+    const maxReference=p.trailing?Math.max(a.initial,a.peakEod):a.initial;
+    const maxUse=Math.max(0,maxReference-a.balance)/(a.initial*p.max/100)*100;
+    const dateRange=new Date(a.firstDate).toLocaleDateString()+' – '+new Date(a.lastDate).toLocaleDateString();
+    const status=a.failed?'FAILED — CLOSED-HISTORY BREACH':a.passedClosed?'TARGET REACHED — NO CLOSED BREACH':'STILL ACTIVE — NO FAILURE FOUND';
+    const actions=[...paceActions.querySelectorAll('li')].map(li=>'<li>'+escapeHTML(li.textContent)+'</li>').join('');
+    const lotDisplay=auditPrivacy?plan.riskHigh.toFixed(1)+'% risk cap':plan.recLot.toFixed(plan.decimals)+' lot';
+    const setupDisplay=auditPrivacy?'Percentage-only privacy mode':plan.sl.toFixed(0)+' pip SL · '+plan.spread.toFixed(0)+' pip spread · $'+plan.commission.toFixed(1)+'/lot commission · $'+plan.pip001.toFixed(3)+'/pip per 0.01 lot';
+    auditPrintReport.innerHTML=
+      '<div class="print-head"><div><div class="print-brand">FTMO JOURNEY AUDIT</div><div class="print-subtitle">MT5-style closed-trade evaluation report · educational planning output</div></div><div class="print-meta"><b>'+escapeHTML(a.preset)+'</b><br>'+escapeHTML(auditFileName||'Myfxbook CSV')+'<br>Generated '+new Date().toLocaleString()+(auditPrivacy?'<br><b>PRIVACY: PERCENTAGES ONLY</b>':'')+'</div></div>'+
+      '<div class="print-status"><strong>'+status+'</strong><span>Closed trades only · floating-equity compliance cannot be certified</span></div>'+
+      '<div class="print-section"><div class="print-section-title">Account Summary</div><table class="print-table">'+
+        reportRow('Initial capital',auditAmount(a.initial,a.initial),'Current balance',auditAmount(a.balance,a.initial))+
+        reportRow('Net result',auditAmount(a.net,a.initial)+' · '+pct(a.returnPct),'Period',dateRange)+
+        reportRow('Closed trades',String(a.trades),'Trading days',String(a.tradingDays))+'</table></div>'+
+      '<div class="print-section"><div class="print-section-title">Closed Balance Curve</div><div class="print-equity">'+equitySVG(a)+'</div></div>'+
+      '<div class="print-two-col">'+
+        '<div class="print-section"><div class="print-section-title">Trading Performance</div><table class="print-table">'+
+          reportRow('Win rate',pct(a.winRate,1),'Profit factor',pfText(a.profitFactor))+
+          reportRow('Recent-10 PF',pfText(a.recentProfitFactor),'Wins / losses',a.wins+' / '+a.losses)+
+          reportRow('Current loss streak',String(a.currentLossStreak),'Closed drawdown',auditAmount(a.maxClosedDD,a.initial))+
+          reportRow('Median observed lot',auditPrivacy?'Hidden':a.medianObservedLot.toFixed(2),'Return',pct(a.returnPct))+'</table></div>'+
+        '<div class="print-section"><div class="print-section-title">FTMO Objectives</div><table class="print-table">'+
+          reportRow('Profit target',pct(a.returnPct)+' / '+p.target+'%','Target remaining',auditAmount(Math.max(0,a.targetBalance-a.balance),a.initial))+
+          reportRow('Daily-loss use',pct(dailyUse,1),'Daily cushion',auditAmount(dailyAllowance-dailyUsed,a.initial))+
+          reportRow('Maximum-loss use',pct(maxUse,1),'Maximum cushion',auditAmount(a.balance-a.maxFloorNow,a.initial))+
+          reportRow(p.bestDay?'Best Day share':'Minimum days',p.bestDay?pct(a.bestDayShare,1)+' / 50%':a.tradingDays+' / '+p.minDays,'Rule status',a.failed?'BREACHED':'ACTIVE')+'</table></div>'+
+      '</div>'+
+      '<div class="print-section"><div class="print-section-title">XAU/USD Pace &amp; Sizing Plan</div><div class="print-pace"><div class="print-pace-head"><strong>'+escapeHTML(paceSummary.textContent)+'</strong><span class="print-pace-badge">'+escapeHTML(paceBadge.textContent)+'</span></div><table class="print-table">'+
+        reportRow('Suggested risk',plan.mode==='stop'?'0%':plan.riskLow.toFixed(1)+'–'+plan.riskHigh.toFixed(1)+'%','Maximum size',lotDisplay)+
+        reportRow('Session stop',plan.mode==='stop'?'No trading':auditAmount(plan.dailyStop,a.initial),'Selected risk',plan.selectedRisk.toFixed(1)+'%')+
+        reportRow('Sizing setup',setupDisplay,'Buffer cap','20% of tighter FTMO buffer')+'</table><ul class="print-actions">'+actions+'</ul></div></div>'+
+      '<div class="print-foot"><b>Method:</b> closed balance is reconstructed from the imported Myfxbook CSV. FTMO evaluates equity continuously, including open P/L, swaps and commissions, and resets daily limits at 00:00 CE(S)T. This report cannot verify missing floating equity or timezone alignment. It is not financial advice and is not affiliated with FTMO.</div>';
   }
   function renderAudit(a){
     const p=AUDIT_PRESETS[a.presetKey];
@@ -3379,12 +3462,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       ? 'The imported CSV contains a definite closed-balance rule breach. Review the dated objective below.'
       : 'Your forward test has not failed '+a.preset+' based on closed trades. This is an ongoing journey audit, not a pass prediction or official verification; floating intraday equity is unavailable.';
     auditMetrics.innerHTML=
-      metric('Current balance',money(a.balance),money(a.net)+' · '+pct(a.returnPct))+
+      metric('Current balance',auditAmount(a.balance,a.initial),auditAmount(a.net,a.initial)+' · '+pct(a.returnPct))+
       metric('Closed trades',String(a.trades),a.tradingDays+' active trading days')+
-      metric('Target remaining',a.targetMet?'Reached':money(Math.max(0,a.targetBalance-a.balance)),money(a.targetBalance)+' target')+
-      metric('Closed drawdown',money(a.maxClosedDD),pct(a.maxClosedDD/a.initial*100)+' from closed peak')+
-      metric('Next daily cushion',money(a.balance-a.dailyFloorNow),p.daily+'% initial capital')+
-      metric('Max-loss cushion',money(a.balance-a.maxFloorNow),p.trailing?'EOD trailing floor':'static floor');
+      metric('Target remaining',a.targetMet?'Reached':auditAmount(Math.max(0,a.targetBalance-a.balance),a.initial),auditAmount(a.targetBalance,a.initial)+' target')+
+      metric('Closed drawdown',auditAmount(a.maxClosedDD,a.initial),pct(a.maxClosedDD/a.initial*100)+' from closed peak')+
+      metric('Next daily cushion',auditAmount(a.balance-a.dailyFloorNow,a.initial),p.daily+'% initial capital')+
+      metric('Max-loss cushion',auditAmount(a.balance-a.maxFloorNow,a.initial),p.trailing?'EOD trailing floor':'static floor');
     const dailyAllowance=a.initial*p.daily/100;
     const dailyUsed=Math.abs(Math.min(0,a.worstDayExcursion));
     const dailyUsePct=a.breachDaily?Math.max(100,dailyUsed/dailyAllowance*100):dailyUsed/dailyAllowance*100;
@@ -3402,9 +3485,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       objectiveMeter=meter('Minimum trading days',a.tradingDays+' of '+p.minDays+' days','Required before this phase can pass',daysProgress,'progress','0 days',p.minDays+' days');
     }
     auditVisuals.innerHTML=
-      meter('Profit target progress',pct(a.returnPct)+' of '+p.target+'%',money(Math.max(0,a.targetBalance-a.balance))+' remaining',targetProgress,'progress','Start',money(a.targetBalance))+
-      meter('Daily-loss danger · closest observed',pct(dailyUsePct,1)+' used',money(Math.max(0,dailyAllowance-dailyUsed))+' remained at the closest closed-trade point',dailyUsePct,'risk','0% used','Breach at 100%')+
-      meter('Maximum-loss danger · current',pct(maxUsePct,1)+' used',money(a.balance-a.maxFloorNow)+' current cushion above '+money(a.maxFloorNow)+' floor',maxUsePct,'risk','0% used','Breach at 100%')+
+      meter('Profit target progress',pct(a.returnPct)+' of '+p.target+'%',auditAmount(Math.max(0,a.targetBalance-a.balance),a.initial)+' remaining',targetProgress,'progress','Start',auditAmount(a.targetBalance,a.initial))+
+      meter('Daily-loss danger · closest observed',pct(dailyUsePct,1)+' used',auditAmount(Math.max(0,dailyAllowance-dailyUsed),a.initial)+' remained at the closest closed-trade point',dailyUsePct,'risk','0% used','Breach at 100%')+
+      meter('Maximum-loss danger · current',pct(maxUsePct,1)+' used',auditAmount(a.balance-a.maxFloorNow,a.initial)+' current cushion above '+auditAmount(a.maxFloorNow,a.initial)+' floor',maxUsePct,'risk','0% used','Breach at 100%')+
       objectiveMeter;
     requestAnimationFrame(()=>auditVisuals.querySelectorAll('.risk-fill').forEach(el=>{
       const width=Number(el.dataset.width)||0;
@@ -3417,7 +3500,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     auditRules.innerHTML=
       rule('Maximum Daily Loss',a.breachDaily?'BREACHED '+a.breachDaily.day:'No closed-trade breach',dailyState)+
       rule('Maximum Loss',a.breachMax?'BREACHED '+a.breachMax.day:'No closed-trade breach',maxState)+
-      rule('Worst observed closed loss within a day',money(a.worstDayExcursion),Math.abs(a.worstDayExcursion)>a.initial*p.daily/100?'fail':'safe')+
+      rule('Worst observed closed loss within a day',auditAmount(a.worstDayExcursion,a.initial),Math.abs(a.worstDayExcursion)>a.initial*p.daily/100?'fail':'safe')+
       rule('Profit target',a.targetMet?'Met':'In progress · '+pct(a.returnPct)+' / '+p.target+'%',a.targetMet?'safe':'warn')+
       (p.minDays?rule('Minimum trading days',a.minDaysMet?'Met · '+a.tradingDays+' / '+p.minDays:'In progress · '+a.tradingDays+' / '+p.minDays,a.minDaysMet?'safe':'warn'):'')+
       (p.bestDay?rule('Best Day consistency',Number.isFinite(a.bestDayShare)?pct(a.bestDayShare)+' / 50%':'No positive day yet',a.bestDayMet?'safe':'warn'):'')+
@@ -3425,22 +3508,24 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const cp=checkpoint();
     if(cp){
       const tradeDelta=a.trades-cp.trades,balanceDelta=a.balance-cp.balance,ddDelta=a.maxClosedDD-cp.maxClosedDD;
-      auditDelta.textContent='Since saved checkpoint: '+(tradeDelta>=0?'+':'')+tradeDelta+' trades · '+signedMoney(balanceDelta)+' balance · closed drawdown '+(ddDelta>=0?'improved ':'worsened ')+money(Math.abs(ddDelta))+'.';
+      auditDelta.textContent='Since saved checkpoint: '+(tradeDelta>=0?'+':'')+tradeDelta+' trades · '+auditSignedAmount(balanceDelta,a.initial)+' balance · closed drawdown '+(ddDelta>=0?'improved ':'worsened ')+auditAmount(Math.abs(ddDelta),a.initial)+'.';
     }else auditDelta.textContent='Save this result as your baseline. Next week, upload the new cumulative export to see the change automatically.';
     renderPaceCoach(a);
+    renderPrintReport(a);
     syncAuditStateToFullCalculator(a);
     saveCheckpointBtn.disabled=false;
+    auditPrintBtn.disabled=false;
   }
 
   function runJourneyAudit(){
     if(!auditRows)return;
     try{currentAudit=analyzeJourney(auditRows,auditPreset);renderAudit(currentAudit);}
-    catch(err){currentAudit=null;saveCheckpointBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
+    catch(err){currentAudit=null;saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
   }
   function loadAuditFile(file){
     if(!file)return;
     const reader=new FileReader();
-    reader.onload=()=>{try{auditRows=parseCSV(String(reader.result));auditFileMeta.textContent=file.name+' · '+auditRows.length+' rows · processed locally';runJourneyAudit();}catch(err){auditEmpty.textContent='Could not read this CSV: '+err.message;}};
+    reader.onload=()=>{try{auditFileName=file.name;auditRows=parseCSV(String(reader.result));auditFileMeta.textContent=file.name+' · '+auditRows.length+' rows · processed locally';runJourneyAudit();}catch(err){auditEmpty.textContent='Could not read this CSV: '+err.message;}};
     reader.onerror=()=>{auditEmpty.textContent='The file could not be read. Try exporting the statement again.';};
     reader.readAsText(file);
   }
@@ -3451,10 +3536,19 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   auditPresetSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(!b)return;[...auditPresetSeg.children].forEach(x=>x.classList.toggle('active',x===b));auditPreset=b.dataset.auditPreset;runJourneyAudit();});
   [auditRiskEl,auditSLEl,auditSpreadEl,auditCommEl,auditPipValueEl].forEach(el=>el.addEventListener('input',()=>{
     updateAuditSizingLabels();
-    if(currentAudit){renderPaceCoach(currentAudit);syncAuditStateToFullCalculator(currentAudit);}
+    if(currentAudit){renderPaceCoach(currentAudit);renderPrintReport(currentAudit);syncAuditStateToFullCalculator(currentAudit);}
   }));
-  auditLotStepSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-step]');if(!b)return;auditLotStep=Number(b.dataset.auditStep);updateAuditSizingLabels();if(currentAudit){renderPaceCoach(currentAudit);syncAuditStateToFullCalculator(currentAudit);}});
+  auditLotStepSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-step]');if(!b)return;auditLotStep=Number(b.dataset.auditStep);updateAuditSizingLabels();if(currentAudit){renderPaceCoach(currentAudit);renderPrintReport(currentAudit);syncAuditStateToFullCalculator(currentAudit);}});
   auditOpenLotBtn.addEventListener('click',()=>{if(currentAudit)syncAuditStateToFullCalculator(currentAudit);switchTab('lot');});
+  auditPrivacyToggle.addEventListener('click',()=>{
+    auditPrivacy=!auditPrivacy;
+    auditPrivacyToggle.classList.toggle('on',auditPrivacy);
+    auditPrivacyToggle.setAttribute('aria-checked',String(auditPrivacy));
+    tabAudit.classList.toggle('audit-private',auditPrivacy);
+    refreshCheckpointNote();
+    if(currentAudit)renderAudit(currentAudit);
+  });
+  auditPrintBtn.addEventListener('click',()=>{if(!currentAudit)return;renderPrintReport(currentAudit);window.print();});
   saveCheckpointBtn.addEventListener('click',()=>{if(!currentAudit)return;localStorage.setItem(AUDIT_CHECKPOINT_KEY,JSON.stringify({...currentAudit,savedAt:new Date().toISOString()}));refreshCheckpointNote();renderAudit(currentAudit);});
   clearCheckpointBtn.addEventListener('click',()=>{localStorage.removeItem(AUDIT_CHECKPOINT_KEY);refreshCheckpointNote();if(currentAudit)renderAudit(currentAudit);});
   refreshCheckpointNote();

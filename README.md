@@ -29,6 +29,12 @@ After a CSV is loaded, the audit combines the journey with an embedded copy of t
 
 The coach returns **Slow down**, **Maintain**, **Cautious +0.1%**, or **Stop**. It considers sample size, full and recent-10 profit factor, current losing streak, daily-loss usage, maximum-loss usage, and the selected FTMO preset. Its output includes a risk range, maximum rounded-down XAU/USD lot size, session stop, evidence, and measurable conditions required before accelerating. Distance from the profit target never triggers an acceleration recommendation by itself.
 
+### One-page audit report
+
+After importing a CSV, use **print / save one-page A4 PDF** to create a compact MT5-style report containing the journey status, closed-balance curve, performance statistics, FTMO objective usage, and the XAU/USD pace and sizing plan. Print CSS fixes the output to one A4 portrait page; the browser print dialog can print it or save it as PDF.
+
+The audit's privacy toggle switches both the live view and report to percentage-only mode. Monetary balances, dollar P/L, floors, cushions, absolute lot sizes, and broker-specific sizing values are removed while performance and risk percentages remain visible.
+
 A Myfxbook trade CSV does not contain continuous combined floating equity. It therefore cannot prove official compliance with FTMO's equity-based drawdown checks, and the app labels this limitation separately instead of incorrectly treating it as a failure. Daily grouping assumes the export timestamps already match FTMO's CE(S)T day.
 
 ## What it does
