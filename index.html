@@ -230,30 +230,29 @@ body{
 .audit-copy{font-size:10.5px;color:var(--text-dim);line-height:1.55;}
 .audit-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;}
 .audit-metric{border:1px solid var(--border);border-radius:7px;background:var(--surface-2);padding:11px;min-width:0;}
-.audit-metric-label{font-size:8.5px;letter-spacing:.06em;color:var(--text-faint);text-transform:uppercase;margin-bottom:5px;}
-.audit-metric-value{font-size:14px;font-weight:700;color:var(--text);overflow-wrap:anywhere;}
-.audit-metric-sub{font-size:8.5px;color:var(--text-faint);margin-top:3px;line-height:1.35;}
+.audit-metric-label{font-size:10px;letter-spacing:.05em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;}
+.audit-metric-value{font-size:16px;font-weight:700;color:var(--text);overflow-wrap:anywhere;}
+.audit-metric-sub{font-size:10px;color:var(--text-dim);margin-top:4px;line-height:1.45;}
 .audit-visuals{display:grid;gap:9px;margin:0 0 13px;}
-.risk-meter{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);padding:12px;}
+.risk-meter{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);padding:14px;}
 .risk-meter-head,.risk-meter-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;}
-.risk-meter-title{font-size:10px;font-weight:600;color:var(--text);}
-.risk-meter-reading{font-size:11px;font-weight:700;color:var(--green);text-align:right;}
+.risk-meter-title{font-size:12px;font-weight:700;color:var(--text);line-height:1.35;}
+.risk-meter-reading{font-size:13px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap;}
 .risk-meter.watch .risk-meter-reading{color:var(--amber)}.risk-meter.danger .risk-meter-reading,.risk-meter.failed .risk-meter-reading{color:var(--red)}
-.risk-meter.progress .risk-meter-reading{color:var(--blue)}
-.risk-meter-sub{font-size:8.5px;color:var(--text-faint);margin-top:3px;line-height:1.35;}
-.risk-track{position:relative;height:11px;border-radius:999px;margin:11px 0 7px;overflow:hidden;background:linear-gradient(90deg,var(--green-dim) 0 50%,var(--amber-dim) 50% 75%,var(--red-dim) 75% 100%);border:1px solid var(--border-soft);}
-.risk-track::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.13) 43%,transparent 61%);transform:translateX(-130%);animation:risk-sheen 4.8s ease-in-out infinite;pointer-events:none;}
-.risk-fill{height:100%;width:0;border-radius:inherit;background:var(--green);box-shadow:0 0 10px color-mix(in srgb,var(--green) 45%,transparent);transition:width .75s cubic-bezier(.2,.8,.2,1);}
-.risk-meter.watch .risk-fill{background:var(--amber);box-shadow:0 0 10px color-mix(in srgb,var(--amber) 45%,transparent)}
-.risk-meter.danger .risk-fill,.risk-meter.failed .risk-fill{background:var(--red);box-shadow:0 0 12px color-mix(in srgb,var(--red) 48%,transparent)}
-.risk-meter.progress .risk-fill{background:var(--blue);box-shadow:0 0 10px color-mix(in srgb,var(--blue) 45%,transparent)}
+.risk-meter.progress .risk-meter-reading{color:var(--text)}
+.risk-meter-sub{font-size:10.5px;color:var(--text-dim);margin-top:4px;line-height:1.45;}
+.risk-track{position:relative;height:15px;border-radius:999px;margin:13px 0 8px;overflow:hidden;background:var(--border-soft);border:1px solid var(--border);box-shadow:inset 0 2px 4px rgba(0,0,0,.24);}
+.risk-fill{position:relative;height:100%;width:0;border-radius:inherit;background-image:linear-gradient(90deg,var(--green) 0%,var(--amber) 68%,var(--red) 100%);background-repeat:no-repeat;box-shadow:0 0 13px color-mix(in srgb,var(--green) 42%,transparent);transition:width .8s cubic-bezier(.2,.8,.2,1);animation:risk-pulse 2s ease-in-out infinite;overflow:hidden;}
+.risk-meter.progress .risk-fill{background-image:linear-gradient(90deg,var(--red) 0%,var(--amber) 45%,var(--green) 100%);box-shadow:0 0 13px color-mix(in srgb,var(--amber) 42%,transparent)}
+.risk-fill::after{content:"";position:absolute;top:0;bottom:0;width:42%;left:-52%;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.08) 25%,rgba(255,255,255,.65) 50%,rgba(255,255,255,.08) 75%,transparent 100%);animation:risk-sheen 1.65s linear infinite;pointer-events:none;}
 .risk-meter-foot{align-items:center;font-size:8px;color:var(--text-faint);}
 .risk-meter-foot strong{font-size:9px;color:var(--text-dim);font-weight:500;}
-.risk-scale{display:flex;justify-content:space-between;font-size:7.5px;color:var(--text-faint);margin-top:-2px;}
-@keyframes risk-sheen{0%,58%{transform:translateX(-130%)}82%,100%{transform:translateX(130%)}}
-@media(prefers-reduced-motion:reduce){.risk-track::after{animation:none}.risk-fill{transition:none}}
+.risk-scale{display:flex;justify-content:space-between;font-size:9.5px;color:var(--text-dim);margin-top:-1px;}
+@keyframes risk-sheen{from{left:-52%}to{left:112%}}
+@keyframes risk-pulse{0%,100%{filter:brightness(.9)}50%{filter:brightness(1.18)}}
+@media(prefers-reduced-motion:reduce){.risk-fill,.risk-fill::after{animation-duration:4s}.risk-fill{transition:none}}
 .audit-list{display:grid;gap:7px;}
-.audit-rule{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border-soft);padding:8px 0;font-size:10px;line-height:1.45;}
+.audit-rule{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border-soft);padding:10px 0;font-size:11.5px;line-height:1.5;}
 .audit-rule:last-child{border-bottom:0}.audit-rule span:first-child{color:var(--text-dim)}.audit-rule strong{text-align:right;color:var(--text)}
 .audit-rule strong.safe{color:var(--green)}.audit-rule strong.warn{color:var(--amber)}.audit-rule strong.fail{color:var(--red)}
 .checkpoint-row{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
@@ -3202,7 +3201,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       meter('Daily-loss danger · closest observed',pct(dailyUsePct,1)+' used',money(Math.max(0,dailyAllowance-dailyUsed))+' remained at the closest closed-trade point',dailyUsePct,'risk','0% used','Breach at 100%')+
       meter('Maximum-loss danger · current',pct(maxUsePct,1)+' used',money(a.balance-a.maxFloorNow)+' current cushion above '+money(a.maxFloorNow)+' floor',maxUsePct,'risk','0% used','Breach at 100%')+
       objectiveMeter;
-    requestAnimationFrame(()=>auditVisuals.querySelectorAll('.risk-fill').forEach(el=>{el.style.width=el.dataset.width+'%';}));
+    requestAnimationFrame(()=>auditVisuals.querySelectorAll('.risk-fill').forEach(el=>{
+      const width=Number(el.dataset.width)||0;
+      // Keep each fill mapped to the full 0–100 scale so its visible end has the
+      // correct red/amber/green colour instead of squeezing the whole gradient.
+      el.style.backgroundSize=(10000/Math.max(.1,width))+'% 100%';
+      el.style.width=width+'%';
+    }));
     const dailyState=a.breachDaily?'fail':'safe', maxState=a.breachMax?'fail':'safe';
     auditRules.innerHTML=
       rule('Maximum Daily Loss',a.breachDaily?'BREACHED '+a.breachDaily.day:'No closed-trade breach',dailyState)+
