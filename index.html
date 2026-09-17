@@ -270,7 +270,8 @@ body{
 .checkpoint-note{font-size:9.5px;color:var(--text-faint);line-height:1.5;margin-top:9px;}
 .audit-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:10px 11px;border:1px solid var(--border);border-radius:7px;background:var(--surface-2);}
 .audit-tools-copy{display:flex;flex-direction:column;gap:2px}.audit-tools-title{font-size:10.5px;color:var(--text);font-weight:600}.audit-tools-sub{font-size:8.5px;color:var(--text-faint)}
-.audit-print-btn{width:100%;margin-top:8px;border:1px solid var(--blue);border-radius:6px;background:transparent;color:var(--blue);font:600 10.5px inherit;padding:9px 10px;cursor:pointer}.audit-print-btn:hover{background:var(--surface)}.audit-print-btn:disabled{opacity:.35;cursor:not-allowed}
+.audit-export-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.audit-print-btn{width:100%;border:1px solid var(--blue);border-radius:6px;background:transparent;color:var(--blue);font:600 10.5px inherit;padding:9px 10px;cursor:pointer}.audit-print-btn:hover{background:var(--surface)}.audit-print-btn:disabled{opacity:.35;cursor:not-allowed}
+.audit-image-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:rgba(2,6,12,.82);backdrop-filter:blur(8px)}.audit-image-modal[hidden]{display:none}.audit-image-dialog{width:min(720px,100%);max-height:94vh;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:0 24px 80px rgba(0,0,0,.55);overflow:hidden}.audit-image-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 15px;border-bottom:1px solid var(--border)}.audit-image-head strong{font-size:12px}.audit-image-close{border:0;background:transparent;color:var(--text-dim);font:700 20px/1 inherit;cursor:pointer}.audit-image-preview-wrap{min-height:0;padding:14px;background:#111820;overflow:auto;text-align:center}.audit-image-preview{display:block;width:auto;max-width:100%;max-height:70vh;margin:auto;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.4)}.audit-image-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 15px;border-top:1px solid var(--border)}
 .audit-empty{padding:38px 18px;text-align:center;color:var(--text-faint);font-size:11px;line-height:1.7;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);}
 .audit-print-report{display:none;color:#111;background:#fff;font-family:Arial,Helvetica,sans-serif;}
 .print-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #244a73;padding-bottom:5px;margin-bottom:5px}.print-brand{font-size:17pt;font-weight:700;color:#244a73;letter-spacing:.02em}.print-subtitle{font-size:7.5pt;color:#555;margin-top:2px}.print-meta{text-align:right;font-size:7pt;line-height:1.4;color:#444}
@@ -286,7 +287,7 @@ body{
   #auditPrintReport{display:block!important;position:absolute;left:0;top:0;width:196mm;max-height:283mm;overflow:hidden;color:#111!important;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 @media(max-width:800px){.audit-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}}
-@media(max-width:520px){.pace-compare{grid-template-columns:1fr}.pace-arrow{height:20px;transform:rotate(90deg)!important;animation:none}}
+@media(max-width:520px){.pace-compare{grid-template-columns:1fr}.pace-arrow{height:20px;transform:rotate(90deg)!important;animation:none}.audit-export-actions,.audit-image-actions{grid-template-columns:1fr}}
 @media(max-width:430px){.audit-metrics{grid-template-columns:1fr 1fr}}
 
 .term-body{padding:28px clamp(16px,3vw,36px) 34px;}
@@ -1121,13 +1122,23 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             <div class="audit-export-block">
               <p class="panel-label">4 · export report</p>
               <div class="audit-tools"><div class="audit-tools-copy"><span class="audit-tools-title">Percentage-only privacy mode</span><span class="audit-tools-sub">Hide money and absolute lot values before sharing</span></div><button type="button" class="adv-switch" id="auditPrivacyToggle" role="switch" aria-checked="false" aria-label="Toggle percentage-only privacy mode"></button></div>
-              <button class="audit-print-btn" id="auditPrintBtn" disabled>▣ print / save one-page A4 PDF</button>
+              <div class="audit-export-actions">
+                <button class="audit-print-btn" id="auditPrintBtn" disabled>▣ print / save A4 PDF</button>
+                <button class="audit-print-btn" id="auditImageBtn" disabled>↗ generate share image</button>
+              </div>
             </div>
           </div>
         </section>
       </div>
       <div class="footnote"><b>Status language:</b> “No failure found” means the imported closed-trade history has not crossed a calculated FTMO floor. “Cannot fully verify” means the file lacks tick-by-tick floating equity, so it is not proof of official compliance. “Failed” is shown only when the CSV itself contains a clear breach.</div>
       <section class="audit-print-report" id="auditPrintReport" aria-hidden="true"></section>
+      <div class="audit-image-modal" id="auditImageModal" hidden role="dialog" aria-modal="true" aria-labelledby="auditImageTitle">
+        <div class="audit-image-dialog">
+          <div class="audit-image-head"><strong id="auditImageTitle">Shareable FTMO journey audit</strong><button class="audit-image-close" id="auditImageClose" aria-label="Close image preview">×</button></div>
+          <div class="audit-image-preview-wrap"><img class="audit-image-preview" id="auditImagePreview" alt="Generated FTMO journey audit report"></div>
+          <div class="audit-image-actions"><button class="audit-print-btn" id="auditDownloadImageBtn">↓ save PNG</button><button class="audit-print-btn" id="auditNativeShareBtn">↗ share image</button></div>
+        </div>
+      </div>
     </div>
 
     <!-- LOT SIZING TAB -->
@@ -3123,6 +3134,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const auditPrivacyToggle = document.getElementById('auditPrivacyToggle');
   const auditPrintBtn = document.getElementById('auditPrintBtn');
   const auditPrintReport = document.getElementById('auditPrintReport');
+  const auditImageBtn = document.getElementById('auditImageBtn');
+  const auditImageModal = document.getElementById('auditImageModal');
+  const auditImagePreview = document.getElementById('auditImagePreview');
+  const auditImageClose = document.getElementById('auditImageClose');
+  const auditDownloadImageBtn = document.getElementById('auditDownloadImageBtn');
+  const auditNativeShareBtn = document.getElementById('auditNativeShareBtn');
   const AUDIT_CHECKPOINT_KEY = 'challenge_sim_ftmo_weekly_checkpoint_v1';
   const AUDIT_PRESETS = {
     ftmo1:{name:'FTMO 1-Step',target:10,daily:3,max:10,trailing:true,minDays:0,bestDay:true},
@@ -3136,6 +3153,8 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   let currentPacePlan = null;
   let auditPrivacy = false;
   let auditFileName = '';
+  let auditImageBlob = null;
+  let auditImageUrl = '';
 
   function parseCSV(text){
     const rows=[]; let row=[], field='', quoted=false;
@@ -3404,6 +3423,61 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
         reportRow('Sizing setup',setupDisplay,'Buffer cap','20% of tighter FTMO buffer')+'</table><ul class="print-actions">'+actions+'</ul></div></div>'+
       '<div class="print-foot"><b>Method:</b> closed balance is reconstructed from the imported Myfxbook CSV. FTMO evaluates equity continuously, including open P/L, swaps and commissions, and resets daily limits at 00:00 CE(S)T. This report cannot verify missing floating equity or timezone alignment. It is not financial advice and is not affiliated with FTMO.</div>';
   }
+
+  function generateAuditCanvas(a){
+    const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+    canvas.width=1240;canvas.height=1754;
+    const W=canvas.width,M=70,blue='#244a73',ink='#172433',muted='#5d6874',line='#b8c0c8',pale='#eaf0f6',green='#16734a',red='#a42b2b';
+    const plan=currentPacePlan,p=AUDIT_PRESETS[a.presetKey];
+    const font=(size,weight=400)=>`${weight} ${size}px Arial, Helvetica, sans-serif`;
+    const write=(value,x,y,size=24,weight=400,color=ink,align='left')=>{ctx.font=font(size,weight);ctx.fillStyle=color;ctx.textAlign=align;ctx.textBaseline='alphabetic';ctx.fillText(String(value),x,y);};
+    const wrap=(value,x,y,maxWidth,lineHeight,size=22,weight=400,color=ink,maxLines=3)=>{ctx.font=font(size,weight);ctx.fillStyle=color;ctx.textAlign='left';const words=String(value).split(/\s+/);let row='',rows=[];for(const word of words){const test=row?row+' '+word:word;if(ctx.measureText(test).width>maxWidth&&row){rows.push(row);row=word;}else row=test;}if(row)rows.push(row);rows.slice(0,maxLines).forEach((r,i)=>write(r+(i===maxLines-1&&rows.length>maxLines?'…':''),x,y+i*lineHeight,size,weight,color));return Math.min(rows.length,maxLines)*lineHeight;};
+    const section=(title,y)=>{ctx.fillStyle=blue;ctx.fillRect(M,y,W-M*2,42);write(title.toUpperCase(),M+14,y+29,19,700,'#fff');return y+42;};
+    const table=(rows,y)=>{const col=(W-M*2)/2;for(const [i,row] of rows.entries()){const yy=y+i*54;ctx.fillStyle=i%2?'#f7f8fa':'#fff';ctx.fillRect(M,yy,W-M*2,54);ctx.strokeStyle=line;ctx.strokeRect(M,yy,W-M*2,54);ctx.beginPath();ctx.moveTo(M+col,yy);ctx.lineTo(M+col,yy+54);ctx.stroke();write(row[0],M+14,yy+22,16,400,muted);write(row[1],M+col-14,yy+39,21,700,ink,'right');write(row[2],M+col+14,yy+22,16,400,muted);write(row[3],W-M-14,yy+39,21,700,ink,'right');}return y+rows.length*54;};
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,W,canvas.height);
+    write('FTMO JOURNEY AUDIT',M,92,38,700,blue);write('MT5-style closed-trade evaluation report',M,124,18,400,muted);
+    write(a.preset,W-M,82,20,700,ink,'right');write(new Date().toLocaleDateString(),W-M,112,17,400,muted,'right');
+    ctx.fillStyle=blue;ctx.fillRect(M,145,W-M*2,5);
+    const status=a.failed?'FAILED — CLOSED-HISTORY BREACH':a.passedClosed?'TARGET REACHED — NO CLOSED BREACH':'STILL ACTIVE — NO FAILURE FOUND';
+    ctx.fillStyle=pale;ctx.fillRect(M,172,W-M*2,76);ctx.strokeStyle=line;ctx.strokeRect(M,172,W-M*2,76);write(status,M+18,217,26,700,a.failed?red:green);write('Closed trades only',W-M-18,217,18,700,muted,'right');
+    let y=278;y=section('Account summary',y);y=table([
+      ['Initial capital',auditAmount(a.initial,a.initial),'Current balance',auditAmount(a.balance,a.initial)],
+      ['Net result',auditAmount(a.net,a.initial)+' · '+pct(a.returnPct),'Closed trades',a.trades],
+      ['Trading days',a.tradingDays,'Win rate',pct(a.winRate,1)]
+    ],y)+28;
+    y=section('Closed balance curve',y);const chartY=y+16,chartH=190;ctx.fillStyle='#fbfcfd';ctx.fillRect(M,chartY,W-M*2,chartH);ctx.strokeStyle=line;ctx.strokeRect(M,chartY,W-M*2,chartH);
+    const vals=a.balancePath.map(v=>(v/a.initial-1)*100),vmin=Math.min(...vals),vmax=Math.max(...vals),span=Math.max(.25,vmax-vmin),pad=22;
+    ctx.strokeStyle=blue;ctx.lineWidth=4;ctx.beginPath();vals.forEach((v,i)=>{const x=M+pad+(W-M*2-pad*2)*(i/Math.max(1,vals.length-1)),py=chartY+chartH-pad-(chartH-pad*2)*((v-vmin)/span);i?ctx.lineTo(x,py):ctx.moveTo(x,py);});ctx.stroke();write(pct(vmax,2),M+12,chartY+25,16,700,blue);write(pct(vmin,2),M+12,chartY+chartH-10,16,700,blue);y=chartY+chartH+28;
+    y=section('FTMO objectives',y);
+    const dailyAllowance=a.initial*p.daily/100,dailyUsed=Math.abs(Math.min(0,a.worstDayExcursion)),maxRef=p.trailing?Math.max(a.initial,a.peakEod):a.initial,maxUsed=Math.max(0,maxRef-a.balance),best=p.bestDay?(Number.isFinite(a.bestDayShare)?pct(a.bestDayShare,1)+' / 50%':'No positive day'):a.tradingDays+' / '+p.minDays+' days';
+    y=table([
+      ['Profit target',pct(a.returnPct)+' / '+p.target+'%','Target remaining',auditAmount(Math.max(0,a.targetBalance-a.balance),a.initial)],
+      ['Daily-loss use',pct(dailyUsed/dailyAllowance*100,1),'Daily cushion',auditAmount(dailyAllowance-dailyUsed,a.initial)],
+      ['Maximum-loss use',pct(maxUsed/(a.initial*p.max/100)*100,1),'Maximum cushion',auditAmount(a.balance-a.maxFloorNow,a.initial)],
+      [p.bestDay?'Best Day share':'Minimum days',best,'Rule status',a.failed?'BREACHED':'ACTIVE']
+    ],y)+28;
+    y=section('XAU/USD pace & sizing coach',y);ctx.fillStyle=pale;ctx.fillRect(M,y,W-M*2,262);ctx.strokeStyle=line;ctx.strokeRect(M,y,W-M*2,262);
+    write(paceBadge.textContent,M+18,y+38,22,700,blue);wrap(paceSummary.textContent,M+18,y+75,W-M*2-36,27,20,700,ink,2);
+    const maxSize=auditPrivacy?plan.riskHigh.toFixed(1)+'% risk cap':plan.recLot.toFixed(plan.decimals)+' lot';
+    write('Suggested risk',M+18,y+137,16,400,muted);write(plan.mode==='stop'?'0%':plan.riskLow.toFixed(1)+'–'+plan.riskHigh.toFixed(1)+'%',M+250,y+137,22,700,ink);
+    write('Maximum size',M+570,y+137,16,400,muted);write(maxSize,W-M-18,y+137,22,700,ink,'right');
+    const action=[...paceActions.querySelectorAll('li')].slice(0,2).map(li=>li.textContent);action.forEach((t,i)=>wrap('• '+t,M+18,y+181+i*37,W-M*2-36,25,17,400,ink,1));y+=290;
+    ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();wrap('Closed-trade planning aid. Floating equity, exact CE(S)T reset alignment and execution conditions cannot be verified from this CSV. Not affiliated with FTMO.',M,y+31,W-M*2,24,15,400,muted,2);
+    if(auditPrivacy){write('PRIVACY MODE · PERCENTAGES ONLY',W-M,canvas.height-38,16,700,blue,'right');}
+    return canvas;
+  }
+
+  function closeAuditImage(){auditImageModal.hidden=true;}
+  function auditImageFile(){return new File([auditImageBlob],'ftmo-journey-audit-'+new Date().toISOString().slice(0,10)+'.png',{type:'image/png'});}
+  function openAuditImage(){
+    if(!currentAudit||!currentPacePlan)return;
+    auditImageBtn.disabled=true;auditImageBtn.textContent='generating…';
+    generateAuditCanvas(currentAudit).toBlob(blob=>{
+      auditImageBtn.disabled=false;auditImageBtn.textContent='↗ generate share image';if(!blob)return;
+      if(auditImageUrl)URL.revokeObjectURL(auditImageUrl);auditImageBlob=blob;auditImageUrl=URL.createObjectURL(blob);auditImagePreview.src=auditImageUrl;auditImageModal.hidden=false;
+      const file=auditImageFile();auditNativeShareBtn.hidden=!(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]}));auditImageClose.focus();
+    },'image/png');
+  }
   function renderAudit(a){
     const p=AUDIT_PRESETS[a.presetKey];
     auditEmpty.hidden=true;auditResults.hidden=false;
@@ -3466,12 +3540,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     syncAuditStateToFullCalculator(a);
     saveCheckpointBtn.disabled=false;
     auditPrintBtn.disabled=false;
+    auditImageBtn.disabled=false;
   }
 
   function runJourneyAudit(){
     if(!auditRows)return;
     try{currentAudit=analyzeJourney(auditRows,auditPreset);renderAudit(currentAudit);}
-    catch(err){currentAudit=null;saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
+    catch(err){currentAudit=null;saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditImageBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
   }
   function loadAuditFile(file){
     if(!file)return;
@@ -3494,6 +3569,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     if(currentAudit)renderAudit(currentAudit);
   });
   auditPrintBtn.addEventListener('click',()=>{if(!currentAudit)return;renderPrintReport(currentAudit);window.print();});
+  auditImageBtn.addEventListener('click',openAuditImage);
+  auditImageClose.addEventListener('click',closeAuditImage);
+  auditImageModal.addEventListener('click',e=>{if(e.target===auditImageModal)closeAuditImage();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!auditImageModal.hidden)closeAuditImage();});
+  auditDownloadImageBtn.addEventListener('click',()=>{if(!auditImageBlob)return;const link=document.createElement('a');link.href=auditImageUrl;link.download=auditImageFile().name;link.click();});
+  auditNativeShareBtn.addEventListener('click',async()=>{if(!auditImageBlob||!navigator.share)return;try{await navigator.share({files:[auditImageFile()],title:'FTMO Journey Audit',text:'My FTMO journey audit'});}catch(err){if(err.name!=='AbortError')auditNativeShareBtn.textContent='sharing unavailable';}});
   saveCheckpointBtn.addEventListener('click',()=>{if(!currentAudit)return;localStorage.setItem(AUDIT_CHECKPOINT_KEY,JSON.stringify({...currentAudit,savedAt:new Date().toISOString()}));refreshCheckpointNote();renderAudit(currentAudit);});
   clearCheckpointBtn.addEventListener('click',()=>{localStorage.removeItem(AUDIT_CHECKPOINT_KEY);refreshCheckpointNote();if(currentAudit)renderAudit(currentAudit);});
   refreshCheckpointNote();

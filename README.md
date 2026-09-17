@@ -35,6 +35,8 @@ The coach returns **Slow down**, **Maintain**, **Cautious +0.1%**, or **Stop**. 
 
 After importing a CSV, use **print / save one-page A4 PDF** to create a compact MT5-style report containing the journey status, closed-balance curve, performance statistics, FTMO objective usage, and the XAU/USD pace and sizing plan. Print CSS fixes the output to one A4 portrait page; the browser print dialog can print it or save it as PDF.
 
+Use **generate share image** to render the same audit as an A4-proportioned PNG directly in the browser. A preview opens with **save PNG** and, on supported mobile/desktop browsers, the native **share image** sheet. No report data is uploaded to a server.
+
 The audit's privacy toggle switches both the live view and report to percentage-only mode. Monetary balances, dollar P/L, floors, cushions, absolute lot sizes, and broker-specific sizing values are removed while performance and risk percentages remain visible.
 
 A Myfxbook trade CSV does not contain continuous combined floating equity. It therefore cannot prove official compliance with FTMO's equity-based drawdown checks, and the app labels this limitation separately instead of incorrectly treating it as a failure. Daily grouping assumes the export timestamps already match FTMO's CE(S)T day.
