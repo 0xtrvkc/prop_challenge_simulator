@@ -255,10 +255,21 @@ body{
 .audit-rule{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border-soft);padding:10px 0;font-size:11.5px;line-height:1.5;}
 .audit-rule:last-child{border-bottom:0}.audit-rule span:first-child{color:var(--text-dim)}.audit-rule strong{text-align:right;color:var(--text)}
 .audit-rule strong.safe{color:var(--green)}.audit-rule strong.warn{color:var(--amber)}.audit-rule strong.fail{color:var(--red)}
+.audit-sizer{margin-top:20px;padding-top:17px;border-top:1px solid var(--border);}
+.audit-sizer .field{margin-bottom:15px;}
+.audit-sizer-note{font-size:10px;line-height:1.55;color:var(--text-dim);margin:8px 0 0;}
+.pace-coach{margin-top:14px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);overflow:hidden;}
+.pace-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 15px;border-bottom:1px solid var(--border);}
+.pace-title{font-size:12px;font-weight:700;color:var(--text);}.pace-badge{font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 8px;border-radius:999px;border:1px solid var(--green);color:var(--green);background:var(--green-dim);white-space:nowrap;}
+.pace-coach.slow .pace-badge{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}.pace-coach.stop .pace-badge{border-color:var(--red);color:var(--red);background:var(--red-dim)}.pace-coach.accelerate .pace-badge{border-color:var(--blue);color:var(--blue);background:var(--surface)}
+.pace-body{padding:15px;}.pace-summary{margin:0 0 13px;font-size:11.5px;line-height:1.6;color:var(--text-dim);}
+.pace-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:13px;}.pace-stat{padding:11px;border:1px solid var(--border);border-radius:7px;background:var(--bg);}.pace-stat span{display:block;font-size:9px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}.pace-stat strong{font-size:15px;color:var(--text)}
+.pace-actions{display:grid;gap:7px;margin:0;padding:0;list-style:none}.pace-actions li{position:relative;padding:8px 9px 8px 27px;border-radius:6px;background:var(--bg);font-size:10.5px;line-height:1.5;color:var(--text-dim)}.pace-actions li::before{content:"›";position:absolute;left:11px;color:var(--green);font-weight:700}.pace-coach.slow .pace-actions li::before{color:var(--amber)}.pace-coach.stop .pace-actions li::before{color:var(--red)}
+.pace-evidence{margin-top:12px;font-size:9.5px;line-height:1.55;color:var(--text-faint)}
 .checkpoint-row{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
 .checkpoint-note{font-size:9.5px;color:var(--text-faint);line-height:1.5;margin-top:9px;}
 .audit-empty{padding:38px 18px;text-align:center;color:var(--text-faint);font-size:11px;line-height:1.7;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);}
-@media(max-width:800px){.audit-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}}
+@media(max-width:800px){.audit-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.pace-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}}
 @media(max-width:430px){.audit-metrics{grid-template-columns:1fr 1fr}}
 
 .term-body{padding:28px clamp(16px,3vw,36px) 34px;}
@@ -1065,6 +1076,43 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             <button class="reset-btn" id="clearCheckpointBtn">clear checkpoint</button>
           </div>
           <p class="checkpoint-note" id="checkpointNote">No previous weekly checkpoint saved on this device.</p>
+          <div class="audit-sizer">
+            <div class="panel-label-row">
+              <p class="panel-label">XAU/USD sizing setup</p>
+              <button class="reset-btn" id="auditOpenLotBtn">open full calculator ›</button>
+            </div>
+            <div class="field">
+              <div class="field-head"><span class="field-name">RISK_PER_TRADE</span><span class="field-value" id="auditRiskValue">0.5%</span></div>
+              <input type="range" class="risk-slider" id="auditRisk" min="0.1" max="1" step="0.1" value="0.5">
+            </div>
+            <div class="field">
+              <div class="field-head"><span class="field-name">STOP_LOSS (pips)</span><span class="field-value" id="auditSLValue">1250</span></div>
+              <input type="range" id="auditSL" min="10" max="2500" step="10" value="1250">
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <div class="field-head"><span class="field-name">SPREAD</span><span class="field-value" id="auditSpreadValue">20 pips</span></div>
+                <input type="range" id="auditSpread" min="0" max="100" step="1" value="20">
+              </div>
+              <div class="field">
+                <div class="field-head"><span class="field-name">COMMISSION</span><span class="field-value" id="auditCommValue">$0/lot</span></div>
+                <input type="range" id="auditComm" min="0" max="14" step="0.5" value="0">
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-head"><span class="field-name">PIP_VALUE (per 0.01 lot)</span><span class="field-value" id="auditPipValueValue">$0.01</span></div>
+              <input type="range" id="auditPipValue" min="0.005" max="0.05" step="0.005" value="0.01">
+            </div>
+            <div class="field">
+              <div class="field-head"><span class="field-name">LOT_STEP</span></div>
+              <div class="seg" id="auditLotStepSeg">
+                <button class="seg-btn active" data-audit-step="0.01">0.01</button>
+                <button class="seg-btn" data-audit-step="0.1">0.10</button>
+                <button class="seg-btn" data-audit-step="1">1.00</button>
+              </div>
+            </div>
+            <p class="audit-sizer-note">These controls mirror the full calculator. The coach sizes from the CSV's latest closed balance and applies a 20% cap to the tighter remaining FTMO buffer.</p>
+          </div>
         </aside>
         <section class="panel output">
           <p class="panel-label">objective audit</p>
@@ -1079,6 +1127,15 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             <div class="audit-visuals" id="auditVisuals"></div>
             <div class="audit-list" id="auditRules"></div>
             <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
+            <div class="pace-coach" id="paceCoach">
+              <div class="pace-head"><span class="pace-title">XAU/USD pace &amp; sizing coach</span><span class="pace-badge" id="paceBadge">—</span></div>
+              <div class="pace-body">
+                <p class="pace-summary" id="paceSummary">Upload a statement to generate a sizing plan.</p>
+                <div class="pace-grid" id="paceGrid"></div>
+                <ul class="pace-actions" id="paceActions"></ul>
+                <div class="pace-evidence" id="paceEvidence"></div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
@@ -2040,6 +2097,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     tabLot.classList.toggle('active', name === 'lot');
     if (name === 'lot'){
       requestAnimationFrame(() => { if (typeof calcLot === 'function') calcLot(); });
+    }
+    if (name === 'audit' && typeof syncFullCalculatorToAudit === 'function'){
+      syncFullCalculatorToAudit();
     }
   }
   tabBtnSim.addEventListener('click', () => switchTab('sim'));
@@ -3060,6 +3120,24 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const saveCheckpointBtn = document.getElementById('saveCheckpointBtn');
   const clearCheckpointBtn = document.getElementById('clearCheckpointBtn');
   const checkpointNote = document.getElementById('checkpointNote');
+  const auditRiskEl = document.getElementById('auditRisk');
+  const auditSLEl = document.getElementById('auditSL');
+  const auditSpreadEl = document.getElementById('auditSpread');
+  const auditCommEl = document.getElementById('auditComm');
+  const auditPipValueEl = document.getElementById('auditPipValue');
+  const auditLotStepSeg = document.getElementById('auditLotStepSeg');
+  const auditRiskValue = document.getElementById('auditRiskValue');
+  const auditSLValue = document.getElementById('auditSLValue');
+  const auditSpreadValue = document.getElementById('auditSpreadValue');
+  const auditCommValue = document.getElementById('auditCommValue');
+  const auditPipValueValue = document.getElementById('auditPipValueValue');
+  const auditOpenLotBtn = document.getElementById('auditOpenLotBtn');
+  const paceCoach = document.getElementById('paceCoach');
+  const paceBadge = document.getElementById('paceBadge');
+  const paceSummary = document.getElementById('paceSummary');
+  const paceGrid = document.getElementById('paceGrid');
+  const paceActions = document.getElementById('paceActions');
+  const paceEvidence = document.getElementById('paceEvidence');
   const AUDIT_CHECKPOINT_KEY = 'challenge_sim_ftmo_weekly_checkpoint_v1';
   const AUDIT_PRESETS = {
     ftmo1:{name:'FTMO 1-Step',target:10,daily:3,max:10,trailing:true,minDays:0,bestDay:true},
@@ -3067,6 +3145,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     ftmo2v:{name:'FTMO 2-Step · Verification',target:5,daily:5,max:10,trailing:false,minDays:4,bestDay:false}
   };
   let auditPreset = 'ftmo1';
+  let auditLotStep = 0.01;
   let auditRows = null;
   let currentAudit = null;
 
@@ -3117,7 +3196,8 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const trades=rows.filter(r=>/^(buy|sell)$/i.test(r.Action)).map(r=>{
       const open=auditDate(r['Open Date']), close=auditDate(r['Close Date']);
       const profit=Number(r.Profit),commission=Number(r.Commission||0),swap=Number(r.Swap||0);
-      return {open,close,net:profit+(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0)};
+      const lots=Number(r['Units/Lots']);
+      return {open,close,net:profit+(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),lots:Number.isFinite(lots)?lots:0};
     }).filter(t=>t.open&&t.close&&Number.isFinite(t.net)).sort((a,b)=>a.close-b.close);
     if(!trades.length) throw new Error('No closed Buy or Sell trades were found in this CSV.');
 
@@ -3152,9 +3232,21 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const bestDayMet=!p.bestDay||bestDayShare<=50;
     const targetMet=balance>=targetBalance;
     const passedClosed=!failed&&targetMet&&minDaysMet&&bestDayMet;
+    const wins=trades.filter(t=>t.net>0),losses=trades.filter(t=>t.net<0);
+    const grossWin=wins.reduce((s,t)=>s+t.net,0),grossLoss=Math.abs(losses.reduce((s,t)=>s+t.net,0));
+    const profitFactor=grossLoss>0?grossWin/grossLoss:Infinity;
+    const recent=trades.slice(-Math.min(10,trades.length));
+    const recentWin=recent.filter(t=>t.net>0).reduce((s,t)=>s+t.net,0);
+    const recentLoss=Math.abs(recent.filter(t=>t.net<0).reduce((s,t)=>s+t.net,0));
+    const recentProfitFactor=recentLoss>0?recentWin/recentLoss:Infinity;
+    let currentLossStreak=0;
+    for(let i=trades.length-1;i>=0&&trades[i].net<0;i--)currentLossStreak++;
+    const observedLots=trades.map(t=>t.lots).filter(v=>v>0).sort((x,y)=>x-y);
+    const medianObservedLot=observedLots.length?observedLots[Math.floor(observedLots.length/2)]:0;
     return {presetKey,preset:p.name,initial,balance,net:balance-initial,returnPct:(balance/initial-1)*100,trades:trades.length,tradingDays,
       firstDate:trades[0].open.toISOString(),lastDate:trades[trades.length-1].close.toISOString(),peakEod,maxClosedDD,worstDayExcursion,
-      breachDaily,breachMax,positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed};
+      breachDaily,breachMax,positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed,
+      wins:wins.length,losses:losses.length,winRate:wins.length/trades.length*100,profitFactor,recentProfitFactor,currentLossStreak,medianObservedLot};
   }
 
   function metric(label,value,sub){return '<div class="audit-metric"><div class="audit-metric-label">'+label+'</div><div class="audit-metric-value">'+value+'</div><div class="audit-metric-sub">'+sub+'</div></div>';}
@@ -3164,6 +3256,119 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const width=Math.max(0,Math.min(100,value));
     const state=kind==='progress'?'progress':riskState(value);
     return '<div class="risk-meter '+state+'"><div class="risk-meter-head"><div><div class="risk-meter-title">'+title+'</div><div class="risk-meter-sub">'+sub+'</div></div><div class="risk-meter-reading">'+reading+'</div></div><div class="risk-track"><div class="risk-fill" data-width="'+width.toFixed(2)+'"></div></div><div class="risk-scale"><span>'+left+'</span><span>'+right+'</span></div></div>';
+  }
+  function pfText(v){return Number.isFinite(v)?v.toFixed(2):'∞';}
+  function paceStat(label,value){return '<div class="pace-stat"><span>'+label+'</span><strong>'+value+'</strong></div>';}
+  function floorToStep(value,step){return Math.max(0,Math.floor(value/step+1e-9)*step);}
+  function lotDecimals(step){return step<.1?2:step<1?1:0;}
+
+  function syncAuditStateToFullCalculator(a){
+    if(!a)return;
+    applyLotPreset(a.presetKey,false);
+    lotBalanceEl.value=a.balance.toFixed(2);
+    lotInitialCapitalEl.value=a.initial.toFixed(2);
+    lotCurrentEquityEl.value=a.balance.toFixed(2);
+    lotDayStartBalanceEl.value=a.balance.toFixed(2);
+    lotHighestEodEl.value=a.peakEod.toFixed(2);
+    lotPositiveDaysProfitEl.value=a.positiveDaysProfit.toFixed(2);
+    lotBestDayProfitEl.value=a.bestDay.toFixed(2);
+    lotRiskEl.value=auditRiskEl.value;
+    lotSLEl.value=auditSLEl.value;
+    lotSpreadEl.value=auditSpreadEl.value;
+    lotCommEl.value=auditCommEl.value;
+    lotPipValueEl.value=auditPipValueEl.value;
+    lotWinRateEl.value=Math.max(30,Math.min(90,Math.round(a.winRate)));
+    lotStep=auditLotStep;
+    syncLotStepActive();
+    syncBalancePresetActive();
+    syncLotWRPresetActive();
+    calcLot();
+  }
+
+  function updateAuditSizingLabels(){
+    auditRiskValue.textContent=Number(auditRiskEl.value).toFixed(1)+'%';
+    auditSLValue.textContent=Number(auditSLEl.value).toFixed(0);
+    auditSpreadValue.textContent=Number(auditSpreadEl.value).toFixed(0)+' pips';
+    auditCommValue.textContent='$'+Number(auditCommEl.value).toFixed(1).replace(/\.0$/,'')+'/lot';
+    auditPipValueValue.textContent='$'+Number(auditPipValueEl.value).toFixed(3).replace(/0+$/,'').replace(/\.$/,'');
+    auditLotStepSeg.querySelectorAll('[data-audit-step]').forEach(b=>b.classList.toggle('active',Number(b.dataset.auditStep)===auditLotStep));
+  }
+
+  function syncFullCalculatorToAudit(){
+    auditRiskEl.value=lotRiskEl.value;
+    auditSLEl.value=lotSLEl.value;
+    auditSpreadEl.value=lotSpreadEl.value;
+    auditCommEl.value=lotCommEl.value;
+    auditPipValueEl.value=lotPipValueEl.value;
+    auditLotStep=lotStep;
+    updateAuditSizingLabels();
+    if(currentAudit)renderPaceCoach(currentAudit);
+  }
+
+  function renderPaceCoach(a){
+    if(!a)return;
+    const p=AUDIT_PRESETS[a.presetKey];
+    const selectedRisk=Number(auditRiskEl.value);
+    const sl=Number(auditSLEl.value),spread=Number(auditSpreadEl.value),commission=Number(auditCommEl.value),pip001=Number(auditPipValueEl.value);
+    const dailyUse=Math.abs(Math.min(0,a.worstDayExcursion))/(a.initial*p.daily/100)*100;
+    const maxReference=p.trailing?Math.max(a.initial,a.peakEod):a.initial;
+    const maxUse=Math.max(0,maxReference-a.balance)/(a.initial*p.max/100)*100;
+    const reasons=[];
+    let mode='maintain',riskLow=.3,riskHigh=.4;
+    if(a.failed){mode='stop';riskLow=0;riskHigh=0;reasons.push('The imported history contains an FTMO breach.');}
+    else if(a.profitFactor<1||a.recentProfitFactor<1||a.currentLossStreak>=3||a.trades<30||dailyUse>=50||maxUse>=50){
+      mode='slow';riskLow=.2;riskHigh=.3;
+      if(a.trades<30)reasons.push('Only '+a.trades+' closed trades: the edge estimate is still fragile.');
+      if(a.recentProfitFactor<1)reasons.push('Recent-10 profit factor is '+pfText(a.recentProfitFactor)+', below break-even.');
+      if(a.currentLossStreak>=3)reasons.push('The current losing streak is '+a.currentLossStreak+' trades.');
+      if(a.profitFactor<1)reasons.push('Full-sample profit factor is below 1.00.');
+      if(dailyUse>=50||maxUse>=50)reasons.push('At least half of an FTMO loss budget has been consumed.');
+    }else if(a.trades>=60&&a.profitFactor>=1.3&&a.recentProfitFactor>=1.15&&a.currentLossStreak<3&&dailyUse<35&&maxUse<35){
+      mode='accelerate';riskLow=.4;riskHigh=.5;reasons.push('The sample, recent regime, and FTMO buffers all support one small risk step-up.');
+    }else reasons.push('The edge is positive, but it has not cleared every acceleration gate.');
+
+    const dailyAllowance=a.initial*p.daily/100;
+    const maxBuffer=Math.max(0,a.balance-a.maxFloorNow);
+    const bufferSafeRisk=Math.min(dailyAllowance,maxBuffer)*.20;
+    const recommendedRiskDollar=Math.min(a.balance*riskHigh/100,bufferSafeRisk);
+    const selectedRiskDollar=Math.min(a.balance*selectedRisk/100,bufferSafeRisk);
+    const costPerLot=(sl+spread)*(pip001*100)+commission;
+    const recLot=costPerLot>0?floorToStep(recommendedRiskDollar/costPerLot,auditLotStep):0;
+    const selectedLot=costPerLot>0?floorToStep(selectedRiskDollar/costPerLot,auditLotStep):0;
+    const actualRecRisk=recLot*costPerLot;
+    const dailyStop=Math.min(a.initial*.01,actualRecRisk*2);
+    const decimals=lotDecimals(auditLotStep);
+    const unlockTrades=Math.max(0,50-a.trades);
+
+    paceCoach.className='pace-coach '+mode;
+    paceBadge.textContent=mode==='stop'?'STOP':mode==='slow'?'SLOW DOWN':mode==='accelerate'?'CAUTIOUS +0.1%':'MAINTAIN';
+    paceSummary.textContent=mode==='stop'
+      ? 'Do not size another trade from this evaluation history. Investigate the breach before continuing.'
+      : mode==='slow'
+        ? 'Protect the forward test while the evidence matures. Reduce risk; do not try to recover the target faster.'
+        : mode==='accelerate'
+          ? 'A small increase is supportable, but only one 0.1% risk step—never a direct lot-size jump.'
+          : 'Keep the present pace. There is no evidence-based reason to increase or sharply reduce risk yet.';
+    paceGrid.innerHTML=paceStat('Suggested risk',mode==='stop'?'0%':riskLow.toFixed(1)+'–'+riskHigh.toFixed(1)+'%')+
+      paceStat('Suggested max lot',mode==='stop'?'0.00':recLot.toFixed(decimals))+
+      paceStat('Daily stop',mode==='stop'?'No trading':money(dailyStop));
+    const actions=[];
+    if(mode==='slow'){
+      actions.push('Set risk to '+riskHigh.toFixed(1)+'% maximum. With this stop and cost setup, cap XAU/USD at '+recLot.toFixed(decimals)+' lots.');
+      actions.push('Stop the session after two full-stop losses or '+money(dailyStop)+', whichever happens first.');
+      actions.push('Do not accelerate until at least 50 trades and a recent-10 profit factor of 1.20 or better; '+unlockTrades+' more trades are currently needed for the sample gate.');
+    }else if(mode==='accelerate'){
+      actions.push('Increase risk by only 0.1 percentage point, never by jumping directly to a desired lot size.');
+      actions.push('Cap XAU/USD at '+recLot.toFixed(decimals)+' lots with the current '+sl.toFixed(0)+'-pip stop. Recalculate whenever the stop changes.');
+      actions.push('Return to 0.3% risk if recent-10 profit factor falls below 1.00 or a three-loss streak appears.');
+    }else if(mode==='maintain'){
+      actions.push('Keep risk within '+riskLow.toFixed(1)+'–'+riskHigh.toFixed(1)+'%; the current setup sizes to '+selectedLot.toFixed(decimals)+' lots at '+selectedRisk.toFixed(1)+'%.');
+      actions.push('Use '+money(dailyStop)+' as the session stop and do not increase size to chase the remaining target.');
+      actions.push('Acceleration unlocks only after 60+ trades, full profit factor ≥1.30, recent-10 profit factor ≥1.15, and both loss budgets below 35% used.');
+    }else actions.push('Review the dated breach in Objective Audit and start a clean evaluation dataset before using a new size.');
+    actions.push('Keep the stop technically valid; change lot size to fit the stop, never widen the stop to fit the lot.');
+    paceActions.innerHTML=actions.map(x=>'<li>'+x+'</li>').join('');
+    paceEvidence.textContent='Evidence: '+a.trades+' trades · '+pct(a.winRate,1)+' win rate · PF '+pfText(a.profitFactor)+' · recent-10 PF '+pfText(a.recentProfitFactor)+' · '+a.currentLossStreak+' current losses · median observed lot '+a.medianObservedLot.toFixed(2)+' · selected setup '+selectedRisk.toFixed(1)+'% = '+selectedLot.toFixed(decimals)+' lots. Educational planning aid; floating equity and execution conditions are not available in the CSV.';
   }
   function renderAudit(a){
     const p=AUDIT_PRESETS[a.presetKey];
@@ -3222,6 +3427,8 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       const tradeDelta=a.trades-cp.trades,balanceDelta=a.balance-cp.balance,ddDelta=a.maxClosedDD-cp.maxClosedDD;
       auditDelta.textContent='Since saved checkpoint: '+(tradeDelta>=0?'+':'')+tradeDelta+' trades · '+signedMoney(balanceDelta)+' balance · closed drawdown '+(ddDelta>=0?'improved ':'worsened ')+money(Math.abs(ddDelta))+'.';
     }else auditDelta.textContent='Save this result as your baseline. Next week, upload the new cumulative export to see the change automatically.';
+    renderPaceCoach(a);
+    syncAuditStateToFullCalculator(a);
     saveCheckpointBtn.disabled=false;
   }
 
@@ -3242,9 +3449,16 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   ['dragleave','drop'].forEach(ev=>auditDropZone.addEventListener(ev,e=>{e.preventDefault();auditDropZone.classList.remove('drag');}));
   auditDropZone.addEventListener('drop',e=>loadAuditFile(e.dataTransfer.files[0]));
   auditPresetSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(!b)return;[...auditPresetSeg.children].forEach(x=>x.classList.toggle('active',x===b));auditPreset=b.dataset.auditPreset;runJourneyAudit();});
+  [auditRiskEl,auditSLEl,auditSpreadEl,auditCommEl,auditPipValueEl].forEach(el=>el.addEventListener('input',()=>{
+    updateAuditSizingLabels();
+    if(currentAudit){renderPaceCoach(currentAudit);syncAuditStateToFullCalculator(currentAudit);}
+  }));
+  auditLotStepSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-step]');if(!b)return;auditLotStep=Number(b.dataset.auditStep);updateAuditSizingLabels();if(currentAudit){renderPaceCoach(currentAudit);syncAuditStateToFullCalculator(currentAudit);}});
+  auditOpenLotBtn.addEventListener('click',()=>{if(currentAudit)syncAuditStateToFullCalculator(currentAudit);switchTab('lot');});
   saveCheckpointBtn.addEventListener('click',()=>{if(!currentAudit)return;localStorage.setItem(AUDIT_CHECKPOINT_KEY,JSON.stringify({...currentAudit,savedAt:new Date().toISOString()}));refreshCheckpointNote();renderAudit(currentAudit);});
   clearCheckpointBtn.addEventListener('click',()=>{localStorage.removeItem(AUDIT_CHECKPOINT_KEY);refreshCheckpointNote();if(currentAudit)renderAudit(currentAudit);});
   refreshCheckpointNote();
+  updateAuditSizingLabels();
 
   // ---------- INIT ----------
   // Initial control values come from DEFAULTS, not the HTML value="" attributes,

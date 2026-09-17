@@ -23,6 +23,12 @@ The audit reconstructs closed balance, daily closed P/L, maximum closed-balance 
 
 Animated objective meters make the remaining room visible at a glance: profit-target progress, the largest share of the daily-loss budget consumed so far, current maximum-loss budget consumed, and either Best Day concentration or minimum-trading-day progress. Green, amber, and red zones show increasing breach danger; motion is disabled automatically when the browser requests reduced motion.
 
+### Pace and sizing coach
+
+After a CSV is loaded, the audit combines the journey with an embedded copy of the XAU/USD sizing setup: risk per trade, stop-loss distance, spread, commission, pip value, and lot step. These controls stay synchronized with the full calculator.
+
+The coach returns **Slow down**, **Maintain**, **Cautious +0.1%**, or **Stop**. It considers sample size, full and recent-10 profit factor, current losing streak, daily-loss usage, maximum-loss usage, and the selected FTMO preset. Its output includes a risk range, maximum rounded-down XAU/USD lot size, session stop, evidence, and measurable conditions required before accelerating. Distance from the profit target never triggers an acceleration recommendation by itself.
+
 A Myfxbook trade CSV does not contain continuous combined floating equity. It therefore cannot prove official compliance with FTMO's equity-based drawdown checks, and the app labels this limitation separately instead of incorrectly treating it as a failure. Daily grouping assumes the export timestamps already match FTMO's CE(S)T day.
 
 ## What it does
