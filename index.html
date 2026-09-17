@@ -255,10 +255,12 @@ body{
 .audit-rule{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border-soft);padding:10px 0;font-size:11.5px;line-height:1.5;}
 .audit-rule:last-child{border-bottom:0}.audit-rule span:first-child{color:var(--text-dim)}.audit-rule strong{text-align:right;color:var(--text)}
 .audit-rule strong.safe{color:var(--green)}.audit-rule strong.warn{color:var(--amber)}.audit-rule strong.fail{color:var(--red)}
-.audit-sizer{margin-top:20px;padding-top:17px;border-top:1px solid var(--border);}
+.audit-sizer{padding:14px 14px 4px;}
 .audit-sizer .field{margin-bottom:15px;}
 .audit-sizer-note{font-size:10px;line-height:1.55;color:var(--text-dim);margin:8px 0 0;}
-.pace-coach{margin-top:14px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);overflow:hidden;}
+.audit-sticky-summary{position:sticky;top:8px;z-index:8;margin:0 0 12px;padding:9px 12px;border:1px solid var(--green);border-radius:7px;background:color-mix(in srgb,var(--bg) 92%,transparent);box-shadow:0 8px 24px rgba(0,0,0,.18);backdrop-filter:blur(10px);font-size:10.5px;font-weight:700;letter-spacing:.035em;color:var(--green);text-transform:uppercase;}
+.audit-sticky-summary.slow{border-color:var(--amber);color:var(--amber)}.audit-sticky-summary.stop{border-color:var(--red);color:var(--red)}.audit-sticky-summary.accelerate{border-color:var(--blue);color:var(--blue)}
+.pace-coach{margin:0 0 14px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);overflow:hidden;}
 .pace-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 15px;border-bottom:1px solid var(--border);}
 .pace-title{font-size:12px;font-weight:700;color:var(--text);}.pace-badge{font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 8px;border-radius:999px;border:1px solid var(--green);color:var(--green);background:var(--green-dim);white-space:nowrap;}
 .pace-coach.slow .pace-badge{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}.pace-coach.stop .pace-badge{border-color:var(--red);color:var(--red);background:var(--red-dim)}.pace-coach.accelerate .pace-badge{border-color:var(--blue);color:var(--blue);background:var(--surface)}
@@ -266,6 +268,8 @@ body{
 .pace-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:13px;}.pace-stat{padding:11px;border:1px solid var(--border);border-radius:7px;background:var(--bg);}.pace-stat span{display:block;font-size:9px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}.pace-stat strong{font-size:15px;color:var(--text)}
 .pace-actions{display:grid;gap:7px;margin:0;padding:0;list-style:none}.pace-actions li{position:relative;padding:8px 9px 8px 27px;border-radius:6px;background:var(--bg);font-size:10.5px;line-height:1.5;color:var(--text-dim)}.pace-actions li::before{content:"›";position:absolute;left:11px;color:var(--green);font-weight:700}.pace-coach.slow .pace-actions li::before{color:var(--amber)}.pace-coach.stop .pace-actions li::before{color:var(--red)}
 .pace-evidence{margin-top:12px;font-size:9.5px;line-height:1.55;color:var(--text-faint)}
+.audit-adjust{margin-top:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);overflow:hidden}.audit-adjust summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;cursor:pointer;list-style:none;color:var(--text);font-size:11px;font-weight:700}.audit-adjust summary::-webkit-details-marker{display:none}.audit-adjust summary::after{content:"+";color:var(--green);font-size:16px;line-height:1}.audit-adjust[open] summary::after{content:"−"}.audit-adjust summary small{margin-left:auto;color:var(--text-faint);font-size:9px;font-weight:400}.audit-adjust[open] summary{border-bottom:1px solid var(--border)}
+.audit-advanced-link{display:block;margin:12px 0 10px auto}.audit-export-block{margin-top:14px;padding-top:2px}.audit-export-block .audit-tools{margin-top:0}
 .checkpoint-row{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
 .checkpoint-note{font-size:9.5px;color:var(--text-faint);line-height:1.5;margin-top:9px;}
 .audit-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;padding:10px 11px;border:1px solid var(--border);border-radius:7px;background:var(--surface-2);}
@@ -1073,7 +1077,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       </div>
       <div class="audit-grid">
         <aside class="panel controls">
-          <p class="panel-label">weekly statement</p>
+          <p class="panel-label">1 · upload weekly statement</p>
           <div class="field">
             <div class="field-head"><span class="field-name">FTMO_PRESET</span></div>
             <div class="seg" id="auditPresetSeg">
@@ -1088,56 +1092,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             <p class="upload-meta" id="auditFileMeta">or drag and drop here<br>Expected fields include Open Date, Close Date, Action and Profit.</p>
           </div>
           <div class="rule-note" style="margin-top:12px;">Time grouping assumes the CSV dates already match FTMO's CE(S)T day. Trades near midnight may need timezone correction. Closed trades cannot prove floating-equity compliance.</div>
-          <div class="checkpoint-row">
-            <button class="reset-btn" id="saveCheckpointBtn" disabled>＋ save weekly checkpoint</button>
-            <button class="reset-btn" id="clearCheckpointBtn">clear checkpoint</button>
-          </div>
-          <p class="checkpoint-note" id="checkpointNote">No previous weekly checkpoint saved on this device.</p>
-          <div class="audit-tools">
-            <div class="audit-tools-copy"><span class="audit-tools-title">Privacy mode</span><span class="audit-tools-sub">Hide money and lot values · show percentages</span></div>
-            <button type="button" class="adv-switch" id="auditPrivacyToggle" role="switch" aria-checked="false" aria-label="Toggle percentage-only privacy mode"></button>
-          </div>
-          <button class="audit-print-btn" id="auditPrintBtn" disabled>▣ print / save one-page A4 PDF</button>
-          <div class="audit-sizer">
-            <div class="panel-label-row">
-              <p class="panel-label">XAU/USD sizing setup</p>
-              <button class="reset-btn" id="auditOpenLotBtn">open full calculator ›</button>
-            </div>
-            <div class="field">
-              <div class="field-head"><span class="field-name">RISK_PER_TRADE</span><span class="field-value" id="auditRiskValue">0.5%</span></div>
-              <input type="range" class="risk-slider" id="auditRisk" min="0.1" max="1" step="0.1" value="0.5">
-            </div>
-            <div class="field privacy-absolute">
-              <div class="field-head"><span class="field-name">STOP_LOSS (pips)</span><span class="field-value" id="auditSLValue">1250</span></div>
-              <input type="range" id="auditSL" min="10" max="2500" step="10" value="1250">
-            </div>
-            <div class="field-row privacy-absolute">
-              <div class="field">
-                <div class="field-head"><span class="field-name">SPREAD</span><span class="field-value" id="auditSpreadValue">20 pips</span></div>
-                <input type="range" id="auditSpread" min="0" max="100" step="1" value="20">
-              </div>
-              <div class="field">
-                <div class="field-head"><span class="field-name">COMMISSION</span><span class="field-value" id="auditCommValue">$0/lot</span></div>
-                <input type="range" id="auditComm" min="0" max="14" step="0.5" value="0">
-              </div>
-            </div>
-            <div class="field privacy-absolute">
-              <div class="field-head"><span class="field-name">PIP_VALUE (per 0.01 lot)</span><span class="field-value" id="auditPipValueValue">$0.01</span></div>
-              <input type="range" id="auditPipValue" min="0.005" max="0.05" step="0.005" value="0.01">
-            </div>
-            <div class="field privacy-absolute">
-              <div class="field-head"><span class="field-name">LOT_STEP</span></div>
-              <div class="seg" id="auditLotStepSeg">
-                <button class="seg-btn active" data-audit-step="0.01">0.01</button>
-                <button class="seg-btn" data-audit-step="0.1">0.10</button>
-                <button class="seg-btn" data-audit-step="1">1.00</button>
-              </div>
-            </div>
-            <p class="audit-sizer-note">These controls mirror the full calculator. The coach sizes from the CSV's latest closed balance and applies a 20% cap to the tighter remaining FTMO buffer.</p>
-          </div>
         </aside>
         <section class="panel output">
-          <p class="panel-label">objective audit</p>
+          <p class="panel-label">2 · survival status &amp; action</p>
           <div class="audit-empty" id="auditEmpty">Upload the latest cumulative Myfxbook statement.<br>The result will distinguish <b>no failure found</b> from <b>fully verified</b>.</div>
           <div id="auditResults" hidden>
             <div class="audit-status" id="auditStatus">
@@ -1145,18 +1102,51 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
               <div class="audit-headline" id="auditHeadline">—</div>
               <div class="audit-copy" id="auditStatusCopy">—</div>
             </div>
-            <div class="audit-metrics" id="auditMetrics"></div>
-            <div class="audit-visuals" id="auditVisuals"></div>
-            <div class="audit-list" id="auditRules"></div>
-            <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
+            <div class="audit-sticky-summary" id="auditStickySummary">ACTIVE · awaiting sizing decision</div>
             <div class="pace-coach" id="paceCoach">
-              <div class="pace-head"><span class="pace-title">XAU/USD pace &amp; sizing coach</span><span class="pace-badge" id="paceBadge">—</span></div>
+              <div class="pace-head"><span class="pace-title">3 · XAU/USD pace &amp; sizing coach</span><span class="pace-badge" id="paceBadge">—</span></div>
               <div class="pace-body">
                 <p class="pace-summary" id="paceSummary">Upload a statement to generate a sizing plan.</p>
                 <div class="pace-grid" id="paceGrid"></div>
                 <ul class="pace-actions" id="paceActions"></ul>
                 <div class="pace-evidence" id="paceEvidence"></div>
               </div>
+            </div>
+            <p class="panel-label" style="margin-top:18px;">objective buffers</p>
+            <div class="audit-metrics" id="auditMetrics"></div>
+            <div class="audit-visuals" id="auditVisuals"></div>
+            <div class="audit-list" id="auditRules"></div>
+            <details class="audit-adjust" id="auditAdjust">
+              <summary><span>4 · Adjust recommendation</span><small>Optional · risk, stop and costs</small></summary>
+              <div class="audit-sizer">
+                <div class="field">
+                  <div class="field-head"><span class="field-name">RISK_PER_TRADE</span><span class="field-value" id="auditRiskValue">0.5%</span></div>
+                  <input type="range" class="risk-slider" id="auditRisk" min="0.1" max="1" step="0.1" value="0.5">
+                </div>
+                <div class="field privacy-absolute">
+                  <div class="field-head"><span class="field-name">STOP_LOSS (pips)</span><span class="field-value" id="auditSLValue">1250</span></div>
+                  <input type="range" id="auditSL" min="10" max="2500" step="10" value="1250">
+                </div>
+                <div class="field-row privacy-absolute">
+                  <div class="field"><div class="field-head"><span class="field-name">SPREAD</span><span class="field-value" id="auditSpreadValue">20 pips</span></div><input type="range" id="auditSpread" min="0" max="100" step="1" value="20"></div>
+                  <div class="field"><div class="field-head"><span class="field-name">COMMISSION</span><span class="field-value" id="auditCommValue">$0/lot</span></div><input type="range" id="auditComm" min="0" max="14" step="0.5" value="0"></div>
+                </div>
+                <div class="field privacy-absolute"><div class="field-head"><span class="field-name">PIP_VALUE (per 0.01 lot)</span><span class="field-value" id="auditPipValueValue">$0.01</span></div><input type="range" id="auditPipValue" min="0.005" max="0.05" step="0.005" value="0.01"></div>
+                <div class="field privacy-absolute"><div class="field-head"><span class="field-name">LOT_STEP</span></div><div class="seg" id="auditLotStepSeg"><button class="seg-btn active" data-audit-step="0.01">0.01</button><button class="seg-btn" data-audit-step="0.1">0.10</button><button class="seg-btn" data-audit-step="1">1.00</button></div></div>
+                <p class="audit-sizer-note">Uses the CSV's latest closed balance and a 20% cap on the tighter FTMO buffer.</p>
+                <button class="reset-btn audit-advanced-link" id="auditOpenLotBtn">advanced lot calculator ›</button>
+              </div>
+            </details>
+            <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
+            <div class="checkpoint-row">
+              <button class="reset-btn" id="saveCheckpointBtn" disabled>＋ save weekly checkpoint</button>
+              <button class="reset-btn" id="clearCheckpointBtn">clear checkpoint</button>
+            </div>
+            <p class="checkpoint-note" id="checkpointNote">No previous weekly checkpoint saved on this device.</p>
+            <div class="audit-export-block">
+              <p class="panel-label">5 · export report</p>
+              <div class="audit-tools"><div class="audit-tools-copy"><span class="audit-tools-title">Percentage-only privacy mode</span><span class="audit-tools-sub">Hide money and absolute lot values before sharing</span></div><button type="button" class="adv-switch" id="auditPrivacyToggle" role="switch" aria-checked="false" aria-label="Toggle percentage-only privacy mode"></button></div>
+              <button class="audit-print-btn" id="auditPrintBtn" disabled>▣ print / save one-page A4 PDF</button>
             </div>
           </div>
         </section>
@@ -3161,6 +3151,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const paceGrid = document.getElementById('paceGrid');
   const paceActions = document.getElementById('paceActions');
   const paceEvidence = document.getElementById('paceEvidence');
+  const auditStickySummary = document.getElementById('auditStickySummary');
   const auditPrivacyToggle = document.getElementById('auditPrivacyToggle');
   const auditPrintBtn = document.getElementById('auditPrintBtn');
   const auditPrintReport = document.getElementById('auditPrintReport');
@@ -3376,6 +3367,8 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
     paceCoach.className='pace-coach '+mode;
     paceBadge.textContent=mode==='stop'?'STOP':mode==='slow'?'SLOW DOWN':mode==='accelerate'?'CAUTIOUS +0.1%':'MAINTAIN';
+    auditStickySummary.className='audit-sticky-summary '+mode;
+    auditStickySummary.textContent=(a.failed?'FAILED':'ACTIVE')+' · '+paceBadge.textContent+' · '+(mode==='stop'?'0% RISK':riskLow.toFixed(1)+'–'+riskHigh.toFixed(1)+'% RISK')+' · '+(auditPrivacy?'PERCENTAGES ONLY':'MAX '+recLot.toFixed(decimals)+' LOT');
     paceSummary.textContent=mode==='stop'
       ? 'Do not size another trade from this evaluation history. Investigate the breach before continuing.'
       : mode==='slow'

@@ -15,6 +15,8 @@ The `journey_audit.sh` tab is designed for a new forward test. Its primary quest
 3. Upload the cumulative CSV. Processing happens locally in the browser.
 4. Save the result as a weekly checkpoint. On the next upload, the app reports the changes in trade count, balance, and closed drawdown.
 
+The screen follows one direction: **upload → survival status → pace decision → objective buffers → optional sizing adjustment → weekly checkpoint → export**. Essential advice stays in Journey Audit; the full lot calculator is a secondary advanced destination. A sticky summary keeps status, pace, risk range, and maximum lot visible while the audit is reviewed.
+
 The audit reconstructs closed balance, daily closed P/L, maximum closed-balance drawdown, active trading days, profit-target progress, the 1-Step end-of-day trailing loss floor, and the 1-Step Best Day ratio. Its headline states one of:
 
 - **Still active — no failure found**: no rule breach exists in the imported closed-trade history.
