@@ -2,9 +2,26 @@ https://0xtrvkc.github.io/prop_challenge_simulator/
 
 # Prop Challenge Pass-Probability Simulator
 
-A single-file, client-side Monte Carlo simulator that estimates your odds of passing a prop-firm trading challenge, given a win rate, reward:risk ratio, and position size. It includes current FTMO 1-Step and 2-Step presets plus fully custom rules. Built as a self-contained terminal-themed web app — no build step, dependencies, or server.
+A single-file, client-side FTMO planning toolkit. It estimates challenge pass probability, audits a live forward-testing journey from a Myfxbook CSV, and calculates prop-safe position size. It includes current FTMO 1-Step and 2-Step presets plus fully custom simulation rules. No build step, dependencies, API, account connection, or server is required.
 
 Open it in any modern browser and it runs entirely in-page.
+
+## Weekly FTMO journey audit
+
+The `journey_audit.sh` tab is designed for a new forward test. Its primary question is not “Will this definitely pass?” but **“Has this account failed an FTMO objective yet?”**
+
+1. Export the complete trade-history CSV from Myfxbook, including the starting `Deposit` row.
+2. Choose FTMO 1-Step, 2-Step Challenge, or 2-Step Verification.
+3. Upload the cumulative CSV. Processing happens locally in the browser.
+4. Save the result as a weekly checkpoint. On the next upload, the app reports the changes in trade count, balance, and closed drawdown.
+
+The audit reconstructs closed balance, daily closed P/L, maximum closed-balance drawdown, active trading days, profit-target progress, the 1-Step end-of-day trailing loss floor, and the 1-Step Best Day ratio. Its headline states one of:
+
+- **Still active — no failure found**: no rule breach exists in the imported closed-trade history.
+- **Target reached — no closed-history breach**: closed trades meet the preset objectives, subject to the verification limitation below.
+- **Failed — breach found in closed history**: the imported data itself contains a definite daily-loss or maximum-loss breach.
+
+A Myfxbook trade CSV does not contain continuous combined floating equity. It therefore cannot prove official compliance with FTMO's equity-based drawdown checks, and the app labels this limitation separately instead of incorrectly treating it as a failure. Daily grouping assumes the export timestamps already match FTMO's CE(S)T day.
 
 ## What it does
 

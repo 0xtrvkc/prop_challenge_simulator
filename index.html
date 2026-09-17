@@ -215,6 +215,34 @@ body{
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
 
+/* Weekly journey audit */
+.audit-grid{display:grid;grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr);gap:16px;align-items:start;}
+.upload-box{border:1px dashed var(--border);border-radius:9px;padding:18px;text-align:center;background:var(--surface-2);transition:border-color .15s ease,background .15s ease;}
+.upload-box.drag{border-color:var(--green);background:var(--green-dim);}
+.upload-box input{display:none;}
+.upload-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--green);border-radius:6px;background:var(--green-dim);color:var(--green);font:600 11px inherit;padding:9px 13px;cursor:pointer;}
+.upload-meta{margin:9px 0 0;color:var(--text-faint);font-size:10px;line-height:1.55;overflow-wrap:anywhere;}
+.audit-status{border:1px solid var(--border);border-left:4px solid var(--text-faint);border-radius:8px;padding:14px 15px;background:var(--surface-2);margin-bottom:12px;}
+.audit-status.safe{border-left-color:var(--green);}.audit-status.fail{border-left-color:var(--red);}.audit-status.warn{border-left-color:var(--amber);}
+.audit-kicker{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);margin-bottom:5px;}
+.audit-headline{font-size:18px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.audit-status.safe .audit-headline{color:var(--green)}.audit-status.fail .audit-headline{color:var(--red)}.audit-status.warn .audit-headline{color:var(--amber)}
+.audit-copy{font-size:10.5px;color:var(--text-dim);line-height:1.55;}
+.audit-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.audit-metric{border:1px solid var(--border);border-radius:7px;background:var(--surface-2);padding:11px;min-width:0;}
+.audit-metric-label{font-size:8.5px;letter-spacing:.06em;color:var(--text-faint);text-transform:uppercase;margin-bottom:5px;}
+.audit-metric-value{font-size:14px;font-weight:700;color:var(--text);overflow-wrap:anywhere;}
+.audit-metric-sub{font-size:8.5px;color:var(--text-faint);margin-top:3px;line-height:1.35;}
+.audit-list{display:grid;gap:7px;}
+.audit-rule{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border-soft);padding:8px 0;font-size:10px;line-height:1.45;}
+.audit-rule:last-child{border-bottom:0}.audit-rule span:first-child{color:var(--text-dim)}.audit-rule strong{text-align:right;color:var(--text)}
+.audit-rule strong.safe{color:var(--green)}.audit-rule strong.warn{color:var(--amber)}.audit-rule strong.fail{color:var(--red)}
+.checkpoint-row{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap;}
+.checkpoint-note{font-size:9.5px;color:var(--text-faint);line-height:1.5;margin-top:9px;}
+.audit-empty{padding:38px 18px;text-align:center;color:var(--text-faint);font-size:11px;line-height:1.7;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);}
+@media(max-width:800px){.audit-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}}
+@media(max-width:430px){.audit-metrics{grid-template-columns:1fr 1fr}}
+
 .term-body{padding:28px clamp(16px,3vw,36px) 34px;}
 
 .intro{margin-bottom:26px;}
@@ -789,6 +817,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
     <div class="tab-bar">
       <button class="tab-btn active" id="tabBtnSim" data-tab="sim">pass_probability.sh</button>
+      <button class="tab-btn" id="tabBtnAudit" data-tab="audit">journey_audit.sh</button>
       <button class="tab-btn" id="tabBtnLot" data-tab="lot">lot_sizing.sh</button>
     </div>
 
@@ -987,6 +1016,54 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       <div class="footnote">
         <b>Assumptions:</b> trades are independent Bernoulli outcomes; each simulated trade is opened and closed within the same CE(S)T trading day. Daily loss is tested against start-of-day balance and includes simulated intraday equity. FTMO 1-Step max loss trails only from the highest end-of-day balance; FTMO 2-Step uses a static floor. Position risk stays fixed, with no compounding, slippage, spread, commission, swaps, or martingale. This planning estimate is not a guarantee and is not affiliated with FTMO.
       </div>
+    </div>
+
+    <!-- WEEKLY JOURNEY AUDIT TAB -->
+    <div class="tab-panel" id="tabAudit">
+      <div class="intro">
+        <p class="prompt">audit --weekly --closed-trades</p>
+        <h1>FTMO Journey Audit</h1>
+        <p class="sub">Upload your latest Myfxbook CSV once a week. The audit answers the right early-stage question: “Has this forward test failed an FTMO objective yet?” Everything runs locally in your browser—no API, account login, or upload to a server.</p>
+      </div>
+      <div class="audit-grid">
+        <aside class="panel controls">
+          <p class="panel-label">weekly statement</p>
+          <div class="field">
+            <div class="field-head"><span class="field-name">FTMO_PRESET</span></div>
+            <div class="seg" id="auditPresetSeg">
+              <button class="seg-btn active" data-audit-preset="ftmo1">1-Step</button>
+              <button class="seg-btn" data-audit-preset="ftmo2">2-Step</button>
+              <button class="seg-btn" data-audit-preset="ftmo2v">Verification</button>
+            </div>
+          </div>
+          <div class="upload-box" id="auditDropZone">
+            <label class="upload-btn" for="auditFile">Choose Myfxbook CSV</label>
+            <input type="file" id="auditFile" accept=".csv,text/csv">
+            <p class="upload-meta" id="auditFileMeta">or drag and drop here<br>Expected fields include Open Date, Close Date, Action and Profit.</p>
+          </div>
+          <div class="rule-note" style="margin-top:12px;">Time grouping assumes the CSV dates already match FTMO's CE(S)T day. Trades near midnight may need timezone correction. Closed trades cannot prove floating-equity compliance.</div>
+          <div class="checkpoint-row">
+            <button class="reset-btn" id="saveCheckpointBtn" disabled>＋ save weekly checkpoint</button>
+            <button class="reset-btn" id="clearCheckpointBtn">clear checkpoint</button>
+          </div>
+          <p class="checkpoint-note" id="checkpointNote">No previous weekly checkpoint saved on this device.</p>
+        </aside>
+        <section class="panel output">
+          <p class="panel-label">objective audit</p>
+          <div class="audit-empty" id="auditEmpty">Upload the latest cumulative Myfxbook statement.<br>The result will distinguish <b>no failure found</b> from <b>fully verified</b>.</div>
+          <div id="auditResults" hidden>
+            <div class="audit-status" id="auditStatus">
+              <div class="audit-kicker" id="auditStatusKicker">Closed-trade assessment</div>
+              <div class="audit-headline" id="auditHeadline">—</div>
+              <div class="audit-copy" id="auditStatusCopy">—</div>
+            </div>
+            <div class="audit-metrics" id="auditMetrics"></div>
+            <div class="audit-list" id="auditRules"></div>
+            <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
+          </div>
+        </section>
+      </div>
+      <div class="footnote"><b>Status language:</b> “No failure found” means the imported closed-trade history has not crossed a calculated FTMO floor. “Cannot fully verify” means the file lacks tick-by-tick floating equity, so it is not proof of official compliance. “Failed” is shown only when the CSV itself contains a clear breach.</div>
     </div>
 
     <!-- LOT SIZING TAB -->
@@ -1929,21 +2006,25 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
   // ---------- TABS ----------
   const tabBtnSim = document.getElementById('tabBtnSim');
+  const tabBtnAudit = document.getElementById('tabBtnAudit');
   const tabBtnLot = document.getElementById('tabBtnLot');
   const tabSim = document.getElementById('tabSim');
+  const tabAudit = document.getElementById('tabAudit');
   const tabLot = document.getElementById('tabLot');
 
   function switchTab(name){
-    const toSim = name === 'sim';
-    tabBtnSim.classList.toggle('active', toSim);
-    tabBtnLot.classList.toggle('active', !toSim);
-    tabSim.classList.toggle('active', toSim);
-    tabLot.classList.toggle('active', !toSim);
-    if (!toSim){
+    tabBtnSim.classList.toggle('active', name === 'sim');
+    tabBtnAudit.classList.toggle('active', name === 'audit');
+    tabBtnLot.classList.toggle('active', name === 'lot');
+    tabSim.classList.toggle('active', name === 'sim');
+    tabAudit.classList.toggle('active', name === 'audit');
+    tabLot.classList.toggle('active', name === 'lot');
+    if (name === 'lot'){
       requestAnimationFrame(() => { if (typeof calcLot === 'function') calcLot(); });
     }
   }
   tabBtnSim.addEventListener('click', () => switchTab('sim'));
+  tabBtnAudit.addEventListener('click', () => switchTab('audit'));
   tabBtnLot.addEventListener('click', () => switchTab('lot'));
 
   // ---------- LOT SIZING: ADVANCED MODE ----------
@@ -2942,6 +3023,174 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       }
     });
   })();
+
+  // ---------- WEEKLY FTMO JOURNEY AUDIT ----------
+  const auditFile = document.getElementById('auditFile');
+  const auditDropZone = document.getElementById('auditDropZone');
+  const auditFileMeta = document.getElementById('auditFileMeta');
+  const auditPresetSeg = document.getElementById('auditPresetSeg');
+  const auditEmpty = document.getElementById('auditEmpty');
+  const auditResults = document.getElementById('auditResults');
+  const auditStatus = document.getElementById('auditStatus');
+  const auditHeadline = document.getElementById('auditHeadline');
+  const auditStatusCopy = document.getElementById('auditStatusCopy');
+  const auditMetrics = document.getElementById('auditMetrics');
+  const auditRules = document.getElementById('auditRules');
+  const auditDelta = document.getElementById('auditDelta');
+  const saveCheckpointBtn = document.getElementById('saveCheckpointBtn');
+  const clearCheckpointBtn = document.getElementById('clearCheckpointBtn');
+  const checkpointNote = document.getElementById('checkpointNote');
+  const AUDIT_CHECKPOINT_KEY = 'challenge_sim_ftmo_weekly_checkpoint_v1';
+  const AUDIT_PRESETS = {
+    ftmo1:{name:'FTMO 1-Step',target:10,daily:3,max:10,trailing:true,minDays:0,bestDay:true},
+    ftmo2:{name:'FTMO 2-Step · Challenge',target:10,daily:5,max:10,trailing:false,minDays:4,bestDay:false},
+    ftmo2v:{name:'FTMO 2-Step · Verification',target:5,daily:5,max:10,trailing:false,minDays:4,bestDay:false}
+  };
+  let auditPreset = 'ftmo1';
+  let auditRows = null;
+  let currentAudit = null;
+
+  function parseCSV(text){
+    const rows=[]; let row=[], field='', quoted=false;
+    for(let i=0;i<text.length;i++){
+      const c=text[i];
+      if(quoted){
+        if(c==='"' && text[i+1]==='"'){field+='"';i++;}
+        else if(c==='"'){quoted=false;}
+        else field+=c;
+      }else if(c==='"'){quoted=true;}
+      else if(c===','){row.push(field);field='';}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+      else if(c!=='\r'){field+=c;}
+    }
+    if(field.length||row.length){row.push(field);rows.push(row);}
+    if(!rows.length) return [];
+    const headers=rows[0].map((h,i)=>(i===0?h.replace(/^\uFEFF/,''):h).trim());
+    return rows.slice(1).filter(r=>r.some(v=>v.trim()!=='')).map(r=>{
+      const out={}; headers.forEach((h,i)=>out[h]=(r[i]??'').trim()); return out;
+    });
+  }
+
+  function auditDate(value){
+    const m=String(value||'').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{2})/);
+    if(!m) return null;
+    const d=new Date(Number(m[3]),Number(m[1])-1,Number(m[2]),Number(m[4]),Number(m[5]));
+    return Number.isNaN(d.getTime())?null:d;
+  }
+  function dayKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function money(n){return (n<0?'−':'')+'$'+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function signedMoney(n){return (n>=0?'+':'−')+'$'+Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function pct(n,digits=2){return Number.isFinite(n)?n.toFixed(digits)+'%':'—';}
+  function checkpoint(){try{return JSON.parse(localStorage.getItem(AUDIT_CHECKPOINT_KEY)||'null');}catch(e){return null;}}
+  function refreshCheckpointNote(){
+    const cp=checkpoint();
+    checkpointNote.textContent=cp?'Previous checkpoint: '+new Date(cp.savedAt).toLocaleString()+' · '+cp.trades+' trades · '+money(cp.balance):'No previous weekly checkpoint saved on this device.';
+  }
+
+  function analyzeJourney(rows,presetKey){
+    const p=AUDIT_PRESETS[presetKey];
+    const required=['Open Date','Close Date','Action','Profit'];
+    if(!rows.length||required.some(k=>!(k in rows[0]))) throw new Error('Unsupported CSV. Required columns: '+required.join(', ')+'.');
+    const deposits=rows.filter(r=>String(r.Action).toLowerCase()==='deposit').map(r=>Number(r.Profit)).filter(Number.isFinite);
+    if(!deposits.length||deposits[0]<=0) throw new Error('Starting deposit was not found. Export the complete account history, including the Deposit row.');
+    const initial=deposits[0];
+    const trades=rows.filter(r=>/^(buy|sell)$/i.test(r.Action)).map(r=>{
+      const open=auditDate(r['Open Date']), close=auditDate(r['Close Date']);
+      const profit=Number(r.Profit),commission=Number(r.Commission||0),swap=Number(r.Swap||0);
+      return {open,close,net:profit+(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0)};
+    }).filter(t=>t.open&&t.close&&Number.isFinite(t.net)).sort((a,b)=>a.close-b.close);
+    if(!trades.length) throw new Error('No closed Buy or Sell trades were found in this CSV.');
+
+    const groups=new Map();
+    trades.forEach(t=>{const k=dayKey(t.close);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(t);});
+    let balance=initial,peakEod=initial,peakClosed=initial,maxClosedDD=0,worstDayExcursion=0;
+    let breachDaily=null,breachMax=null,positiveDays=0,positiveDaysProfit=0,bestDay=0;
+    for(const [day,dayTrades] of groups){
+      const dayStart=balance, dailyFloor=dayStart-initial*p.daily/100;
+      const maxFloor=(p.trailing?Math.max(initial,peakEod):initial)-initial*p.max/100;
+      let dayLow=0;
+      for(const t of dayTrades){
+        balance+=t.net;
+        dayLow=Math.min(dayLow,balance-dayStart);
+        peakClosed=Math.max(peakClosed,balance);
+        maxClosedDD=Math.min(maxClosedDD,balance-peakClosed);
+        if(!breachDaily&&balance<dailyFloor) breachDaily={day,balance,floor:dailyFloor};
+        if(!breachMax&&balance<maxFloor) breachMax={day,balance,floor:maxFloor};
+      }
+      const dayPnl=balance-dayStart;
+      worstDayExcursion=Math.min(worstDayExcursion,dayLow);
+      if(dayPnl>0){positiveDays++;positiveDaysProfit+=dayPnl;bestDay=Math.max(bestDay,dayPnl);}
+      peakEod=Math.max(peakEod,balance);
+    }
+    const tradingDays=new Set(trades.map(t=>dayKey(t.open))).size;
+    const targetBalance=initial*(1+p.target/100);
+    const dailyFloorNow=balance-initial*p.daily/100;
+    const maxFloorNow=(p.trailing?Math.max(initial,peakEod):initial)-initial*p.max/100;
+    const bestDayShare=positiveDaysProfit>0?bestDay/positiveDaysProfit*100:NaN;
+    const failed=Boolean(breachDaily||breachMax);
+    const minDaysMet=tradingDays>=p.minDays;
+    const bestDayMet=!p.bestDay||bestDayShare<=50;
+    const targetMet=balance>=targetBalance;
+    const passedClosed=!failed&&targetMet&&minDaysMet&&bestDayMet;
+    return {presetKey,preset:p.name,initial,balance,net:balance-initial,returnPct:(balance/initial-1)*100,trades:trades.length,tradingDays,
+      firstDate:trades[0].open.toISOString(),lastDate:trades[trades.length-1].close.toISOString(),peakEod,maxClosedDD,worstDayExcursion,
+      breachDaily,breachMax,positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed};
+  }
+
+  function metric(label,value,sub){return '<div class="audit-metric"><div class="audit-metric-label">'+label+'</div><div class="audit-metric-value">'+value+'</div><div class="audit-metric-sub">'+sub+'</div></div>';}
+  function rule(label,value,state){return '<div class="audit-rule"><span>'+label+'</span><strong class="'+state+'">'+value+'</strong></div>';}
+  function renderAudit(a){
+    const p=AUDIT_PRESETS[a.presetKey];
+    auditEmpty.hidden=true;auditResults.hidden=false;
+    auditStatus.className='audit-status '+(a.failed?'fail':'safe');
+    auditHeadline.textContent=a.failed?'FAILED — breach found in closed history':a.passedClosed?'Target reached — no closed-history breach':'STILL ACTIVE — no failure found';
+    auditStatusCopy.textContent=a.failed
+      ? 'The imported CSV contains a definite closed-balance rule breach. Review the dated objective below.'
+      : 'Your forward test has not failed '+a.preset+' based on closed trades. This is an ongoing journey audit, not a pass prediction or official verification; floating intraday equity is unavailable.';
+    auditMetrics.innerHTML=
+      metric('Current balance',money(a.balance),money(a.net)+' · '+pct(a.returnPct))+
+      metric('Closed trades',String(a.trades),a.tradingDays+' active trading days')+
+      metric('Target remaining',a.targetMet?'Reached':money(Math.max(0,a.targetBalance-a.balance)),money(a.targetBalance)+' target')+
+      metric('Closed drawdown',money(a.maxClosedDD),pct(a.maxClosedDD/a.initial*100)+' from closed peak')+
+      metric('Next daily cushion',money(a.balance-a.dailyFloorNow),p.daily+'% initial capital')+
+      metric('Max-loss cushion',money(a.balance-a.maxFloorNow),p.trailing?'EOD trailing floor':'static floor');
+    const dailyState=a.breachDaily?'fail':'safe', maxState=a.breachMax?'fail':'safe';
+    auditRules.innerHTML=
+      rule('Maximum Daily Loss',a.breachDaily?'BREACHED '+a.breachDaily.day:'No closed-trade breach',dailyState)+
+      rule('Maximum Loss',a.breachMax?'BREACHED '+a.breachMax.day:'No closed-trade breach',maxState)+
+      rule('Worst observed closed loss within a day',money(a.worstDayExcursion),Math.abs(a.worstDayExcursion)>a.initial*p.daily/100?'fail':'safe')+
+      rule('Profit target',a.targetMet?'Met':'In progress · '+pct(a.returnPct)+' / '+p.target+'%',a.targetMet?'safe':'warn')+
+      (p.minDays?rule('Minimum trading days',a.minDaysMet?'Met · '+a.tradingDays+' / '+p.minDays:'In progress · '+a.tradingDays+' / '+p.minDays,a.minDaysMet?'safe':'warn'):'')+
+      (p.bestDay?rule('Best Day consistency',Number.isFinite(a.bestDayShare)?pct(a.bestDayShare)+' / 50%':'No positive day yet',a.bestDayMet?'safe':'warn'):'')+
+      rule('Floating equity / exact CE(S)T reset','Cannot verify from this CSV','warn');
+    const cp=checkpoint();
+    if(cp){
+      const tradeDelta=a.trades-cp.trades,balanceDelta=a.balance-cp.balance,ddDelta=a.maxClosedDD-cp.maxClosedDD;
+      auditDelta.textContent='Since saved checkpoint: '+(tradeDelta>=0?'+':'')+tradeDelta+' trades · '+signedMoney(balanceDelta)+' balance · closed drawdown '+(ddDelta>=0?'improved ':'worsened ')+money(Math.abs(ddDelta))+'.';
+    }else auditDelta.textContent='Save this result as your baseline. Next week, upload the new cumulative export to see the change automatically.';
+    saveCheckpointBtn.disabled=false;
+  }
+
+  function runJourneyAudit(){
+    if(!auditRows)return;
+    try{currentAudit=analyzeJourney(auditRows,auditPreset);renderAudit(currentAudit);}
+    catch(err){currentAudit=null;saveCheckpointBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
+  }
+  function loadAuditFile(file){
+    if(!file)return;
+    const reader=new FileReader();
+    reader.onload=()=>{try{auditRows=parseCSV(String(reader.result));auditFileMeta.textContent=file.name+' · '+auditRows.length+' rows · processed locally';runJourneyAudit();}catch(err){auditEmpty.textContent='Could not read this CSV: '+err.message;}};
+    reader.onerror=()=>{auditEmpty.textContent='The file could not be read. Try exporting the statement again.';};
+    reader.readAsText(file);
+  }
+  auditFile.addEventListener('change',()=>loadAuditFile(auditFile.files[0]));
+  ['dragenter','dragover'].forEach(ev=>auditDropZone.addEventListener(ev,e=>{e.preventDefault();auditDropZone.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>auditDropZone.addEventListener(ev,e=>{e.preventDefault();auditDropZone.classList.remove('drag');}));
+  auditDropZone.addEventListener('drop',e=>loadAuditFile(e.dataTransfer.files[0]));
+  auditPresetSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(!b)return;[...auditPresetSeg.children].forEach(x=>x.classList.toggle('active',x===b));auditPreset=b.dataset.auditPreset;runJourneyAudit();});
+  saveCheckpointBtn.addEventListener('click',()=>{if(!currentAudit)return;localStorage.setItem(AUDIT_CHECKPOINT_KEY,JSON.stringify({...currentAudit,savedAt:new Date().toISOString()}));refreshCheckpointNote();renderAudit(currentAudit);});
+  clearCheckpointBtn.addEventListener('click',()=>{localStorage.removeItem(AUDIT_CHECKPOINT_KEY);refreshCheckpointNote();if(currentAudit)renderAudit(currentAudit);});
+  refreshCheckpointNote();
 
   // ---------- INIT ----------
   // Initial control values come from DEFAULTS, not the HTML value="" attributes,
