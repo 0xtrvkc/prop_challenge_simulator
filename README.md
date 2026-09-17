@@ -67,6 +67,8 @@ Any change triggers a debounced re-run (300ms) automatically. `↺ reset default
 
 Rules can change. Verify the preset against [FTMO's official Trading Objectives](https://ftmo.com/en/trading-objectives/) before purchasing or trading an evaluation. This project is independent and is not affiliated with FTMO.
 
+The lot-sizing tab includes the same presets and shows the complete objective summary beside its sizing controls. Selecting a preset automatically applies its daily-loss percentage, maximum-loss percentage, and static/end-of-day-trailing behavior. Profit target, minimum days, and Best Day requirements are shown for planning context; they do not alter the lot-size formula. Dollar loss budgets are sizing references based on the entered balance, not a calculation of the account's exact remaining distance to a live breach floor.
+
 ## Tech notes
 
 - Pure HTML/CSS/JS, single file, no external JS dependencies (only a Google Fonts import for JetBrains Mono).

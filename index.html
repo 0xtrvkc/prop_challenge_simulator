@@ -382,6 +382,13 @@ input[type="range"]::-moz-range-track{
 .rule-note{margin:-10px 0 18px;padding:9px 10px;border-left:2px solid var(--blue);background:var(--blue-dim);color:var(--text-dim);font-size:10px;line-height:1.55;}
 .check-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0;color:var(--text-dim);font-size:11px;}
 .check-row input{accent-color:var(--green);width:16px;height:16px;}
+.objective-card{margin:0 0 18px;padding:12px;border:1px solid var(--border);border-radius:5px;background:var(--surface-2);}
+.objective-title{color:var(--green);font-size:11px;font-weight:700;margin-bottom:8px;}
+.objective-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+.objective-item{padding:7px 8px;background:var(--surface);border:1px solid var(--border-soft);border-radius:4px;}
+.objective-item span{display:block;color:var(--text-faint);font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;}
+.objective-item strong{display:block;color:var(--text);font-size:11px;margin-top:3px;}
+.objective-extra{margin-top:8px;color:var(--text-dim);font-size:9.5px;line-height:1.5;}
 @media(max-width:520px){.challenge-presets{grid-template-columns:1fr;}}
 
 .seg{
@@ -1109,6 +1116,24 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
           <p class="panel-label" style="margin-top:24px;">drawdown limits</p>
 
+          <div class="challenge-presets" id="lotChallengePresets">
+            <button class="challenge-preset active" data-preset="ftmo1"><strong>FTMO 1-Step</strong>3% daily · 10% EOD trailing</button>
+            <button class="challenge-preset" data-preset="ftmo2"><strong>FTMO 2-Step · Challenge</strong>5% daily · 10% static</button>
+            <button class="challenge-preset" data-preset="ftmo2v"><strong>FTMO 2-Step · Verification</strong>5% daily · 10% static</button>
+            <button class="challenge-preset" data-preset="custom"><strong>Custom</strong>Keep values and edit freely</button>
+          </div>
+
+          <div class="objective-card" id="lotObjectiveCard">
+            <div class="objective-title" id="lotObjectiveTitle">FTMO 1-Step objectives</div>
+            <div class="objective-grid">
+              <div class="objective-item"><span>Profit target</span><strong id="lotObjectiveTarget">10%</strong></div>
+              <div class="objective-item"><span>Daily loss</span><strong id="lotObjectiveDaily">3%</strong></div>
+              <div class="objective-item"><span>Maximum loss</span><strong id="lotObjectiveMax">10% · EOD trailing</strong></div>
+              <div class="objective-item"><span>Minimum days</span><strong id="lotObjectiveDays">None</strong></div>
+            </div>
+            <div class="objective-extra" id="lotObjectiveExtra">Best Day must be no more than 50% of total positive-day profit. Daily limits reset at 00:00 CE(S)T.</div>
+          </div>
+
           <div class="field">
             <div class="field-head">
               <span class="field-name">DAILY_LOSS</span>
@@ -1120,9 +1145,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
           <div class="field">
             <div class="field-head">
               <span class="field-name">MAX_LOSS</span>
-              <span class="field-value" id="valLotMax">6%</span>
+              <span class="field-value" id="valLotMax">10%</span>
             </div>
-            <input type="range" class="rules-slider" id="lotMaxLoss" min="2" max="20" step="0.5" value="6">
+            <input type="range" class="rules-slider" id="lotMaxLoss" min="2" max="20" step="0.5" value="10">
           </div>
 
           <div class="adv-block">
@@ -1131,10 +1156,10 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
               <span class="field-name">DD_TYPE<span class="adv-badge">advanced</span></span>
             </div>
             <div class="seg" id="lotDDTypeSeg">
-              <button class="seg-btn active" data-ddtype="static">Static</button>
-              <button class="seg-btn" data-ddtype="trailing">Trailing</button>
+              <button class="seg-btn" data-ddtype="static">Static</button>
+              <button class="seg-btn active" data-ddtype="eodTrailing">EOD trailing</button>
             </div>
-            <p class="hint" id="ddTypeHint">Static: max loss measured from the initial balance and never moves. Most beginner-friendly challenges use this.</p>
+            <p class="hint" id="ddTypeHint">FTMO 1-Step: the floor is recalculated at 00:00 CE(S)T from the highest end-of-day balance and can only rise.</p>
           </div>
           </div>
 
@@ -1874,6 +1899,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
   // ---------- LOT SIZE CALCULATOR ----------
   const LOT_DEFAULTS = {
+    preset: 'ftmo1',
     balance: 10000,
     risk: 0.5,
     sl: 1250,
@@ -1884,15 +1910,31 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     winRate: 65,
     rr: 1,
     dailyLoss: 3,
-    maxLoss: 6,
-    ddType: 'static',
+    maxLoss: 10,
+    ddType: 'eodTrailing',
     concurrentCap: 2.0,
     deriskEnabled: false,
     deriskAfter: 2,
     deriskCut: 50
   };
 
+  const LOT_PRESETS = {
+    ftmo1: { title:'FTMO 1-Step objectives', target:10, dailyLoss:3, maxLoss:10, ddType:'eodTrailing', days:'None',
+      extra:'Best Day must be no more than 50% of total positive-day profit. Daily limits reset at 00:00 CE(S)T. Dollar budgets below are sizing references, not exact remaining breach-floor room.' },
+    ftmo2: { title:'FTMO 2-Step · Challenge objectives', target:10, dailyLoss:5, maxLoss:10, ddType:'static', days:'4',
+      extra:'At least four trading days are required. A trading day counts when at least one position is opened, measured in CE(S)T. Dollar budgets below are sizing references.' },
+    ftmo2v: { title:'FTMO 2-Step · Verification objectives', target:5, dailyLoss:5, maxLoss:10, ddType:'static', days:'4',
+      extra:'At least four trading days are required. A trading day counts when at least one position is opened, measured in CE(S)T. Dollar budgets below are sizing references.' }
+  };
+
   const lotBalanceEl = document.getElementById('lotBalance');
+  const lotChallengePresets = document.getElementById('lotChallengePresets');
+  const lotObjectiveTitle = document.getElementById('lotObjectiveTitle');
+  const lotObjectiveTarget = document.getElementById('lotObjectiveTarget');
+  const lotObjectiveDaily = document.getElementById('lotObjectiveDaily');
+  const lotObjectiveMax = document.getElementById('lotObjectiveMax');
+  const lotObjectiveDays = document.getElementById('lotObjectiveDays');
+  const lotObjectiveExtra = document.getElementById('lotObjectiveExtra');
   const balancePresets = document.getElementById('balancePresets');
   const lotRiskEl = document.getElementById('lotRisk');
   const lotSLEl = document.getElementById('lotSL');
@@ -2303,6 +2345,55 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   let lotStep = LOT_DEFAULTS.step;
   let lotRR = LOT_DEFAULTS.rr; // 1, 2, or 'custom'
   let lotDDType = LOT_DEFAULTS.ddType;
+  let activeLotPreset = LOT_DEFAULTS.preset;
+
+  function syncLotPresetActive(){
+    lotChallengePresets.querySelectorAll('.challenge-preset').forEach(b => b.classList.toggle('active', b.dataset.preset === activeLotPreset));
+  }
+
+  function renderLotObjectives(preset){
+    if (!preset){
+      lotObjectiveTitle.textContent = 'Custom objectives';
+      lotObjectiveTarget.textContent = 'Not modeled here';
+      lotObjectiveDaily.textContent = parseFloat(lotDailyLossEl.value).toFixed(1) + '%';
+      lotObjectiveMax.textContent = parseFloat(lotMaxLossEl.value).toFixed(1) + '% · ' + (lotDDType === 'static' ? 'static' : 'EOD trailing');
+      lotObjectiveDays.textContent = 'Custom';
+      lotObjectiveExtra.textContent = 'Lot sizing uses the loss limits below. Use the simulation tab to model profit target, minimum days, and consistency requirements.';
+      return;
+    }
+    lotObjectiveTitle.textContent = preset.title;
+    lotObjectiveTarget.textContent = preset.target + '%';
+    lotObjectiveDaily.textContent = preset.dailyLoss + '%';
+    lotObjectiveMax.textContent = preset.maxLoss + '% · ' + (preset.ddType === 'static' ? 'static' : 'EOD trailing');
+    lotObjectiveDays.textContent = preset.days;
+    lotObjectiveExtra.textContent = preset.extra;
+  }
+
+  function markLotCustom(){
+    activeLotPreset = 'custom';
+    syncLotPresetActive();
+    renderLotObjectives(null);
+  }
+
+  function applyLotPreset(name, recalc){
+    const preset = LOT_PRESETS[name];
+    if (!preset){ markLotCustom(); return; }
+    activeLotPreset = name;
+    lotDailyLossEl.value = preset.dailyLoss;
+    lotMaxLossEl.value = preset.maxLoss;
+    lotDDType = preset.ddType;
+    syncLotPresetActive();
+    syncDDTypeActive();
+    renderLotObjectives(preset);
+    if (recalc !== false) calcLot();
+  }
+
+  lotChallengePresets.addEventListener('click', e => {
+    const btn = e.target.closest('.challenge-preset');
+    if (!btn) return;
+    if (btn.dataset.preset === 'custom'){ markLotCustom(); return; }
+    applyLotPreset(btn.dataset.preset);
+  });
 
   function fmtUSD(n){
     return '$' + n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -2589,14 +2680,15 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       b.classList.toggle('active', b.dataset.ddtype === lotDDType);
     });
     ddTypeHint.textContent = lotDDType === 'static'
-      ? 'Static: max loss measured from the initial balance and never moves. Most beginner-friendly challenges use this.'
-      : 'Trailing: max loss floor rises with your equity high (locks in profit). Mid-losing-streak the math is identical to static — it only diverges after a win pushes a new peak.';
+      ? 'FTMO 2-Step: maximum loss is a static floor measured from the initial simulated capital.'
+      : 'FTMO 1-Step: the floor is recalculated at 00:00 CE(S)T from the highest end-of-day balance and can only rise.';
   }
 
   lotDDTypeSeg.addEventListener('click', (e) => {
     const btn = e.target.closest('.seg-btn');
     if (!btn) return;
     lotDDType = btn.dataset.ddtype;
+    markLotCustom();
     syncDDTypeActive();
     calcLot();
   });
@@ -2607,11 +2699,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
    lotDailyLossEl, lotMaxLossEl, lotConcurrentCapEl, lotDeriskAfterEl, lotDeriskCutEl].forEach(el => {
     el.addEventListener('input', () => {
       if (el === lotBalanceEl) syncBalancePresetActive();
+      if (el === lotDailyLossEl || el === lotMaxLossEl) markLotCustom();
       calcLot();
     });
   });
 
   function applyLotDefaults(){
+    activeLotPreset = LOT_DEFAULTS.preset;
     lotBalanceEl.value = LOT_DEFAULTS.balance;
     lotRiskEl.value = LOT_DEFAULTS.risk;
     lotSLEl.value = LOT_DEFAULTS.sl;
@@ -2621,9 +2715,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     lotWinRateEl.value = LOT_DEFAULTS.winRate;
     lotRR = LOT_DEFAULTS.rr;
     lotCustomRREl.value = 1.5;
-    lotDailyLossEl.value = LOT_DEFAULTS.dailyLoss;
-    lotMaxLossEl.value = LOT_DEFAULTS.maxLoss;
-    lotDDType = LOT_DEFAULTS.ddType;
+    applyLotPreset(LOT_DEFAULTS.preset, false);
     lotConcurrentCapEl.value = LOT_DEFAULTS.concurrentCap;
     lotDeriskEnabledEl.checked = LOT_DEFAULTS.deriskEnabled;
     lotDeriskAfterEl.value = LOT_DEFAULTS.deriskAfter;
