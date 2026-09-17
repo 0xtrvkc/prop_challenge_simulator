@@ -265,7 +265,7 @@ body{
 .pace-title{font-size:12px;font-weight:700;color:var(--text);}.pace-badge{font-size:10px;font-weight:700;letter-spacing:.07em;padding:5px 8px;border-radius:999px;border:1px solid var(--green);color:var(--green);background:var(--green-dim);white-space:nowrap;}
 .pace-coach.slow .pace-badge{border-color:var(--amber);color:var(--amber);background:var(--amber-dim)}.pace-coach.stop .pace-badge{border-color:var(--red);color:var(--red);background:var(--red-dim)}.pace-coach.accelerate .pace-badge{border-color:var(--blue);color:var(--blue);background:var(--surface)}
 .pace-body{padding:15px;}.pace-summary{margin:0 0 13px;font-size:11.5px;line-height:1.6;color:var(--text-dim);}
-.pace-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:13px;}.pace-stat{padding:11px;border:1px solid var(--border);border-radius:7px;background:var(--bg);}.pace-stat span{display:block;font-size:9px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}.pace-stat strong{font-size:15px;color:var(--text)}
+.pace-grid{margin-bottom:13px}.pace-compare{display:grid;grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);gap:8px;align-items:stretch}.pace-plan{padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg)}.pace-plan.suggested{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green)}.pace-plan-label{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-faint);margin-bottom:9px}.pace-plan.suggested .pace-plan-label{color:var(--green)}.pace-plan-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--border-soft);font-size:10px;color:var(--text-dim)}.pace-plan-row:last-of-type{border-bottom:0}.pace-plan-row strong{color:var(--text);font-size:11px;text-align:right}.pace-arrow{display:flex;align-items:center;justify-content:center;color:var(--green);font-size:20px;font-weight:700;animation:pace-nudge 1.5s ease-in-out infinite}.pace-risk-track{height:6px;margin-top:9px;border-radius:999px;background:var(--border);overflow:hidden}.pace-risk-fill{height:100%;border-radius:inherit;background:var(--amber)}.pace-plan.suggested .pace-risk-fill{background:var(--green)}@keyframes pace-nudge{0%,100%{transform:translateX(-2px);opacity:.55}50%{transform:translateX(2px);opacity:1}}
 .pace-actions{display:grid;gap:7px;margin:0;padding:0;list-style:none}.pace-actions li{position:relative;padding:8px 9px 8px 27px;border-radius:6px;background:var(--bg);font-size:10.5px;line-height:1.5;color:var(--text-dim)}.pace-actions li::before{content:"›";position:absolute;left:11px;color:var(--green);font-weight:700}.pace-coach.slow .pace-actions li::before{color:var(--amber)}.pace-coach.stop .pace-actions li::before{color:var(--red)}
 .pace-evidence{margin-top:12px;font-size:9.5px;line-height:1.55;color:var(--text-faint)}
 .audit-adjust{margin-top:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);overflow:hidden}.audit-adjust summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;cursor:pointer;list-style:none;color:var(--text);font-size:11px;font-weight:700}.audit-adjust summary::-webkit-details-marker{display:none}.audit-adjust summary::after{content:"+";color:var(--green);font-size:16px;line-height:1}.audit-adjust[open] summary::after{content:"−"}.audit-adjust summary small{margin-left:auto;color:var(--text-faint);font-size:9px;font-weight:400}.audit-adjust[open] summary{border-bottom:1px solid var(--border)}
@@ -290,7 +290,8 @@ body{
   #auditPrintReport,#auditPrintReport *{visibility:visible!important}
   #auditPrintReport{display:block!important;position:absolute;left:0;top:0;width:196mm;max-height:283mm;overflow:hidden;color:#111!important;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
-@media(max-width:800px){.audit-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.pace-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}}
+@media(max-width:800px){.audit-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}}
+@media(max-width:520px){.pace-compare{grid-template-columns:1fr}.pace-arrow{height:20px;transform:rotate(90deg)!important;animation:none}}
 @media(max-width:430px){.audit-metrics{grid-template-columns:1fr 1fr}}
 
 .term-body{padding:28px clamp(16px,3vw,36px) 34px;}
@@ -1117,8 +1118,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             <div class="audit-visuals" id="auditVisuals"></div>
             <div class="audit-list" id="auditRules"></div>
             <details class="audit-adjust" id="auditAdjust">
-              <summary><span>4 · Adjust recommendation</span><small>Optional · risk, stop and costs</small></summary>
+              <summary><span>4 · Change sizing assumptions</span><small>Optional · only if your real setup differs</small></summary>
               <div class="audit-sizer">
+                <p class="audit-sizer-note" style="margin:0 0 14px;">This does not manually change the coach's verdict. It recalculates both columns above when your planned risk, technical stop, spread, commission, pip value or broker lot step is different.</p>
                 <div class="field">
                   <div class="field-head"><span class="field-name">RISK_PER_TRADE</span><span class="field-value" id="auditRiskValue">0.5%</span></div>
                   <input type="range" class="risk-slider" id="auditRisk" min="0.1" max="1" step="0.1" value="0.5">
@@ -3282,7 +3284,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     return '<div class="risk-meter '+state+'"><div class="risk-meter-head"><div><div class="risk-meter-title">'+title+'</div><div class="risk-meter-sub">'+sub+'</div></div><div class="risk-meter-reading">'+reading+'</div></div><div class="risk-track"><div class="risk-fill" data-width="'+width.toFixed(2)+'"></div></div><div class="risk-scale"><span>'+left+'</span><span>'+right+'</span></div></div>';
   }
   function pfText(v){return Number.isFinite(v)?v.toFixed(2):'∞';}
-  function paceStat(label,value){return '<div class="pace-stat"><span>'+label+'</span><strong>'+value+'</strong></div>';}
+  function pacePlanCard(kind,label,risk,lot,stop,riskWidth){return '<div class="pace-plan '+kind+'"><div class="pace-plan-label">'+label+'</div><div class="pace-plan-row"><span>Risk / trade</span><strong>'+risk+'</strong></div><div class="pace-plan-row"><span>Max lot</span><strong>'+lot+'</strong></div><div class="pace-plan-row"><span>2-loss stop</span><strong>'+stop+'</strong></div><div class="pace-risk-track"><div class="pace-risk-fill" style="width:'+Math.max(0,Math.min(100,riskWidth)).toFixed(0)+'%"></div></div></div>';}
   function floorToStep(value,step){return Math.max(0,Math.floor(value/step+1e-9)*step);}
   function lotDecimals(step){return step<.1?2:step<1?1:0;}
 
@@ -3361,9 +3363,10 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const selectedLot=costPerLot>0?floorToStep(selectedRiskDollar/costPerLot,auditLotStep):0;
     const actualRecRisk=recLot*costPerLot;
     const dailyStop=Math.min(a.initial*.01,actualRecRisk*2);
+    const selectedDailyStop=Math.min(a.initial*.01,selectedLot*costPerLot*2);
     const decimals=lotDecimals(auditLotStep);
     const unlockTrades=Math.max(0,50-a.trades);
-    currentPacePlan={mode,riskLow,riskHigh,recLot,selectedLot,actualRecRisk,dailyStop,selectedRisk,sl,spread,commission,pip001,decimals,reasons};
+    currentPacePlan={mode,riskLow,riskHigh,recLot,selectedLot,actualRecRisk,dailyStop,selectedDailyStop,selectedRisk,sl,spread,commission,pip001,decimals,reasons};
 
     paceCoach.className='pace-coach '+mode;
     paceBadge.textContent=mode==='stop'?'STOP':mode==='slow'?'SLOW DOWN':mode==='accelerate'?'CAUTIOUS +0.1%':'MAINTAIN';
@@ -3376,9 +3379,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
         : mode==='accelerate'
           ? 'A small increase is supportable, but only one 0.1% risk step—never a direct lot-size jump.'
           : 'Keep the present pace. There is no evidence-based reason to increase or sharply reduce risk yet.';
-    paceGrid.innerHTML=paceStat('Suggested risk',mode==='stop'?'0%':riskLow.toFixed(1)+'–'+riskHigh.toFixed(1)+'%')+
-      paceStat('Suggested max lot',mode==='stop'?'0% risk':auditPrivacy?riskHigh.toFixed(1)+'% cap':recLot.toFixed(decimals))+
-      paceStat('Daily stop',mode==='stop'?'No trading':auditAmount(dailyStop,a.initial));
+    const currentLotDisplay=auditPrivacy?'Hidden':selectedLot.toFixed(decimals);
+    const suggestedLotDisplay=mode==='stop'?(auditPrivacy?'0% risk':'0.00'):auditPrivacy?'Hidden':recLot.toFixed(decimals);
+    paceGrid.innerHTML='<div class="pace-compare">'+
+      pacePlanCard('current','Your setting',selectedRisk.toFixed(1)+'%',currentLotDisplay,auditAmount(selectedDailyStop,a.initial),selectedRisk*100)+
+      '<div class="pace-arrow" aria-hidden="true">→</div>'+
+      pacePlanCard('suggested','Suggested plan',mode==='stop'?'0%':riskLow.toFixed(1)+'–'+riskHigh.toFixed(1)+'%',suggestedLotDisplay,mode==='stop'?'No trading':auditAmount(dailyStop,a.initial),mode==='stop'?0:riskHigh*100)+
+      '</div>';
     const actions=[];
     if(mode==='slow'){
       actions.push('Set risk to '+riskHigh.toFixed(1)+'% maximum.'+(auditPrivacy?' Keep absolute lot size hidden in privacy mode.':' With this stop and cost setup, cap XAU/USD at '+recLot.toFixed(decimals)+' lots.'));
