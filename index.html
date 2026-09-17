@@ -374,6 +374,15 @@ input[type="range"]::-moz-range-track{
 .preset-btn.red{--preset-color:var(--red); --preset-dim:var(--red-dim);}
 .preset-btn.orange{--preset-color:var(--orange); --preset-dim:var(--orange-dim);}
 .preset-btn.yellow{--preset-color:var(--yellow); --preset-dim:var(--yellow-dim);}
+.challenge-presets{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:10px 0 20px;}
+.challenge-preset{padding:9px 10px;text-align:left;border:1px solid var(--border);border-radius:5px;background:var(--surface-2);color:var(--text-dim);font:inherit;font-size:10px;line-height:1.35;cursor:pointer;}
+.challenge-preset strong{display:block;color:var(--text);font-size:11px;margin-bottom:2px;}
+.challenge-preset:hover{border-color:var(--blue);}
+.challenge-preset.active{border-color:var(--green);box-shadow:inset 3px 0 0 var(--green);background:var(--green-dim);}
+.rule-note{margin:-10px 0 18px;padding:9px 10px;border-left:2px solid var(--blue);background:var(--blue-dim);color:var(--text-dim);font-size:10px;line-height:1.55;}
+.check-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0;color:var(--text-dim);font-size:11px;}
+.check-row input{accent-color:var(--green);width:16px;height:16px;}
+@media(max-width:520px){.challenge-presets{grid-template-columns:1fr;}}
 
 .seg{
   display:flex;
@@ -774,7 +783,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       <div class="intro">
         <p class="prompt">whoami --strategy</p>
         <h1>Prop Challenge Pass-Probability Simulator</h1>
-        <p class="sub">Monte-Carlo engine · win-rate × R:R vs. whatever drawdown rules you set below. Defaults match a typical FTMO-style challenge (10% target / 6% max loss / 3% daily loss) — edit them to model any firm's ruleset.</p>
+        <p class="sub">Monte-Carlo engine · win-rate × R:R against real prop-firm rules. Starts with the current FTMO 1-Step objectives; choose another preset or edit every rule.</p>
       </div>
 
       <div class="grid">
@@ -784,6 +793,14 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             <p class="panel-label">challenge rules</p>
             <button class="reset-btn" id="resetBtn">↺ reset defaults</button>
           </div>
+
+          <div class="challenge-presets" id="challengePresets">
+            <button class="challenge-preset active" data-preset="ftmo1"><strong>FTMO 1-Step</strong>10% target · 3% daily · 10% EOD trailing</button>
+            <button class="challenge-preset" data-preset="ftmo2"><strong>FTMO 2-Step · Challenge</strong>10% target · 5% daily · 10% static · 4 days</button>
+            <button class="challenge-preset" data-preset="ftmo2v"><strong>FTMO 2-Step · Verification</strong>5% target · 5% daily · 10% static · 4 days</button>
+            <button class="challenge-preset" data-preset="custom"><strong>Custom</strong>Keep values and edit freely</button>
+          </div>
+          <div class="rule-note" id="presetNote">FTMO 1-Step also applies the Best Day rule: the best profitable day must be no more than 50% of total positive-day profit.</div>
 
           <div class="field">
             <div class="field-head">
@@ -796,9 +813,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
           <div class="field">
             <div class="field-head">
               <span class="field-name">MAX_LOSS</span>
-              <span class="field-value" id="valMaxLoss">6%</span>
+              <span class="field-value" id="valMaxLoss">10%</span>
             </div>
-            <input type="range" class="rules-slider" id="maxLoss" min="2" max="20" step="0.5" value="6">
+            <input type="range" class="rules-slider" id="maxLoss" min="2" max="20" step="0.5" value="10">
           </div>
 
           <div class="field">
@@ -807,7 +824,20 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
               <span class="field-value" id="valDailyLoss">3%</span>
             </div>
             <input type="range" class="rules-slider" id="dailyLoss" min="1" max="10" step="0.5" value="3">
-            <p class="hint">These three defaults match a typical FTMO-style challenge. Change them to model any firm's rules — or your own personal risk limits.</p>
+          </div>
+
+          <div class="field">
+            <div class="field-head"><span class="field-name">MAX_LOSS_MODE</span></div>
+            <div class="seg" id="maxLossModeSeg">
+              <button class="seg-btn" data-mode="static">Static</button>
+              <button class="seg-btn active" data-mode="eodTrailing">End-of-day trailing</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-head"><span class="field-name">MIN_TRADING_DAYS</span><span class="field-value" id="valMinDays">0</span></div>
+            <input type="range" class="rules-slider" id="minTradingDays" min="0" max="10" step="1" value="0">
+            <label class="check-row"><span>Best Day ≤ 50% of positive-day profit</span><input type="checkbox" id="bestDayRule" checked></label>
           </div>
 
           <p class="panel-label" style="margin-top:24px;">your strategy</p>
@@ -940,7 +970,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       </div>
 
       <div class="footnote">
-        <b>Assumptions:</b> trades are modeled as independent Bernoulli outcomes at the stated win rate — no streak clustering, no correlation between setups. Max loss and daily loss are static thresholds measured from initial balance / start-of-day equity — this matches most standard (non-trailing) prop-firm challenge rules; check your own firm's account type if it uses a trailing drawdown instead, since that would need a different model. Position size is held constant at the chosen risk-per-trade throughout (no compounding of lot size with equity, no martingale). Challenge rules (target / max loss / daily loss) are fully editable above — the defaults shown just reflect one common structure. This is a probabilistic estimate from simulated randomness, not a guarantee of live trading outcomes — real markets add slippage, spread, execution risk, and behavioral error that this model does not.
+        <b>Assumptions:</b> trades are independent Bernoulli outcomes; each simulated trade is opened and closed within the same CE(S)T trading day. Daily loss is tested against start-of-day balance and includes simulated intraday equity. FTMO 1-Step max loss trails only from the highest end-of-day balance; FTMO 2-Step uses a static floor. Position risk stays fixed, with no compounding, slippage, spread, commission, swaps, or martingale. This planning estimate is not a guarantee and is not affiliated with FTMO.
       </div>
     </div>
 
@@ -1368,6 +1398,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const profitTargetEl = document.getElementById('profitTarget');
   const maxLossEl = document.getElementById('maxLoss');
   const dailyLossEl = document.getElementById('dailyLoss');
+  const challengePresets = document.getElementById('challengePresets');
+  const presetNote = document.getElementById('presetNote');
+  const maxLossModeSeg = document.getElementById('maxLossModeSeg');
+  const minTradingDaysEl = document.getElementById('minTradingDays');
+  const bestDayRuleEl = document.getElementById('bestDayRule');
+  const valMinDays = document.getElementById('valMinDays');
   const resetBtn = document.getElementById('resetBtn');
   const valTarget = document.getElementById('valTarget');
   const valMaxLoss = document.getElementById('valMaxLoss');
@@ -1398,8 +1434,16 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const statFailMaxSub = document.getElementById('statFailMaxSub');
   const statFailDailySub = document.getElementById('statFailDailySub');
 
+  const PRESETS = {
+    ftmo1: { label:'FTMO 1-Step', profitTarget:10, maxLoss:10, dailyLoss:3, maxLossMode:'eodTrailing', minTradingDays:0, bestDayRule:true,
+      note:'FTMO 1-Step: 10% target, 3% maximum daily loss, 10% end-of-day trailing maximum loss, and Best Day ≤ 50% of positive-day profit.' },
+    ftmo2: { label:'FTMO 2-Step · Challenge', profitTarget:10, maxLoss:10, dailyLoss:5, maxLossMode:'static', minTradingDays:4, bestDayRule:false,
+      note:'FTMO 2-Step Challenge: 10% target, 5% maximum daily loss, 10% static maximum loss, and at least 4 trading days.' },
+    ftmo2v: { label:'FTMO 2-Step · Verification', profitTarget:5, maxLoss:10, dailyLoss:5, maxLossMode:'static', minTradingDays:4, bestDayRule:false,
+      note:'FTMO 2-Step Verification: 5% target, 5% maximum daily loss, 10% static maximum loss, and at least 4 trading days.' }
+  };
   const DEFAULTS = {
-    profitTarget: 10, maxLoss: 6, dailyLoss: 3,
+    preset:'ftmo1', profitTarget:10, maxLoss:10, dailyLoss:3, maxLossMode:'eodTrailing', minTradingDays:0, bestDayRule:true,
     winRate: 65, rr: 1, risk: 1.0, tpd: 1, horizon: 30, simRuns: 10000
   };
   const RUN_LABEL = './run_simulation.sh';
@@ -1410,6 +1454,8 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
   let rrMode = 1; // number or 'custom'
   let simRuns = 10000;
+  let activePreset = DEFAULTS.preset;
+  let maxLossMode = DEFAULTS.maxLossMode;
   let lastCurves = [];
   let lastConfig = {};
 
@@ -1456,16 +1502,51 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   });
 
   // ---------- RULES SLIDERS ----------
-  profitTargetEl.addEventListener('input', () => { valTarget.textContent = parseFloat(profitTargetEl.value).toFixed(1).replace(/\.0$/,'') + '%'; scheduleRun(); });
-  maxLossEl.addEventListener('input', () => { valMaxLoss.textContent = parseFloat(maxLossEl.value).toFixed(1).replace(/\.0$/,'') + '%'; scheduleRun(); });
-  dailyLossEl.addEventListener('input', () => { valDailyLoss.textContent = parseFloat(dailyLossEl.value).toFixed(1).replace(/\.0$/,'') + '%'; scheduleRun(); });
+  function markCustom(){
+    activePreset = 'custom';
+    syncChallengePreset();
+    presetNote.textContent = 'Custom rules. Verify the exact definitions and reset time against your firm’s current rulebook.';
+  }
+  function syncChallengePreset(){
+    challengePresets.querySelectorAll('.challenge-preset').forEach(b => b.classList.toggle('active', b.dataset.preset === activePreset));
+    maxLossModeSeg.querySelectorAll('.seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === maxLossMode));
+  }
+  function setRuleLabels(){
+    valTarget.textContent = parseFloat(profitTargetEl.value).toFixed(1).replace(/\.0$/,'') + '%';
+    valMaxLoss.textContent = parseFloat(maxLossEl.value).toFixed(1).replace(/\.0$/,'') + '%';
+    valDailyLoss.textContent = parseFloat(dailyLossEl.value).toFixed(1).replace(/\.0$/,'') + '%';
+    valMinDays.textContent = minTradingDaysEl.value;
+  }
+  function applyPreset(name){
+    const p = PRESETS[name];
+    if (!p){ markCustom(); return; }
+    activePreset = name;
+    profitTargetEl.value = p.profitTarget;
+    maxLossEl.value = p.maxLoss;
+    dailyLossEl.value = p.dailyLoss;
+    maxLossMode = p.maxLossMode;
+    minTradingDaysEl.value = p.minTradingDays;
+    bestDayRuleEl.checked = p.bestDayRule;
+    presetNote.textContent = p.note;
+    setRuleLabels();
+    syncChallengePreset();
+  }
+  [profitTargetEl,maxLossEl,dailyLossEl,minTradingDaysEl].forEach(el => el.addEventListener('input', () => { setRuleLabels(); markCustom(); scheduleRun(); }));
+  bestDayRuleEl.addEventListener('change', () => { markCustom(); scheduleRun(); });
+  maxLossModeSeg.addEventListener('click', e => {
+    const btn=e.target.closest('.seg-btn'); if(!btn) return;
+    maxLossMode=btn.dataset.mode; markCustom(); syncChallengePreset(); scheduleRun();
+  });
+  challengePresets.addEventListener('click', e => {
+    const btn=e.target.closest('.challenge-preset'); if(!btn) return;
+    if(btn.dataset.preset === 'custom'){ markCustom(); return; }
+    applyPreset(btn.dataset.preset); scheduleRun();
+  });
 
   // Single source of truth: sets every control/label from DEFAULTS.
   // Used both on initial load and on reset, so the two can never drift apart.
   function applyDefaults(){
-    profitTargetEl.value = DEFAULTS.profitTarget; valTarget.textContent = DEFAULTS.profitTarget + '%';
-    maxLossEl.value = DEFAULTS.maxLoss; valMaxLoss.textContent = DEFAULTS.maxLoss + '%';
-    dailyLossEl.value = DEFAULTS.dailyLoss; valDailyLoss.textContent = DEFAULTS.dailyLoss + '%';
+    applyPreset(DEFAULTS.preset);
     winRateEl.value = DEFAULTS.winRate; valWinRate.textContent = DEFAULTS.winRate + '%';
     syncPresetActive();
     riskEl.value = DEFAULTS.risk; valRisk.textContent = DEFAULTS.risk.toFixed(1) + '%';
@@ -1521,9 +1602,8 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const INITIAL = 100;
   const MAX_SAMPLE_CURVES = 40;
 
-  function simulate(p, RR, riskPct, tradesPerDay, horizonDays, iterations, targetPct, maxLossPct, dailyLossPct){
+  function simulate(p, RR, riskPct, tradesPerDay, horizonDays, iterations, targetPct, maxLossPct, dailyLossPct, lossMode, minDays, useBestDay){
     const profitTarget = INITIAL + targetPct;
-    const maxLossFloor = INITIAL - maxLossPct;
     let pass = 0, failMax = 0, failDaily = 0, timeout = 0;
     const daysToPass = [];
     const curves = [];
@@ -1532,21 +1612,29 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       let equity = INITIAL;
       let outcome = 'timeout';
       let passDay = null;
+      let highestEodBalance = INITIAL;
+      let positiveDaysProfit = 0;
+      let bestDayProfit = 0;
       const keep = i < MAX_SAMPLE_CURVES;
       const curve = keep ? [equity] : null;
 
       outer:
       for (let day = 1; day <= horizonDays; day++){
         const dayStart = equity;
+        const maxLossFloor = (lossMode === 'eodTrailing' ? highestEodBalance : INITIAL) - maxLossPct;
         for (let t = 0; t < tradesPerDay; t++){
           const win = Math.random() < p;
           equity += win ? riskPct * RR : -riskPct;
           if (curve) curve.push(equity);
 
-          if (equity <= maxLossFloor){ outcome = 'failMax'; break outer; }
-          if (equity <= dayStart - dailyLossPct){ outcome = 'failDaily'; break outer; }
-          if (equity >= profitTarget){ outcome = 'pass'; passDay = day; break outer; }
+          if (equity < maxLossFloor){ outcome = 'failMax'; break outer; }
+          if (equity < dayStart - dailyLossPct){ outcome = 'failDaily'; break outer; }
         }
+        const dayProfit = equity - dayStart;
+        if (dayProfit > 0){ positiveDaysProfit += dayProfit; bestDayProfit = Math.max(bestDayProfit, dayProfit); }
+        const bestDaySatisfied = !useBestDay || (positiveDaysProfit > 0 && bestDayProfit <= positiveDaysProfit * 0.5 + 1e-9);
+        if (equity >= profitTarget && day >= minDays && bestDaySatisfied){ outcome = 'pass'; passDay = day; break outer; }
+        highestEodBalance = Math.max(highestEodBalance, equity);
       }
 
       if (outcome === 'pass'){ pass++; daysToPass.push(passDay); }
@@ -1578,14 +1666,16 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const target = parseFloat(profitTargetEl.value);
     const maxLoss = parseFloat(maxLossEl.value);
     const dailyLoss = parseFloat(dailyLossEl.value);
+    const minDays = parseInt(minTradingDaysEl.value, 10);
+    const bestDay = bestDayRuleEl.checked;
 
     runBtn.textContent = '';
     runBtn.style.opacity = '0.6';
 
     // slight timeout so UI paints the "running" state on very large runs
     setTimeout(() => {
-      const res = simulate(p, RR, risk, tpd, horizon, simRuns, target, maxLoss, dailyLoss);
-      renderResults(res, { p, RR, risk, tpd, horizon, target, maxLoss, dailyLoss });
+      const res = simulate(p, RR, risk, tpd, horizon, simRuns, target, maxLoss, dailyLoss, maxLossMode, minDays, bestDay);
+      renderResults(res, { p, RR, risk, tpd, horizon, target, maxLoss, dailyLoss, maxLossMode, minDays, bestDay, preset:activePreset });
       runBtn.textContent = RUN_LABEL;
       runBtn.style.opacity = '1';
     }, 10);
@@ -1599,7 +1689,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     statTimeout.textContent = res.timeout.toFixed(1) + '%';
 
     statPassSub.textContent = 'hits +' + cfg.target + '% before any breach';
-    statFailMaxSub.textContent = 'equity ≤ −' + cfg.maxLoss + '% from start';
+    statFailMaxSub.textContent = cfg.maxLossMode === 'eodTrailing' ? 'equity below EOD high −' + cfg.maxLoss + '%' : 'equity below start −' + cfg.maxLoss + '%';
     statFailDailySub.textContent = 'single day ≤ −' + cfg.dailyLoss + '%';
 
     avgDaysOut.textContent = res.avgDays ? res.avgDays.toFixed(1) + ' days' : '—';
@@ -1633,7 +1723,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       : 'This is a middle-ground size — reasonable speed toward target without stacking too much risk into any single streak.';
 
     return lead + ' At ' + (cfg.p*100).toFixed(0) + '% win rate, 1:' + cfg.RR + ' R:R and ' + cfg.risk.toFixed(1) + '% risk/trade, '
-      + pass.toFixed(1) + '% of simulated runs hit the +' + cfg.target + '% target before breaching either drawdown rule ('
+      + pass.toFixed(1) + '% of simulated runs satisfied the target' + (cfg.minDays ? ', minimum days' : '') + (cfg.bestDay ? ' and Best Day rule' : '') + ' before breaching either drawdown rule ('
       + res.failMax.toFixed(1) + '% blow the ' + cfg.maxLoss + '% max loss, ' + res.failDaily.toFixed(1) + '% blow the ' + cfg.dailyLoss + '% daily limit). '
       + riskNote;
   }
