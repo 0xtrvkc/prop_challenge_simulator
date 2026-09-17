@@ -662,6 +662,13 @@ canvas{width:100%; display:block;}
   display:none;
 }
 .warn-line.show{display:block;}
+.safety-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);}
+.safety-banner strong{font-size:13px;color:var(--green);}
+.safety-banner span{font-size:10px;color:var(--text-dim);text-align:right;}
+.safety-banner.warn{border-color:var(--amber);background:var(--amber-dim);}
+.safety-banner.warn strong{color:var(--amber);}
+.safety-banner.danger{border-color:var(--red);background:var(--red-dim);}
+.safety-banner.danger strong{color:var(--red);}
 
 ::selection{background:var(--green-dim); color:var(--text);}
 button:focus-visible, input:focus-visible{outline:2px solid var(--green); outline-offset:2px;}
@@ -856,9 +863,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             </div>
             <input type="range" id="winRate" min="40" max="85" step="1" value="65">
             <div class="preset-row" id="winRatePresets">
-              <button class="preset-btn red" data-wr="55">1σ edge<span>55%</span></button>
-              <button class="preset-btn orange active" data-wr="65">2σ edge<span>65%</span></button>
-              <button class="preset-btn yellow" data-wr="75">3σ edge<span>75%</span></button>
+              <button class="preset-btn red" data-wr="55">Baseline<span>55%</span></button>
+              <button class="preset-btn orange active" data-wr="65">Strong<span>65%</span></button>
+              <button class="preset-btn yellow" data-wr="75">Very high<span>75%</span></button>
             </div>
           </div>
 
@@ -1007,7 +1014,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
           <div class="field">
             <div class="field-head">
-              <span class="field-name">ACCOUNT_BALANCE</span>
+              <span class="field-name">CURRENT_BALANCE</span>
             </div>
             <input type="text" inputmode="decimal" class="input-field" id="lotBalance" value="10000">
             <div class="preset-row balance-preset-row" id="balancePresets">
@@ -1018,7 +1025,38 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
               <button class="preset-btn" data-bal="100000">100K</button>
               <button class="preset-btn" data-bal="200000">200K</button>
             </div>
-            <p class="hint">Current equity, not the funded/initial size — sizing should track equity as it moves.</p>
+            <p class="hint">Closed-trade balance right now. Selecting an account-size button resets all live account-state fields to that starting value.</p>
+          </div>
+
+          <p class="panel-label" style="margin-top:24px;">live FTMO account state</p>
+
+          <div class="field-row">
+            <div class="field">
+              <div class="field-head"><span class="field-name">INITIAL_CAPITAL</span></div>
+              <input type="text" inputmode="decimal" class="input-field" id="lotInitialCapital" value="10000">
+            </div>
+            <div class="field">
+              <div class="field-head"><span class="field-name">CURRENT_EQUITY</span></div>
+              <input type="text" inputmode="decimal" class="input-field" id="lotCurrentEquity" value="10000">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <div class="field-head"><span class="field-name">DAY_START_BALANCE</span></div>
+              <input type="text" inputmode="decimal" class="input-field" id="lotDayStartBalance" value="10000">
+            </div>
+            <div class="field">
+              <div class="field-head"><span class="field-name">HIGHEST_EOD_BALANCE</span></div>
+              <input type="text" inputmode="decimal" class="input-field" id="lotHighestEod" value="10000">
+            </div>
+          </div>
+          <p class="hint">Equity should already include floating P/L, commissions and swaps. FTMO recalculates its daily reference at 00:00 CE(S)T.</p>
+
+          <div class="field">
+            <div class="field-head"><span class="field-name">MAX_BUFFER_USE_PER_TRADE</span><span class="field-value" id="valBufferUse">20%</span></div>
+            <input type="range" id="lotBufferUse" min="5" max="100" step="5" value="20">
+            <p class="hint">Veteran safety cap: one stopped trade may consume at most this share of the tighter remaining FTMO buffer.</p>
           </div>
 
           <div class="field">
@@ -1092,9 +1130,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             </div>
             <input type="range" id="lotWinRate" min="30" max="90" step="1" value="65">
             <div class="preset-row" id="lotWRPresets">
-              <button class="preset-btn red" data-wr="55">1σ edge<span>55%</span></button>
-              <button class="preset-btn orange active" data-wr="65">2σ edge<span>65%</span></button>
-              <button class="preset-btn yellow" data-wr="75">3σ edge<span>75%</span></button>
+              <button class="preset-btn red" data-wr="55">Baseline<span>55%</span></button>
+              <button class="preset-btn orange active" data-wr="65">Strong<span>65%</span></button>
+              <button class="preset-btn yellow" data-wr="75">Very high<span>75%</span></button>
             </div>
           </div>
 
@@ -1134,6 +1172,18 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
             </div>
             <div class="objective-extra" id="lotObjectiveExtra">Best Day must be no more than 50% of total positive-day profit. Daily limits reset at 00:00 CE(S)T.</div>
           </div>
+
+          <div class="field-row">
+            <div class="field">
+              <div class="field-head"><span class="field-name">POSITIVE_DAYS_PROFIT</span></div>
+              <input type="text" inputmode="decimal" class="input-field" id="lotPositiveDaysProfit" value="0">
+            </div>
+            <div class="field">
+              <div class="field-head"><span class="field-name">BEST_DAY_PROFIT</span></div>
+              <input type="text" inputmode="decimal" class="input-field" id="lotBestDayProfit" value="0">
+            </div>
+          </div>
+          <p class="hint">Used for 1-Step Best Day progress. Enter profitable-day totals only; losing days do not reduce Positive Days’ Profit.</p>
 
           <div class="field">
             <div class="field-head">
@@ -1219,6 +1269,18 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
         <section class="panel output">
           <p class="panel-label">position size output</p>
 
+          <div class="safety-banner" id="lotSafetyBanner">
+            <strong id="lotSafetyStatus">SAFE TO SIZE</strong>
+            <span id="lotSafetyReason">Live FTMO buffers are available</span>
+          </div>
+
+          <div class="stat-grid">
+            <div class="stat faildaily"><div class="stat-label">Daily buffer remaining</div><div class="stat-value" id="liveDailyBuffer">—</div><div class="stat-sub" id="liveDailyFloor">floor —</div></div>
+            <div class="stat failmax"><div class="stat-label">Max-loss buffer remaining</div><div class="stat-value" id="liveMaxBuffer">—</div><div class="stat-sub" id="liveMaxFloor">floor —</div></div>
+            <div class="stat pass"><div class="stat-label">Prop-safe risk cap</div><div class="stat-value" id="liveSafeRisk">—</div><div class="stat-sub" id="liveSafeLot">maximum lot —</div></div>
+            <div class="stat neutral"><div class="stat-label">Best Day progress</div><div class="stat-value" id="liveBestDayRatio">—</div><div class="stat-sub" id="liveBestDayNeed">enter profits above</div></div>
+          </div>
+
           <div class="lot-hero">
             <div class="lot-hero-label">Recommended lot size</div>
             <div class="lot-hero-value" id="lotOut">—</div>
@@ -1285,12 +1347,16 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
               <span id="lotEffSLOut">—</span>
             </div>
             <div class="kelly-row">
-              <span>Daily loss budget ($)</span>
+              <span>Daily buffer remaining ($)</span>
               <span id="lotDailyDollarOut">—</span>
             </div>
             <div class="kelly-row">
-              <span>Max loss budget ($)</span>
+              <span>Max-loss buffer remaining ($)</span>
               <span id="lotMaxDollarOut">—</span>
+            </div>
+            <div class="kelly-row">
+              <span>Profit target remaining (closed balance)</span>
+              <span id="lotTargetRemainingOut">—</span>
             </div>
             <div class="kelly-row">
               <span>$ value per pip at this lot size</span>
@@ -1902,6 +1968,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const LOT_DEFAULTS = {
     preset: 'ftmo1',
     balance: 10000,
+    initialCapital: 10000,
+    currentEquity: 10000,
+    dayStartBalance: 10000,
+    highestEod: 10000,
+    bufferUse: 20,
+    positiveDaysProfit: 0,
+    bestDayProfit: 0,
     risk: 0.5,
     sl: 1250,
     pipValue: 0.01,
@@ -1929,6 +2002,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   };
 
   const lotBalanceEl = document.getElementById('lotBalance');
+  const lotInitialCapitalEl = document.getElementById('lotInitialCapital');
+  const lotCurrentEquityEl = document.getElementById('lotCurrentEquity');
+  const lotDayStartBalanceEl = document.getElementById('lotDayStartBalance');
+  const lotHighestEodEl = document.getElementById('lotHighestEod');
+  const lotBufferUseEl = document.getElementById('lotBufferUse');
+  const lotPositiveDaysProfitEl = document.getElementById('lotPositiveDaysProfit');
+  const lotBestDayProfitEl = document.getElementById('lotBestDayProfit');
   const lotChallengePresets = document.getElementById('lotChallengePresets');
   const lotObjectiveTitle = document.getElementById('lotObjectiveTitle');
   const lotObjectiveTarget = document.getElementById('lotObjectiveTarget');
@@ -1969,10 +2049,22 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const valLotDaily = document.getElementById('valLotDaily');
   const valLotMax = document.getElementById('valLotMax');
   const valLotConcurrent = document.getElementById('valLotConcurrent');
+  const valBufferUse = document.getElementById('valBufferUse');
   const valDeriskAfter = document.getElementById('valDeriskAfter');
   const valDeriskCut = document.getElementById('valDeriskCut');
 
   const lotOut = document.getElementById('lotOut');
+  const lotSafetyBanner = document.getElementById('lotSafetyBanner');
+  const lotSafetyStatus = document.getElementById('lotSafetyStatus');
+  const lotSafetyReason = document.getElementById('lotSafetyReason');
+  const liveDailyBuffer = document.getElementById('liveDailyBuffer');
+  const liveDailyFloor = document.getElementById('liveDailyFloor');
+  const liveMaxBuffer = document.getElementById('liveMaxBuffer');
+  const liveMaxFloor = document.getElementById('liveMaxFloor');
+  const liveSafeRisk = document.getElementById('liveSafeRisk');
+  const liveSafeLot = document.getElementById('liveSafeLot');
+  const liveBestDayRatio = document.getElementById('liveBestDayRatio');
+  const liveBestDayNeed = document.getElementById('liveBestDayNeed');
   const lotOutSub = document.getElementById('lotOutSub');
   const statLossesDaily = document.getElementById('statLossesDaily');
   const statLossesMax = document.getElementById('statLossesMax');
@@ -1983,6 +2075,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const lotEffSLOut = document.getElementById('lotEffSLOut');
   const lotDailyDollarOut = document.getElementById('lotDailyDollarOut');
   const lotMaxDollarOut = document.getElementById('lotMaxDollarOut');
+  const lotTargetRemainingOut = document.getElementById('lotTargetRemainingOut');
   const lotPipDollarOut = document.getElementById('lotPipDollarOut');
   const lotRecoveryDailyOut = document.getElementById('lotRecoveryDailyOut');
   const lotRecoveryMaxOut = document.getElementById('lotRecoveryMaxOut');
@@ -2406,6 +2499,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     return isFinite(n) && n > 0 ? n : 0;
   }
 
+  function parseMoneyInput(el){
+    const raw = (el.value || '').replace(/[^0-9.-]/g, '');
+    const n = parseFloat(raw);
+    return isFinite(n) ? n : 0;
+  }
+
   function currentRRValue(){
     if (lotRR === 'custom'){
       const v = parseFloat(lotCustomRREl.value);
@@ -2416,6 +2515,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
   function calcLot(){
     const balance = parseBalance();
+    const initialCapital = parseMoneyInput(lotInitialCapitalEl);
+    const currentEquity = parseMoneyInput(lotCurrentEquityEl);
+    const dayStartBalance = parseMoneyInput(lotDayStartBalanceEl);
+    const highestEod = parseMoneyInput(lotHighestEodEl);
+    const bufferUsePct = parseFloat(lotBufferUseEl.value);
+    const positiveDaysProfit = Math.max(0, parseMoneyInput(lotPositiveDaysProfitEl));
+    const bestDayProfit = Math.max(0, parseMoneyInput(lotBestDayProfitEl));
     const riskPct = parseFloat(lotRiskEl.value);
     const slPips = parseFloat(lotSLEl.value);
     const pipValue001 = parseFloat(lotPipValueEl.value); // $ per pip per 0.01 lot
@@ -2440,6 +2546,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     valLotDaily.textContent = dailyPct.toFixed(1) + '%';
     valLotMax.textContent = maxPct.toFixed(1) + '%';
     valLotConcurrent.textContent = concurrentPct.toFixed(1) + '%';
+    valBufferUse.textContent = bufferUsePct.toFixed(0) + '%';
     valDeriskAfter.textContent = deriskAfter;
     valDeriskCut.textContent = deriskCutPct.toFixed(0) + '%';
 
@@ -2447,7 +2554,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     lotDeriskFields.style.pointerEvents = deriskEnabled ? 'auto' : 'none';
     lotDeriskRow.style.display = deriskEnabled ? 'flex' : 'none';
 
-    if (!balance || !slPips || !pipValue001){
+    if (!balance || !initialCapital || !currentEquity || !dayStartBalance || !slPips || !pipValue001){
       lotOut.textContent = '—';
       lotOutSub.textContent = 'enter a valid balance and stop-loss';
       statLossesDaily.textContent = '—';
@@ -2456,44 +2563,93 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       statStreakProbMax.textContent = '—';
       lotVerdictText.innerHTML = 'Awaiting valid input<span class="cursor"></span>';
       [lotRiskDollarOut, lotEffSLOut, lotDailyDollarOut, lotMaxDollarOut, lotPipDollarOut,
-       lotRecoveryDailyOut, lotRecoveryMaxOut, lotKellyOut, lotConcurrentOut, lotDeriskOut]
+       lotTargetRemainingOut, lotRecoveryDailyOut, lotRecoveryMaxOut, lotKellyOut, lotConcurrentOut, lotDeriskOut]
         .forEach(el => el.textContent = '—');
       lotWarn.classList.remove('show');
       lotKellyWarn.classList.remove('show');
+      lotSafetyBanner.className = 'safety-banner danger';
+      lotSafetyStatus.textContent = 'ACCOUNT DATA NEEDED';
+      lotSafetyReason.textContent = 'Enter positive account-state values';
+      [liveDailyBuffer,liveDailyFloor,liveMaxBuffer,liveMaxFloor,liveSafeRisk,liveSafeLot,liveBestDayRatio,liveBestDayNeed].forEach(el => el.textContent = '—');
       return;
     }
 
-    const riskDollar = balance * (riskPct / 100);
-    const dailyDollar = balance * (dailyPct / 100);
-    const maxDollar = balance * (maxPct / 100);
+    const requestedRiskDollar = currentEquity * (riskPct / 100);
+    const dailyLossAmount = initialCapital * (dailyPct / 100);
+    const maxLossAmount = initialCapital * (maxPct / 100);
+    const dailyFloor = dayStartBalance - dailyLossAmount;
+    const maxReference = lotDDType === 'eodTrailing' ? Math.max(initialCapital, highestEod) : initialCapital;
+    const maxFloor = maxReference - maxLossAmount;
+    const dailyBuffer = currentEquity - dailyFloor;
+    const maxBuffer = currentEquity - maxFloor;
+    const tightBuffer = Math.max(0, Math.min(dailyBuffer, maxBuffer));
+    const safeRiskDollar = tightBuffer * (bufferUsePct / 100);
+    const riskDollar = Math.max(0, Math.min(requestedRiskDollar, safeRiskDollar));
 
     // pip value per 1.00 (standard) lot = pipValue001 * 100
     const pipValuePerStdLot = pipValue001 * 100;
     const effSLPips = slPips + spreadPips;
 
     // size off effective stop (incl spread) so realized risk lands on target
-    const rawLot = riskDollar / (effSLPips * pipValuePerStdLot + commPerLot);
+    const costPerLot = effSLPips * pipValuePerStdLot + commPerLot;
+    const rawLot = riskDollar / costPerLot;
+    const safeRawLot = safeRiskDollar / costPerLot;
+    const requestedRawLot = requestedRiskDollar / costPerLot;
 
     // round DOWN to the chosen lot step, so actual risk never exceeds target
     const steps = Math.floor(rawLot / lotStep + 1e-9);
     const roundedLot = Math.max(0, steps * lotStep);
+    const safeSteps = Math.floor(safeRawLot / lotStep + 1e-9);
+    const safeRoundedLot = Math.max(0, safeSteps * lotStep);
+    const requestedSteps = Math.floor(requestedRawLot / lotStep + 1e-9);
+    const requestedRoundedLot = Math.max(0, requestedSteps * lotStep);
     const decimals = lotStep < 1 ? (lotStep < 0.1 ? 2 : 1) : 0;
 
     const actualRiskDollar = roundedLot * (effSLPips * pipValuePerStdLot + commPerLot);
     const pipDollarAtLot = roundedLot * pipValuePerStdLot;
+    const wasCapped = roundedLot + 1e-9 < requestedRoundedLot;
+
+    liveDailyBuffer.textContent = fmtUSD(Math.max(0, dailyBuffer));
+    liveDailyFloor.textContent = 'floor ' + fmtUSD(dailyFloor);
+    liveMaxBuffer.textContent = fmtUSD(Math.max(0, maxBuffer));
+    liveMaxFloor.textContent = 'floor ' + fmtUSD(maxFloor);
+    liveSafeRisk.textContent = fmtUSD(Math.max(0, safeRiskDollar));
+    liveSafeLot.textContent = 'maximum lot ' + safeRoundedLot.toFixed(decimals);
+
+    const bestDayRatio = positiveDaysProfit > 0 ? bestDayProfit / positiveDaysProfit * 100 : 0;
+    const bestDayNeed = Math.max(0, bestDayProfit * 2 - positiveDaysProfit);
+    liveBestDayRatio.textContent = activeLotPreset === 'ftmo1' ? (positiveDaysProfit > 0 ? bestDayRatio.toFixed(1) + '%' : '—') : 'N/A';
+    liveBestDayNeed.textContent = activeLotPreset === 'ftmo1'
+      ? (bestDayNeed > 0 ? fmtUSD(bestDayNeed) + ' more positive profit needed' : (positiveDaysProfit > 0 ? 'consistency objective satisfied' : 'enter positive-day totals'))
+      : 'not required for this preset';
+
+    lotSafetyBanner.className = 'safety-banner';
+    if (dailyBuffer <= 0 || maxBuffer <= 0){
+      lotSafetyBanner.classList.add('danger');
+      lotSafetyStatus.textContent = 'STOP — LIMIT BREACHED';
+      lotSafetyReason.textContent = dailyBuffer <= maxBuffer ? 'Equity is at/below the daily floor' : 'Equity is at/below the maximum-loss floor';
+    } else if (wasCapped || tightBuffer / initialCapital < 0.01){
+      lotSafetyBanner.classList.add('warn');
+      lotSafetyStatus.textContent = 'REDUCE SIZE';
+      lotSafetyReason.textContent = wasCapped ? 'Requested risk exceeds the veteran buffer cap' : 'Less than 1% of initial capital remains';
+    } else {
+      lotSafetyStatus.textContent = 'SAFE TO SIZE';
+      lotSafetyReason.textContent = 'Post-stop buffer remains inside the selected safety plan';
+    }
 
     if (roundedLot <= 0){
       lotOut.textContent = '0.00';
-      lotOutSub.textContent = 'below broker minimum — widen stop or raise risk %';
+      lotOutSub.textContent = tightBuffer <= 0 ? 'no trade — account is at or beyond an FTMO floor' : 'safe cap is below the broker minimum — skip this trade';
+      lotWarn.textContent = tightBuffer <= 0 ? '⚠ Stop trading: current equity has no remaining room to the tighter FTMO floor.' : '⚠ The prop-safe size is below the broker minimum. Do not round up; skip the trade or use a tighter valid setup.';
       lotWarn.classList.add('show');
     } else {
       lotOut.textContent = roundedLot.toFixed(decimals);
-      lotOutSub.textContent = 'risking ' + fmtUSD(actualRiskDollar) + ' (' + ((actualRiskDollar/balance)*100).toFixed(2) + '% of balance)';
+      lotOutSub.textContent = 'risking ' + fmtUSD(actualRiskDollar) + ' (' + ((actualRiskDollar/currentEquity)*100).toFixed(2) + '% of equity)' + (wasCapped ? ' · capped from ' + requestedRoundedLot.toFixed(decimals) + ' lots' : '');
       lotWarn.classList.remove('show');
     }
 
-    const lossesDaily = actualRiskDollar > 0 ? Math.floor(dailyDollar / actualRiskDollar) : 0;
-    const lossesMax = actualRiskDollar > 0 ? Math.floor(maxDollar / actualRiskDollar) : 0;
+    const lossesDaily = actualRiskDollar > 0 ? Math.floor(Math.max(0, dailyBuffer) / actualRiskDollar) : 0;
+    const lossesMax = actualRiskDollar > 0 ? Math.floor(Math.max(0, maxBuffer) / actualRiskDollar) : 0;
     statLossesDaily.textContent = actualRiskDollar > 0 ? lossesDaily : '—';
     statLossesMax.textContent = actualRiskDollar > 0 ? lossesMax : '—';
     renderDotRow(dotsLossesDaily, lossesDaily, 20);
@@ -2522,7 +2678,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     let deriskLossesDaily = null;
     if (deriskEnabled && actualRiskDollar > 0){
       const cutDollar = actualRiskDollar * (1 - deriskCutPct / 100);
-      let budget = dailyDollar;
+      let budget = Math.max(0, dailyBuffer);
       let count = 0;
       let n = 0;
       while (true){
@@ -2578,8 +2734,10 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
     lotRiskDollarOut.textContent = fmtUSD(actualRiskDollar);
     lotEffSLOut.textContent = effSLPips.toFixed(0) + ' (' + slPips.toFixed(0) + ' + ' + spreadPips.toFixed(0) + ' spread)';
-    lotDailyDollarOut.textContent = fmtUSD(dailyDollar);
-    lotMaxDollarOut.textContent = fmtUSD(maxDollar);
+    lotDailyDollarOut.textContent = fmtUSD(Math.max(0, dailyBuffer));
+    lotMaxDollarOut.textContent = fmtUSD(Math.max(0, maxBuffer));
+    const activeObjective = LOT_PRESETS[activeLotPreset];
+    lotTargetRemainingOut.textContent = activeObjective ? fmtUSD(Math.max(0, initialCapital * (1 + activeObjective.target / 100) - balance)) : 'custom objective';
     lotPipDollarOut.textContent = '$' + pipDollarAtLot.toFixed(4) + ' / pip';
     lotRecoveryDailyOut.textContent = '+' + recoveryDaily.toFixed(2) + '%';
     lotRecoveryMaxOut.textContent = '+' + recoveryMax.toFixed(2) + '%';
@@ -2596,6 +2754,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       verdict = 'This combination of stop-loss and risk % rounds down to below your broker\'s minimum lot. Widen the stop, raise risk %, or pick a smaller lot step if your broker supports it.';
     } else {
       verdict = 'At ' + roundedLot.toFixed(decimals) + ' lots with a ' + slPips.toFixed(0) + '-pip stop (' + effSLPips.toFixed(0) + ' effective incl. spread), a full loser costs ' + fmtUSD(actualRiskDollar)
+        + (wasCapped ? '. The prop-safety engine reduced the requested ' + requestedRoundedLot.toFixed(decimals) + ' lots to preserve the tighter FTMO buffer' : '')
         + '. You can absorb ' + lossesDaily + ' losing trade' + (lossesDaily === 1 ? '' : 's') + ' in a row before breaching your ' + dailyPct.toFixed(1) + '% daily limit ('
         + (streakProbDaily < 0.01 ? '<0.01' : streakProbDaily.toFixed(1)) + '% chance of that at a ' + winRatePct.toFixed(0) + '% win rate), and '
         + lossesMax + ' before breaching your ' + maxPct.toFixed(1) + '% max drawdown'
@@ -2604,7 +2763,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     lotVerdictText.innerHTML = verdict + '<span class="cursor"></span>';
 
     drawLotCharts({
-      balance, actualRiskDollar, dailyPct, maxPct, deriskEnabled, deriskAfter, deriskCutPct,
+      balance: currentEquity, actualRiskDollar, dailyPct, maxPct, deriskEnabled, deriskAfter, deriskCutPct,
       lossesMax, lossesDaily, deriskLossesDaily, lossRate, W, RR, kellyFrac, riskPct,
       roundedLot, commPerLot, pipDollarAtLot, slPips, spreadPips
     });
@@ -2635,6 +2794,10 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const btn = e.target.closest('.preset-btn');
     if (!btn) return;
     lotBalanceEl.value = btn.dataset.bal;
+    lotInitialCapitalEl.value = btn.dataset.bal;
+    lotCurrentEquityEl.value = btn.dataset.bal;
+    lotDayStartBalanceEl.value = btn.dataset.bal;
+    lotHighestEodEl.value = btn.dataset.bal;
     syncBalancePresetActive();
     calcLot();
   });
@@ -2697,7 +2860,9 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   lotDeriskEnabledEl.addEventListener('change', calcLot);
 
   [lotBalanceEl, lotRiskEl, lotSLEl, lotPipValueEl, lotSpreadEl, lotCommEl,
-   lotDailyLossEl, lotMaxLossEl, lotConcurrentCapEl, lotDeriskAfterEl, lotDeriskCutEl].forEach(el => {
+   lotDailyLossEl, lotMaxLossEl, lotConcurrentCapEl, lotDeriskAfterEl, lotDeriskCutEl,
+   lotInitialCapitalEl, lotCurrentEquityEl, lotDayStartBalanceEl, lotHighestEodEl,
+   lotBufferUseEl, lotPositiveDaysProfitEl, lotBestDayProfitEl].forEach(el => {
     el.addEventListener('input', () => {
       if (el === lotBalanceEl) syncBalancePresetActive();
       if (el === lotDailyLossEl || el === lotMaxLossEl) markLotCustom();
@@ -2708,6 +2873,13 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   function applyLotDefaults(){
     activeLotPreset = LOT_DEFAULTS.preset;
     lotBalanceEl.value = LOT_DEFAULTS.balance;
+    lotInitialCapitalEl.value = LOT_DEFAULTS.initialCapital;
+    lotCurrentEquityEl.value = LOT_DEFAULTS.currentEquity;
+    lotDayStartBalanceEl.value = LOT_DEFAULTS.dayStartBalance;
+    lotHighestEodEl.value = LOT_DEFAULTS.highestEod;
+    lotBufferUseEl.value = LOT_DEFAULTS.bufferUse;
+    lotPositiveDaysProfitEl.value = LOT_DEFAULTS.positiveDaysProfit;
+    lotBestDayProfitEl.value = LOT_DEFAULTS.bestDayProfit;
     lotRiskEl.value = LOT_DEFAULTS.risk;
     lotSLEl.value = LOT_DEFAULTS.sl;
     lotPipValueEl.value = LOT_DEFAULTS.pipValue;

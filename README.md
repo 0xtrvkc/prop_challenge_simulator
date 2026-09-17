@@ -48,7 +48,7 @@ This is a probabilistic estimate from simulated randomness, not a guarantee of l
 | `MAX_LOSS_MODE` | Static floor or end-of-day trailing floor. |
 | `MIN_TRADING_DAYS` | Minimum active days required before passing. |
 | `BEST_DAY` | Requires the best positive day to be no more than 50% of total positive-day profit. |
-| `WIN_RATE` | Your trade win rate. Presets at 55% / 65% / 75% ("1σ/2σ/3σ edge"), or drag freely from 40–85%. |
+| `WIN_RATE` | Your estimated trade win rate. Convenience values at 55% / 65% / 75%, or drag freely from 40–85%. These are not statistical confidence levels. |
 | `REWARD : RISK` | 1:1, 1:2, or a custom ratio (0.3–5). |
 | `RISK_PER_TRADE` | % of balance risked per trade, 0.1–1.0%. |
 | `TRADES_PER_DAY` | Number of trades taken each simulated day, 1–10. |
@@ -67,7 +67,22 @@ Any change triggers a debounced re-run (300ms) automatically. `↺ reset default
 
 Rules can change. Verify the preset against [FTMO's official Trading Objectives](https://ftmo.com/en/trading-objectives/) before purchasing or trading an evaluation. This project is independent and is not affiliated with FTMO.
 
-The lot-sizing tab includes the same presets and shows the complete objective summary beside its sizing controls. Selecting a preset automatically applies its daily-loss percentage, maximum-loss percentage, and static/end-of-day-trailing behavior. Profit target, minimum days, and Best Day requirements are shown for planning context; they do not alter the lot-size formula. Dollar loss budgets are sizing references based on the entered balance, not a calculation of the account's exact remaining distance to a live breach floor.
+The lot-sizing tab includes the same presets and shows the complete objective summary beside its sizing controls. Selecting a preset automatically applies its daily-loss percentage, maximum-loss percentage, and static/end-of-day-trailing behavior.
+
+### Live FTMO account-state sizing
+
+The lot sizer accepts:
+
+- Initial simulated capital
+- Current balance and equity
+- Balance recorded at the start of the CE(S)T trading day
+- Highest recorded end-of-day balance
+- Positive Days' Profit and Best Day profit
+- Maximum share of the tighter remaining drawdown buffer that one stopped trade may consume
+
+It calculates the current daily-loss floor, maximum-loss floor, exact remaining buffer to each, Best Day consistency progress, and a prop-safe lot cap. The final lot recommendation is the lower of the trader's requested risk size and this safety cap. Current equity should include floating P/L, commissions, and swaps.
+
+For FTMO 1-Step, the maximum-loss reference is the greater of initial capital or the entered highest end-of-day balance. For FTMO 2-Step, the maximum-loss floor remains static from initial capital. The safety cap defaults to 20% of whichever remaining buffer is tighter; this is a planning policy, not an FTMO rule.
 
 ## Tech notes
 
