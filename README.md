@@ -21,6 +21,8 @@ The audit reconstructs closed balance, daily closed P/L, maximum closed-balance 
 - **Target reached — no closed-history breach**: closed trades meet the preset objectives, subject to the verification limitation below.
 - **Failed — breach found in closed history**: the imported data itself contains a definite daily-loss or maximum-loss breach.
 
+Animated objective meters make the remaining room visible at a glance: profit-target progress, the largest share of the daily-loss budget consumed so far, current maximum-loss budget consumed, and either Best Day concentration or minimum-trading-day progress. Green, amber, and red zones show increasing breach danger; motion is disabled automatically when the browser requests reduced motion.
+
 A Myfxbook trade CSV does not contain continuous combined floating equity. It therefore cannot prove official compliance with FTMO's equity-based drawdown checks, and the app labels this limitation separately instead of incorrectly treating it as a failure. Daily grouping assumes the export timestamps already match FTMO's CE(S)T day.
 
 ## What it does

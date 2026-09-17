@@ -233,6 +233,25 @@ body{
 .audit-metric-label{font-size:8.5px;letter-spacing:.06em;color:var(--text-faint);text-transform:uppercase;margin-bottom:5px;}
 .audit-metric-value{font-size:14px;font-weight:700;color:var(--text);overflow-wrap:anywhere;}
 .audit-metric-sub{font-size:8.5px;color:var(--text-faint);margin-top:3px;line-height:1.35;}
+.audit-visuals{display:grid;gap:9px;margin:0 0 13px;}
+.risk-meter{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);padding:12px;}
+.risk-meter-head,.risk-meter-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;}
+.risk-meter-title{font-size:10px;font-weight:600;color:var(--text);}
+.risk-meter-reading{font-size:11px;font-weight:700;color:var(--green);text-align:right;}
+.risk-meter.watch .risk-meter-reading{color:var(--amber)}.risk-meter.danger .risk-meter-reading,.risk-meter.failed .risk-meter-reading{color:var(--red)}
+.risk-meter.progress .risk-meter-reading{color:var(--blue)}
+.risk-meter-sub{font-size:8.5px;color:var(--text-faint);margin-top:3px;line-height:1.35;}
+.risk-track{position:relative;height:11px;border-radius:999px;margin:11px 0 7px;overflow:hidden;background:linear-gradient(90deg,var(--green-dim) 0 50%,var(--amber-dim) 50% 75%,var(--red-dim) 75% 100%);border:1px solid var(--border-soft);}
+.risk-track::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.13) 43%,transparent 61%);transform:translateX(-130%);animation:risk-sheen 4.8s ease-in-out infinite;pointer-events:none;}
+.risk-fill{height:100%;width:0;border-radius:inherit;background:var(--green);box-shadow:0 0 10px color-mix(in srgb,var(--green) 45%,transparent);transition:width .75s cubic-bezier(.2,.8,.2,1);}
+.risk-meter.watch .risk-fill{background:var(--amber);box-shadow:0 0 10px color-mix(in srgb,var(--amber) 45%,transparent)}
+.risk-meter.danger .risk-fill,.risk-meter.failed .risk-fill{background:var(--red);box-shadow:0 0 12px color-mix(in srgb,var(--red) 48%,transparent)}
+.risk-meter.progress .risk-fill{background:var(--blue);box-shadow:0 0 10px color-mix(in srgb,var(--blue) 45%,transparent)}
+.risk-meter-foot{align-items:center;font-size:8px;color:var(--text-faint);}
+.risk-meter-foot strong{font-size:9px;color:var(--text-dim);font-weight:500;}
+.risk-scale{display:flex;justify-content:space-between;font-size:7.5px;color:var(--text-faint);margin-top:-2px;}
+@keyframes risk-sheen{0%,58%{transform:translateX(-130%)}82%,100%{transform:translateX(130%)}}
+@media(prefers-reduced-motion:reduce){.risk-track::after{animation:none}.risk-fill{transition:none}}
 .audit-list{display:grid;gap:7px;}
 .audit-rule{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border-soft);padding:8px 0;font-size:10px;line-height:1.45;}
 .audit-rule:last-child{border-bottom:0}.audit-rule span:first-child{color:var(--text-dim)}.audit-rule strong{text-align:right;color:var(--text)}
@@ -1058,6 +1077,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
               <div class="audit-copy" id="auditStatusCopy">—</div>
             </div>
             <div class="audit-metrics" id="auditMetrics"></div>
+            <div class="audit-visuals" id="auditVisuals"></div>
             <div class="audit-list" id="auditRules"></div>
             <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
           </div>
@@ -3035,6 +3055,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   const auditHeadline = document.getElementById('auditHeadline');
   const auditStatusCopy = document.getElementById('auditStatusCopy');
   const auditMetrics = document.getElementById('auditMetrics');
+  const auditVisuals = document.getElementById('auditVisuals');
   const auditRules = document.getElementById('auditRules');
   const auditDelta = document.getElementById('auditDelta');
   const saveCheckpointBtn = document.getElementById('saveCheckpointBtn');
@@ -3139,6 +3160,12 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
   function metric(label,value,sub){return '<div class="audit-metric"><div class="audit-metric-label">'+label+'</div><div class="audit-metric-value">'+value+'</div><div class="audit-metric-sub">'+sub+'</div></div>';}
   function rule(label,value,state){return '<div class="audit-rule"><span>'+label+'</span><strong class="'+state+'">'+value+'</strong></div>';}
+  function riskState(value){return value>=100?'failed':value>=75?'danger':value>=50?'watch':'safe';}
+  function meter(title,reading,sub,value,kind,left,right){
+    const width=Math.max(0,Math.min(100,value));
+    const state=kind==='progress'?'progress':riskState(value);
+    return '<div class="risk-meter '+state+'"><div class="risk-meter-head"><div><div class="risk-meter-title">'+title+'</div><div class="risk-meter-sub">'+sub+'</div></div><div class="risk-meter-reading">'+reading+'</div></div><div class="risk-track"><div class="risk-fill" data-width="'+width.toFixed(2)+'"></div></div><div class="risk-scale"><span>'+left+'</span><span>'+right+'</span></div></div>';
+  }
   function renderAudit(a){
     const p=AUDIT_PRESETS[a.presetKey];
     auditEmpty.hidden=true;auditResults.hidden=false;
@@ -3154,6 +3181,28 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
       metric('Closed drawdown',money(a.maxClosedDD),pct(a.maxClosedDD/a.initial*100)+' from closed peak')+
       metric('Next daily cushion',money(a.balance-a.dailyFloorNow),p.daily+'% initial capital')+
       metric('Max-loss cushion',money(a.balance-a.maxFloorNow),p.trailing?'EOD trailing floor':'static floor');
+    const dailyAllowance=a.initial*p.daily/100;
+    const dailyUsed=Math.abs(Math.min(0,a.worstDayExcursion));
+    const dailyUsePct=a.breachDaily?Math.max(100,dailyUsed/dailyAllowance*100):dailyUsed/dailyAllowance*100;
+    const maxAllowance=a.initial*p.max/100;
+    const maxReference=p.trailing?Math.max(a.initial,a.peakEod):a.initial;
+    const maxUsed=Math.max(0,maxReference-a.balance);
+    const maxUsePct=a.breachMax?Math.max(100,maxUsed/maxAllowance*100):maxUsed/maxAllowance*100;
+    const targetProgress=Math.max(0,Math.min(100,a.net/(a.targetBalance-a.initial)*100));
+    let objectiveMeter='';
+    if(p.bestDay){
+      const bestUse=Number.isFinite(a.bestDayShare)?a.bestDayShare/50*100:0;
+      objectiveMeter=meter('Best Day concentration',Number.isFinite(a.bestDayShare)?pct(a.bestDayShare)+' of 50%':'No positive day','Lower is safer · share of positive-day profit',bestUse,'risk','0% concentrated','50% limit');
+    }else{
+      const daysProgress=Math.min(100,a.tradingDays/p.minDays*100);
+      objectiveMeter=meter('Minimum trading days',a.tradingDays+' of '+p.minDays+' days','Required before this phase can pass',daysProgress,'progress','0 days',p.minDays+' days');
+    }
+    auditVisuals.innerHTML=
+      meter('Profit target progress',pct(a.returnPct)+' of '+p.target+'%',money(Math.max(0,a.targetBalance-a.balance))+' remaining',targetProgress,'progress','Start',money(a.targetBalance))+
+      meter('Daily-loss danger · closest observed',pct(dailyUsePct,1)+' used',money(Math.max(0,dailyAllowance-dailyUsed))+' remained at the closest closed-trade point',dailyUsePct,'risk','0% used','Breach at 100%')+
+      meter('Maximum-loss danger · current',pct(maxUsePct,1)+' used',money(a.balance-a.maxFloorNow)+' current cushion above '+money(a.maxFloorNow)+' floor',maxUsePct,'risk','0% used','Breach at 100%')+
+      objectiveMeter;
+    requestAnimationFrame(()=>auditVisuals.querySelectorAll('.risk-fill').forEach(el=>{el.style.width=el.dataset.width+'%';}));
     const dailyState=a.breachDaily?'fail':'safe', maxState=a.breachMax?'fail':'safe';
     auditRules.innerHTML=
       rule('Maximum Daily Loss',a.breachDaily?'BREACHED '+a.breachDaily.day:'No closed-trade breach',dailyState)+
