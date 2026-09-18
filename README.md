@@ -135,7 +135,7 @@ For FTMO 1-Step, the maximum-loss reference is the greater of initial capital or
 
 - Pure HTML/CSS/JS, single file, no external JS dependencies (only a Google Fonts import for JetBrains Mono).
 - Chart is hand-drawn on a `<canvas>` element (no charting library).
-- Light/dark theme toggle. Light mode and Journey Audit are the first-visit defaults; a manually selected theme is remembered locally.
+- Light/dark theme toggle. Light mode and Journey Audit are the first-visit defaults; a manually selected theme is remembered locally. The light palette uses WCAG-readable text and button contrast, distinct surface layers, and a four-step Upload → Audit → Size → Analyze progress guide.
 - Fully responsive; controls stack below the chart on narrow viewports.
 
 ## Usage
