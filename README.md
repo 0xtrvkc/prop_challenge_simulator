@@ -43,7 +43,9 @@ The audit's privacy toggle switches both the live view and report to percentage-
 
 A fourth tab, **quant_analysis.sh**, appears only after a valid Myfxbook CSV is imported. It analyzes realized expectancy, payoff structure, break-even win rate, profit factor, an SQN-like consistency score, recovery factor, return percentiles, skew, tail balance, winner concentration, streaks, holding time, direction, symbol, session, weekday, recent-versus-full performance, position-size variation, post-loss sizing, visible stop usage, and supported Myfxbook execution fields.
 
-The tab also infers a likely trading style from holding time, direction mix, sizing variation, and visible stop behavior. The inference includes an evidence-confidence indicator and explicitly lists what closed-trade data cannot establish, such as strategy intent, floating-equity risk, pending orders, or timezone alignment.
+The tab also infers a likely execution style from holding time, direction mix, sizing variation, and visible stop behavior. Nine evidence-scored strategy fingerprints cover high-frequency scalping, momentum/breakout, trend-following/runners, mean-reversion/counter-trend, recovery sizing, pyramiding, discretionary exits, fixed-size execution, and asymmetric runner payoff. These are pattern matches rather than claims about trader intent. The interface includes a confidence indicator and explicitly lists what closed-trade data cannot establish, such as floating-equity risk, pending orders, or timezone alignment.
+
+All on-screen typography is enlarged by 30% for improved readability. Print-report typography remains independently sized so the audit still fits on one A4 page.
 
 A Myfxbook trade CSV does not contain continuous combined floating equity. It therefore cannot prove official compliance with FTMO's equity-based drawdown checks, and the app labels this limitation separately instead of incorrectly treating it as a failure. Daily grouping assumes the export timestamps already match FTMO's CE(S)T day.
 
