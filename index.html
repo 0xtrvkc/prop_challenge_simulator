@@ -272,6 +272,7 @@ body{
 .audit-tools-copy{display:flex;flex-direction:column;gap:2px}.audit-tools-title{font-size:10.5px;color:var(--text);font-weight:600}.audit-tools-sub{font-size:8.5px;color:var(--text-faint)}
 .audit-export-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.audit-print-btn{width:100%;border:1px solid var(--blue);border-radius:6px;background:transparent;color:var(--blue);font:600 10.5px inherit;padding:9px 10px;cursor:pointer}.audit-print-btn:hover{background:var(--surface)}.audit-print-btn:disabled{opacity:.35;cursor:not-allowed}
 .audit-image-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:rgba(2,6,12,.82);backdrop-filter:blur(8px)}.audit-image-modal[hidden]{display:none}.audit-image-dialog{width:min(720px,100%);max-height:94vh;display:flex;flex-direction:column;border:1px solid var(--border);border-radius:12px;background:var(--surface);box-shadow:0 24px 80px rgba(0,0,0,.55);overflow:hidden}.audit-image-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 15px;border-bottom:1px solid var(--border)}.audit-image-head strong{font-size:12px}.audit-image-close{border:0;background:transparent;color:var(--text-dim);font:700 20px/1 inherit;cursor:pointer}.audit-image-preview-wrap{min-height:0;padding:14px;background:#111820;overflow:auto;text-align:center}.audit-image-preview{display:block;width:auto;max-width:100%;max-height:70vh;margin:auto;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.4)}.audit-image-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 15px;border-top:1px solid var(--border)}
+.quant-shell{display:grid;gap:14px}.quant-hero{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);gap:14px}.quant-card{border:1px solid var(--border);border-radius:9px;background:var(--surface-2);padding:16px;min-width:0}.quant-card h2,.quant-card h3{margin:0;color:var(--text)}.quant-card h2{font-size:16px}.quant-card h3{font-size:11px;text-transform:uppercase;letter-spacing:.07em}.quant-kicker{font-size:9px;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px}.quant-copy{margin:8px 0 0;color:var(--text-dim);font-size:11px;line-height:1.65}.quant-confidence{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:9.5px;color:var(--text-faint)}.quant-confidence-track{flex:1;height:6px;border-radius:99px;background:var(--border);overflow:hidden}.quant-confidence-fill{height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--amber),var(--green))}.quant-score{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.quant-stat{padding:12px;border:1px solid var(--border);border-radius:7px;background:var(--bg)}.quant-stat-label{font-size:8px;line-height:1.35;color:var(--text-faint);text-transform:uppercase;letter-spacing:.06em}.quant-stat-value{margin-top:5px;font-size:16px;font-weight:700;color:var(--text)}.quant-stat-sub{margin-top:4px;font-size:8.5px;line-height:1.4;color:var(--text-dim)}.quant-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.quant-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10px}.quant-table th,.quant-table td{padding:8px 7px;border-bottom:1px solid var(--border-soft);text-align:right}.quant-table th:first-child,.quant-table td:first-child{text-align:left}.quant-table th{font-size:8px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em}.quant-table td{color:var(--text-dim)}.quant-table td strong{color:var(--text)}.quant-bars{display:grid;gap:9px;margin-top:12px}.quant-bar-row{display:grid;grid-template-columns:86px 1fr 58px;align-items:center;gap:9px;font-size:9.5px;color:var(--text-dim)}.quant-bar-track{height:8px;border-radius:99px;background:var(--border);overflow:hidden}.quant-bar-fill{height:100%;border-radius:inherit;background:var(--blue)}.quant-bar-fill.good{background:var(--green)}.quant-bar-fill.bad{background:var(--red)}.quant-insights{display:grid;gap:8px;margin-top:11px}.quant-insight{padding:10px 11px;border-left:3px solid var(--blue);border-radius:0 6px 6px 0;background:var(--bg);font-size:10px;line-height:1.55;color:var(--text-dim)}.quant-insight strong{color:var(--text)}.quant-insight.warn{border-color:var(--amber)}.quant-insight.risk{border-color:var(--red)}.quant-insight.good{border-color:var(--green)}.quant-method{font-size:9px;line-height:1.55;color:var(--text-faint);padding:2px 3px}.quant-empty{padding:60px 20px;text-align:center;color:var(--text-faint)}
 .audit-empty{padding:38px 18px;text-align:center;color:var(--text-faint);font-size:11px;line-height:1.7;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);}
 .audit-print-report{display:none;color:#111;background:#fff;font-family:Arial,Helvetica,sans-serif;}
 .print-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #244a73;padding-bottom:5px;margin-bottom:5px}.print-brand{font-size:17pt;font-weight:700;color:#244a73;letter-spacing:.02em}.print-subtitle{font-size:7.5pt;color:#555;margin-top:2px}.print-meta{text-align:right;font-size:7pt;line-height:1.4;color:#444}
@@ -286,7 +287,7 @@ body{
   #auditPrintReport,#auditPrintReport *{visibility:visible!important}
   #auditPrintReport{display:block!important;position:absolute;left:0;top:0;width:196mm;max-height:283mm;overflow:hidden;color:#111!important;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
-@media(max-width:800px){.audit-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}}
+@media(max-width:800px){.audit-grid,.quant-hero,.quant-grid{grid-template-columns:1fr}.audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.tab-bar{overflow-x:auto}.tab-btn{white-space:nowrap}.quant-score{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.pace-compare{grid-template-columns:1fr}.pace-arrow{height:20px;transform:rotate(90deg)!important;animation:none}.audit-export-actions,.audit-image-actions{grid-template-columns:1fr}}
 @media(max-width:430px){.audit-metrics{grid-template-columns:1fr 1fr}}
 
@@ -747,107 +748,6 @@ canvas{width:100%; display:block;}
 
 ::selection{background:var(--green-dim); color:var(--text);}
 button:focus-visible, input:focus-visible{outline:2px solid var(--green); outline-offset:2px;}
-/* ---------- secret cyberpunk popup ---------- */
-.cyberpunk-popup{
-  position:fixed;
-  top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  z-index:99999;
-  background:#0a0014;
-  border:1px solid #ff00c8;
-  padding:26px 52px;
-  border-radius:2px;
-  font-family:'JetBrains Mono', ui-monospace, monospace;
-  box-shadow:0 0 2px #ff00c8, 0 0 24px rgba(255,0,200,.55), 0 0 48px rgba(0,255,249,.25), inset 0 0 26px rgba(255,0,200,.12);
-  pointer-events:none;
-  opacity:0;
-  animation:cp-blink-in .12s steps(1) 5 forwards, cp-flicker 2.4s linear .6s forwards;
-}
-.cyberpunk-popup::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 3px);
-  mix-blend-mode:overlay;
-  pointer-events:none;
-}
-.cyberpunk-popup .cp-tag{
-  display:block;
-  font-size:9.5px;
-  letter-spacing:.25em;
-  color:#00fff9;
-  text-align:center;
-  margin-bottom:6px;
-  opacity:.85;
-}
-.cyberpunk-popup.cp-fadeout{
-  opacity:0 !important;
-  transition:opacity .45s ease;
-  animation:none;
-}
-.cp-glitch{
-  position:relative;
-  display:block;
-  font-size:26px;
-  font-weight:700;
-  letter-spacing:.14em;
-  color:#e9fbff;
-  text-align:center;
-  text-shadow:0 0 6px #0ff, 0 0 16px rgba(0,255,249,.6), 0 0 2px #fff;
-  animation:cp-textflicker 1.6s infinite;
-}
-.cp-glitch::before,
-.cp-glitch::after{
-  content:attr(data-text);
-  position:absolute;
-  left:0; top:0;
-  width:100%;
-  overflow:hidden;
-  background:#0a0014;
-}
-.cp-glitch::before{
-  color:#ff00c8;
-  clip-path:inset(0 0 55% 0);
-  animation:cp-glitch-1 2.6s infinite linear alternate-reverse;
-}
-.cp-glitch::after{
-  color:#00fff9;
-  clip-path:inset(55% 0 0 0);
-  animation:cp-glitch-2 2.1s infinite linear alternate-reverse;
-}
-@keyframes cp-glitch-1{
-  0%{transform:translate(0,0);}
-  20%{transform:translate(-3px,-1px);}
-  40%{transform:translate(3px,1px);}
-  60%{transform:translate(-2px,1px);}
-  80%{transform:translate(2px,-1px);}
-  100%{transform:translate(0,0);}
-}
-@keyframes cp-glitch-2{
-  0%{transform:translate(0,0);}
-  25%{transform:translate(3px,0);}
-  50%{transform:translate(-3px,1px);}
-  75%{transform:translate(2px,-1px);}
-  100%{transform:translate(0,0);}
-}
-@keyframes cp-textflicker{
-  0%,19%,21%,23%,80%,100%{opacity:1;}
-  20%,22%,24%,26%{opacity:.25;}
-}
-@keyframes cp-flicker{
-  0%{opacity:1;}
-  4%{opacity:.2;}
-  8%{opacity:1;}
-  10%{opacity:.15;}
-  13%{opacity:1;}
-  70%{opacity:1;}
-  74%{opacity:.2;}
-  78%{opacity:1;}
-  100%{opacity:1;}
-}
-@keyframes cp-blink-in{
-  from{opacity:0;} to{opacity:1;}
-}
 </style>
 </head>
 <body>
@@ -865,6 +765,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     <div class="tab-bar">
       <button class="tab-btn active" id="tabBtnSim" data-tab="sim">pass_probability.sh</button>
       <button class="tab-btn" id="tabBtnAudit" data-tab="audit">journey_audit.sh</button>
+      <button class="tab-btn" id="tabBtnQuant" data-tab="quant" hidden>quant_analysis.sh</button>
       <button class="tab-btn" id="tabBtnLot" data-tab="lot">lot_sizing.sh</button>
     </div>
 
@@ -1138,6 +1039,32 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
           <div class="audit-image-preview-wrap"><img class="audit-image-preview" id="auditImagePreview" alt="Generated FTMO journey audit report"></div>
           <div class="audit-image-actions"><button class="audit-print-btn" id="auditDownloadImageBtn">↓ save PNG</button><button class="audit-print-btn" id="auditNativeShareBtn">↗ share image</button></div>
         </div>
+      </div>
+    </div>
+
+    <!-- QUANT ANALYSIS TAB: revealed after a valid CSV import -->
+    <div class="tab-panel" id="tabQuant">
+      <div class="intro">
+        <p class="prompt">diagnose --closed-trades</p>
+        <h1>Quant Trade Analysis</h1>
+        <p class="sub">Deep diagnostics from the uploaded Myfxbook history. Measured facts and inferred behavior are separated so weak evidence is not presented as certainty.</p>
+      </div>
+      <div class="quant-shell">
+        <div class="quant-hero">
+          <section class="quant-card"><div class="quant-kicker">likely trading style</div><h2 id="quantStyle">Waiting for trade history</h2><p class="quant-copy" id="quantStyleCopy"></p><div class="quant-confidence"><span id="quantConfidenceLabel">Style inference confidence</span><div class="quant-confidence-track"><div class="quant-confidence-fill" id="quantConfidenceFill" style="width:0%"></div></div><strong id="quantConfidenceValue">0%</strong></div></section>
+          <section class="quant-card"><div class="quant-kicker">quant diagnosis</div><h2 id="quantDiagnosis">—</h2><p class="quant-copy" id="quantDiagnosisCopy"></p></section>
+        </div>
+        <div class="quant-score" id="quantScore"></div>
+        <div class="quant-grid">
+          <section class="quant-card"><h3>Edge and payoff structure</h3><div id="quantEdge"></div></section>
+          <section class="quant-card"><h3>Return distribution and tail risk</h3><div id="quantDistribution"></div></section>
+          <section class="quant-card"><h3>Direction and holding behavior</h3><div id="quantBehavior"></div></section>
+          <section class="quant-card"><h3>Timing and session profile</h3><div id="quantTiming"></div></section>
+          <section class="quant-card"><h3>Stability and regime checks</h3><div id="quantStability"></div></section>
+          <section class="quant-card"><h3>Risk behavior and sizing discipline</h3><div id="quantRisk"></div></section>
+        </div>
+        <section class="quant-card"><h3>Deep insights</h3><div class="quant-insights" id="quantInsights"></div></section>
+        <p class="quant-method" id="quantMethod"></p>
       </div>
     </div>
 
@@ -2082,17 +2009,21 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   // ---------- TABS ----------
   const tabBtnSim = document.getElementById('tabBtnSim');
   const tabBtnAudit = document.getElementById('tabBtnAudit');
+  const tabBtnQuant = document.getElementById('tabBtnQuant');
   const tabBtnLot = document.getElementById('tabBtnLot');
   const tabSim = document.getElementById('tabSim');
   const tabAudit = document.getElementById('tabAudit');
+  const tabQuant = document.getElementById('tabQuant');
   const tabLot = document.getElementById('tabLot');
 
   function switchTab(name){
     tabBtnSim.classList.toggle('active', name === 'sim');
     tabBtnAudit.classList.toggle('active', name === 'audit');
+    tabBtnQuant.classList.toggle('active', name === 'quant');
     tabBtnLot.classList.toggle('active', name === 'lot');
     tabSim.classList.toggle('active', name === 'sim');
     tabAudit.classList.toggle('active', name === 'audit');
+    tabQuant.classList.toggle('active', name === 'quant');
     tabLot.classList.toggle('active', name === 'lot');
     if (name === 'lot'){
       requestAnimationFrame(() => { if (typeof calcLot === 'function') calcLot(); });
@@ -2103,6 +2034,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   }
   tabBtnSim.addEventListener('click', () => switchTab('sim'));
   tabBtnAudit.addEventListener('click', () => switchTab('audit'));
+  tabBtnQuant.addEventListener('click', () => switchTab('quant'));
   tabBtnLot.addEventListener('click', () => switchTab('lot'));
 
   // ---------- LOT SIZING: ADVANCED MODE ----------
@@ -3063,45 +2995,6 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
   lotResetBtn.addEventListener('click', applyLotDefaults);
 
-  // ---------- SECRET COMMAND: 'iii' on lot_sizing.sh tab ----------
-  (function(){
-    let iStreak = 0;
-
-    function showWelcomeBackPopup(){
-      const popup = document.createElement('div');
-      popup.className = 'cyberpunk-popup';
-      popup.innerHTML =
-        '<span class="cp-tag">// override_authenticated</span>' +
-        '<span class="cp-glitch" data-text="WELCOME BACK">WELCOME BACK</span>';
-      document.body.appendChild(popup);
-      setTimeout(() => {
-        popup.classList.add('cp-fadeout');
-        setTimeout(() => popup.remove(), 500);
-      }, 2200);
-    }
-
-    function triggerSecretCommand(){
-      lotBalanceEl.value = 100000;
-      lotRiskEl.value = 0.4;
-      syncBalancePresetActive();
-      calcLot();
-      showWelcomeBackPopup();
-    }
-
-    document.addEventListener('keydown', (e) => {
-      if (!tabLot.classList.contains('active')){ iStreak = 0; return; }
-      if (e.key && e.key.toLowerCase() === 'i' && !e.ctrlKey && !e.metaKey && !e.altKey){
-        iStreak++;
-        if (iStreak >= 3){
-          iStreak = 0;
-          triggerSecretCommand();
-        }
-      } else {
-        iStreak = 0;
-      }
-    });
-  })();
-
   // ---------- WEEKLY FTMO JOURNEY AUDIT ----------
   const auditFile = document.getElementById('auditFile');
   const auditDropZone = document.getElementById('auditDropZone');
@@ -3155,6 +3048,101 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
   let auditFileName = '';
   let auditImageBlob = null;
   let auditImageUrl = '';
+  const quantStyle = document.getElementById('quantStyle');
+  const quantStyleCopy = document.getElementById('quantStyleCopy');
+  const quantConfidenceFill = document.getElementById('quantConfidenceFill');
+  const quantConfidenceValue = document.getElementById('quantConfidenceValue');
+  const quantDiagnosis = document.getElementById('quantDiagnosis');
+  const quantDiagnosisCopy = document.getElementById('quantDiagnosisCopy');
+  const quantScore = document.getElementById('quantScore');
+  const quantEdge = document.getElementById('quantEdge');
+  const quantDistribution = document.getElementById('quantDistribution');
+  const quantBehavior = document.getElementById('quantBehavior');
+  const quantTiming = document.getElementById('quantTiming');
+  const quantStability = document.getElementById('quantStability');
+  const quantRisk = document.getElementById('quantRisk');
+  const quantInsights = document.getElementById('quantInsights');
+  const quantMethod = document.getElementById('quantMethod');
+
+  function qMean(values){return values.length?values.reduce((s,v)=>s+v,0)/values.length:0;}
+  function qMedian(values){return qPercentile(values,.5);}
+  function qPercentile(values,p){if(!values.length)return 0;const x=[...values].sort((a,b)=>a-b),i=(x.length-1)*p,lo=Math.floor(i),hi=Math.ceil(i);return x[lo]+(x[hi]-x[lo])*(i-lo);}
+  function qStd(values){if(values.length<2)return 0;const m=qMean(values);return Math.sqrt(values.reduce((s,v)=>s+(v-m)**2,0)/(values.length-1));}
+  function qCorr(a,b){if(a.length<3||a.length!==b.length)return NaN;const ma=qMean(a),mb=qMean(b),sa=Math.sqrt(a.reduce((s,v)=>s+(v-ma)**2,0)),sb=Math.sqrt(b.reduce((s,v)=>s+(v-mb)**2,0));return sa&&sb?a.reduce((s,v,i)=>s+(v-ma)*(b[i]-mb),0)/(sa*sb):NaN;}
+  function qPF(trades){const w=trades.filter(t=>t.net>0).reduce((s,t)=>s+t.net,0),l=Math.abs(trades.filter(t=>t.net<0).reduce((s,t)=>s+t.net,0));return l?w/l:(w?Infinity:0);}
+  function qNumber(row,key){const n=Number(row[key]);return Number.isFinite(n)?n:NaN;}
+  function qDuration(minutes){if(minutes<60)return Math.round(minutes)+'m';if(minutes<1440)return (minutes/60).toFixed(minutes<600?1:0)+'h';return (minutes/1440).toFixed(1)+'d';}
+  function qStreaks(trades){let w=0,l=0,maxW=0,maxL=0;for(const t of trades){if(t.net>0){w++;l=0;maxW=Math.max(maxW,w);}else if(t.net<0){l++;w=0;maxL=Math.max(maxL,l);}}return {maxW,maxL};}
+  function qDrawdown(trades){let bal=0,peak=0,max=0;for(const t of trades){bal+=t.net;peak=Math.max(peak,bal);max=Math.min(max,bal-peak);}return Math.abs(max);}
+  function qStats(trades){const wins=trades.filter(t=>t.net>0),losses=trades.filter(t=>t.net<0),net=trades.reduce((s,t)=>s+t.net,0),avgW=qMean(wins.map(t=>t.net)),avgL=Math.abs(qMean(losses.map(t=>t.net))),payoff=avgL?avgW/avgL:Infinity;return {n:trades.length,net,wins:wins.length,losses:losses.length,wr:trades.length?wins.length/trades.length*100:0,pf:qPF(trades),avgW,avgL,payoff,expectancy:trades.length?net/trades.length:0,dd:qDrawdown(trades)};}
+  function qTable(headers,rows){return '<table class="quant-table"><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((v,i)=>'<td>'+(i?'<strong>'+v+'</strong>':v)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';}
+  function qStat(label,value,sub){return '<div class="quant-stat"><div class="quant-stat-label">'+label+'</div><div class="quant-stat-value">'+value+'</div><div class="quant-stat-sub">'+sub+'</div></div>';}
+  function qCohort(trades,keyFn){const map=new Map();for(const t of trades){const k=keyFn(t);if(!map.has(k))map.set(k,[]);map.get(k).push(t);}return [...map].map(([label,list])=>({label,...qStats(list)}));}
+  function qCohortTable(items){return qTable(['Group','Trades','Win rate','PF','Net'],items.map(x=>[x.label,x.n,pct(x.wr,1),pfText(x.pf),signedMoney(x.net)]));}
+
+  function analyzeQuant(rows){
+    const trades=rows.filter(r=>/^(buy|sell)$/i.test(r.Action)).map(r=>{
+      const open=auditDate(r['Open Date']),close=auditDate(r['Close Date']),profit=qNumber(r,'Profit'),commission=Number(r.Commission||0),swap=Number(r.Swap||0),lots=qNumber(r,'Units/Lots');
+      return {open,close,direction:String(r.Action).toLowerCase(),symbol:String(r.Symbol||'Unknown'),net:profit+(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),profit,lots:Number.isFinite(lots)?lots:0,pips:qNumber(r,'Pips'),drawdown:qNumber(r,'Drawdown'),entry:qNumber(r,'Entry Accuracy(%)'),exit:qNumber(r,'Exit Accuracy(%)'),missed:qNumber(r,'ProfitMissed(USD)'),hasSL:Number(r.SL)>0||/\[sl\s/i.test(String(r.Comment||''))};
+    }).filter(t=>t.open&&t.close&&Number.isFinite(t.net)).sort((a,b)=>a.close-b.close).map(t=>({...t,minutes:Math.max(0,(t.close-t.open)/60000)}));
+    if(!trades.length)throw new Error('No closed trades available for quant analysis.');
+    const s=qStats(trades),values=trades.map(t=>t.net),wins=trades.filter(t=>t.net>0),losses=trades.filter(t=>t.net<0),streak=qStreaks(trades),sd=qStd(values),sqn=sd?Math.sqrt(trades.length)*s.expectancy/sd:0,recovery=s.dd?s.net/s.dd:0;
+    const m=qMean(values),skew=sd?values.reduce((z,v)=>z+((v-m)/sd)**3,0)/trades.length:0,p10=qPercentile(values,.1),p90=qPercentile(values,.9),tail=Math.abs(p10)?p90/Math.abs(p10):Infinity;
+    const grossWin=wins.reduce((z,t)=>z+t.net,0),top3=[...wins].sort((a,b)=>b.net-a.net).slice(0,3).reduce((z,t)=>z+t.net,0),top3Share=grossWin?top3/grossWin*100:0;
+    const first=trades.slice(0,Math.ceil(trades.length/2)),second=trades.slice(Math.ceil(trades.length/2)),recent=trades.slice(-Math.min(10,trades.length));
+    const durations=trades.map(t=>t.minutes),medianMinutes=qMedian(durations),avgWinMinutes=qMean(wins.map(t=>t.minutes)),avgLossMinutes=qMean(losses.map(t=>t.minutes));
+    const lots=trades.map(t=>t.lots).filter(v=>v>0),lotCV=lots.length&&qMean(lots)?qStd(lots)/qMean(lots):0,lotResultCorr=qCorr(trades.map(t=>t.lots),values);
+    const afterLoss=trades.slice(1).filter((t,i)=>trades[i].net<0),afterWin=trades.slice(1).filter((t,i)=>trades[i].net>0),afterLossLot=qMean(afterLoss.map(t=>t.lots).filter(Boolean)),afterWinLot=qMean(afterWin.map(t=>t.lots).filter(Boolean));
+    const slUse=trades.filter(t=>t.hasSL).length/trades.length*100;
+    const buy=trades.filter(t=>t.direction==='buy'),sell=trades.filter(t=>t.direction==='sell'),dominant=Math.max(buy.length,sell.length)/trades.length*100;
+    const sessions=qCohort(trades,t=>{const h=t.open.getHours();return h<8?'00–07':h<13?'08–12':h<17?'13–16':'17–23';});
+    const weekdays=qCohort(trades,t=>['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][t.open.getDay()]).sort((a,b)=>['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(a.label)-['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(b.label));
+    const direction=qCohort(trades,t=>t.direction==='buy'?'Buy':'Sell'),symbols=qCohort(trades,t=>t.symbol||'Unknown');
+    let baseStyle=medianMinutes<=15?'Scalper':medianMinutes<=240?'Intraday trader':medianMinutes<1440?'Day trader':'Swing trader';
+    const qualifiers=[];if(dominant>=70)qualifiers.push((buy.length>sell.length?'long':'short')+'-biased');if(lotCV<.12)qualifiers.push('fixed-size');else if(lotCV>.4)qualifiers.push('variable-size');if(slUse>=75)qualifiers.push('stop-led');
+    const style=baseStyle+(qualifiers.length?' · '+qualifiers.join(' · '):'');
+    const completeness=[durations.length/trades.length,lots.filter(Boolean).length/trades.length,trades.filter(t=>Number.isFinite(t.pips)).length/trades.length].reduce((z,v)=>z+v,0)/3;
+    const confidence=Math.round(Math.min(92,30+Math.min(45,trades.length*1.5)+completeness*17));
+    let diagnosis='Edge not established',diagnosisCopy='The sample does not yet show a stable positive expectancy.';
+    if(s.pf>=1.3&&sqn>=1.5){diagnosis='Positive edge, still sample-sensitive';diagnosisCopy='Payoff and consistency are positive. Keep watching recent performance and dependence on a few large winners.';}
+    else if(s.pf>=1){diagnosis='Marginal positive edge';diagnosisCopy='The history is profitable, but the cushion above break-even is thin or statistically fragile.';}
+    else if(s.pf<1){diagnosis='Negative realized edge';diagnosisCopy='Gross losses exceed gross wins in the imported closed trades. More size would amplify the current problem.';}
+    return {trades,s,streak,sd,sqn,recovery,skew,p10,p90,tail,top3Share,first:qStats(first),second:qStats(second),recent:qStats(recent),medianMinutes,avgWinMinutes,avgLossMinutes,lotCV,lotResultCorr,afterLossLot,afterWinLot,slUse,buy:qStats(buy),sell:qStats(sell),direction,symbols,sessions,weekdays,style,baseStyle,qualifiers,confidence,diagnosis,diagnosisCopy,dominant};
+  }
+
+  function renderQuant(rows){
+    const q=analyzeQuant(rows),s=q.s;
+    quantStyle.textContent=q.style;quantStyleCopy.textContent='Median holding time is '+qDuration(q.medianMinutes)+'. '+(q.dominant>=70?'One direction accounts for '+pct(q.dominant,0)+' of trades. ':'Direction use is reasonably balanced. ')+(q.lotCV<.12?'Lot size is highly consistent.':q.lotCV>.4?'Lot size varies materially across trades.':'Lot-size variation is moderate.');
+    quantConfidenceFill.style.width=q.confidence+'%';quantConfidenceValue.textContent=q.confidence+'%';quantDiagnosis.textContent=q.diagnosis;quantDiagnosisCopy.textContent=q.diagnosisCopy;
+    quantScore.innerHTML=qStat('Expectancy / trade',signedMoney(s.expectancy),'Average net result')+qStat('Profit factor',pfText(s.pf),'Gross wins ÷ gross losses')+qStat('SQN-like score',q.sqn.toFixed(2),'Sample-normalized expectancy')+qStat('Recovery factor',q.recovery.toFixed(2),'Net profit ÷ closed drawdown');
+    const breakeven=Number.isFinite(s.payoff)?100/(1+s.payoff):0;
+    quantEdge.innerHTML=qTable(['Metric','Result','Context'],[
+      ['Win rate',pct(s.wr,1),'Break-even '+pct(breakeven,1)],['Average winner',money(s.avgW),'Average loser '+money(s.avgL)],['Payoff ratio',Number.isFinite(s.payoff)?s.payoff.toFixed(2)+'×':'∞','Winner ÷ loser'],['Maximum streak',q.streak.maxW+' wins',q.streak.maxL+' losses']
+    ]);
+    quantDistribution.innerHTML=qTable(['Metric','Result','Meaning'],[
+      ['10th percentile',signedMoney(q.p10),'Typical downside tail'],['90th percentile',signedMoney(q.p90),'Typical upside tail'],['Tail ratio',Number.isFinite(q.tail)?q.tail.toFixed(2)+'×':'∞','Upside tail ÷ downside tail'],['Skewness',q.skew.toFixed(2),q.skew>0?'Right-tailed':q.skew<0?'Left-tailed':'Symmetric'],['Top 3 winner share',pct(q.top3Share,1),q.top3Share>50?'High outlier dependence':'Distributed profits']
+    ]);
+    quantBehavior.innerHTML=qCohortTable(q.symbols)+qCohortTable(q.direction)+qTable(['Holding time','Result','Comparison'],[['Median',qDuration(q.medianMinutes),'All trades'],['Winners',qDuration(q.avgWinMinutes),'Average'],['Losers',qDuration(q.avgLossMinutes),'Average']]);
+    quantTiming.innerHTML='<p class="quant-copy">Hours use the timezone written in the CSV; the export does not identify that timezone.</p>'+qCohortTable(q.sessions)+qCohortTable(q.weekdays);
+    quantStability.innerHTML=qTable(['Window','Trades','PF','Expectancy'],[['First half',q.first.n,pfText(q.first.pf),signedMoney(q.first.expectancy)],['Second half',q.second.n,pfText(q.second.pf),signedMoney(q.second.expectancy)],['Latest 10',q.recent.n,pfText(q.recent.pf),signedMoney(q.recent.expectancy)]])+'<div class="quant-bars">'+[
+      ['First half',q.first.pf],['Second half',q.second.pf],['Latest 10',q.recent.pf]
+    ].map(([label,v])=>'<div class="quant-bar-row"><span>'+label+'</span><div class="quant-bar-track"><div class="quant-bar-fill '+(v>=1?'good':'bad')+'" style="width:'+Math.min(100,(Number.isFinite(v)?v:2)*50)+'%"></div></div><strong>'+pfText(v)+'</strong></div>').join('')+'</div>';
+    const entries=q.trades.map(t=>t.entry).filter(Number.isFinite),exits=q.trades.map(t=>t.exit).filter(Number.isFinite),missed=q.trades.map(t=>t.missed).filter(Number.isFinite),mae=q.trades.map(t=>t.drawdown).filter(Number.isFinite);
+    quantRisk.innerHTML=qTable(['Diagnostic','Result','Interpretation'],[
+      ['Lot-size variation',pct(q.lotCV*100,1),q.lotCV<.12?'Very consistent':q.lotCV>.4?'High variation':'Moderate'],['Size/result correlation',Number.isFinite(q.lotResultCorr)?q.lotResultCorr.toFixed(2):'—',Math.abs(q.lotResultCorr)>.35?'Material relationship':'Weak relationship'],['Average lot after loss',q.afterLossLot?q.afterLossLot.toFixed(2):'—','After losing trade'],['Average lot after win',q.afterWinLot?q.afterWinLot.toFixed(2):'—','After winning trade'],['Visible SL evidence',pct(q.slUse,0),'SL field or closing comment']
+    ])+(entries.length||exits.length||missed.length||mae.length?qTable(['Execution field','Median','Coverage'],[
+      ['Entry accuracy',entries.length?pct(qMedian(entries),1):'—',entries.length+' / '+q.trades.length],['Exit accuracy',exits.length?pct(qMedian(exits),1):'—',exits.length+' / '+q.trades.length],['Profit missed',missed.length?money(qMedian(missed)):'—',missed.length+' / '+q.trades.length],['Reported drawdown',mae.length?qMedian(mae).toFixed(1):'—',mae.length+' / '+q.trades.length]
+    ]):'');
+    const insights=[];
+    insights.push({c:s.wr>=breakeven?'good':'risk',h:'Edge threshold',t:'Observed win rate is '+pct(s.wr,1)+' versus an estimated '+pct(breakeven,1)+' break-even rate at the realized payoff ratio.'});
+    insights.push({c:q.recent.pf+0.15<q.s.pf?'warn':'good',h:'Recent regime',t:'Latest-10 PF is '+pfText(q.recent.pf)+' versus '+pfText(q.s.pf)+' for the full history. '+(q.recent.pf<q.s.pf?'Recent execution is weaker.':'Recent execution is holding up.')});
+    insights.push({c:q.top3Share>50?'warn':'good',h:'Outlier dependence',t:'The three largest winners provide '+pct(q.top3Share,1)+' of gross winning P/L. '+(q.top3Share>50?'Results depend heavily on a small number of trades.':'Profits are reasonably distributed across winners.')});
+    const lossUpsize=q.afterLossLot&&q.afterWinLot?q.afterLossLot/q.afterWinLot:1;insights.push({c:lossUpsize>1.15?'risk':'good',h:'Post-loss sizing',t:'Average size after a loss is '+(lossUpsize*100).toFixed(0)+'% of average size after a win. '+(lossUpsize>1.15?'This resembles recovery or revenge-sizing behavior and deserves review.':'No clear post-loss size escalation is visible.')});
+    insights.push({c:q.avgLossMinutes>q.avgWinMinutes*1.5?'warn':'good',h:'Holding asymmetry',t:'Winners average '+qDuration(q.avgWinMinutes)+' and losers '+qDuration(q.avgLossMinutes)+'. '+(q.avgLossMinutes>q.avgWinMinutes*1.5?'Losing trades are held materially longer than winners.':'There is no strong evidence that losers are held much longer.')});
+    if(q.slUse<70)insights.push({c:'warn',h:'Stop-loss visibility',t:'Only '+pct(q.slUse,0)+' of trades contain an SL value or an SL closing comment. This cannot distinguish hidden, discretionary, or removed stops.'});
+    quantInsights.innerHTML=insights.map(x=>'<div class="quant-insight '+x.c+'"><strong>'+x.h+':</strong> '+x.t+'</div>').join('');
+    quantMethod.textContent='Method: closed trades only. Commission and swap are included where present. “Likely trading style” is inferred from holding time, direction mix, lot-size variation and visible stop evidence. It cannot identify the strategy rules, trader intent, floating-equity risk, pending orders, deleted trades or the CSV timezone. Small samples can change these conclusions sharply.';
+  }
 
   function parseCSV(text){
     const rows=[]; let row=[], field='', quoted=false;
@@ -3335,7 +3323,6 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     const dailyStop=Math.min(a.initial*.01,actualRecRisk*2);
     const selectedDailyStop=Math.min(a.initial*.01,selectedLot*costPerLot*2);
     const decimals=lotDecimals(auditLotStep);
-    const unlockTrades=Math.max(0,50-a.trades);
     currentPacePlan={mode,riskLow,riskHigh,recLot,selectedLot,actualRecRisk,dailyStop,selectedDailyStop,selectedRisk,sl,spread,commission,pip001,decimals,reasons};
 
     paceCoach.className='pace-coach '+mode;
@@ -3360,7 +3347,7 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
     if(mode==='slow'){
       actions.push('Set risk to '+riskHigh.toFixed(1)+'% maximum.'+(auditPrivacy?' Keep absolute lot size hidden in privacy mode.':' With this stop and cost setup, cap XAU/USD at '+recLot.toFixed(decimals)+' lots.'));
       actions.push('Stop the session after two full-stop losses or '+auditAmount(dailyStop,a.initial)+', whichever happens first.');
-      actions.push('Do not accelerate until at least 50 trades and a recent-10 profit factor of 1.20 or better; '+unlockTrades+' more trades are currently needed for the sample gate.');
+      actions.push('Do not accelerate until at least 60 trades and a recent-10 profit factor of 1.15 or better; '+Math.max(0,60-a.trades)+' more trades are currently needed for the sample gate.');
     }else if(mode==='accelerate'){
       actions.push('Increase risk by only 0.1 percentage point, never by jumping directly to a desired lot size.');
       actions.push(auditPrivacy?'Keep the increased risk at or below '+riskHigh.toFixed(1)+'%. Recalculate whenever the stop changes.':'Cap XAU/USD at '+recLot.toFixed(decimals)+' lots with the current '+sl.toFixed(0)+'-pip stop. Recalculate whenever the stop changes.');
@@ -3545,8 +3532,8 @@ button:focus-visible, input:focus-visible{outline:2px solid var(--green); outlin
 
   function runJourneyAudit(){
     if(!auditRows)return;
-    try{currentAudit=analyzeJourney(auditRows,auditPreset);renderAudit(currentAudit);}
-    catch(err){currentAudit=null;saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditImageBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
+    try{currentAudit=analyzeJourney(auditRows,auditPreset);renderAudit(currentAudit);renderQuant(auditRows);tabBtnQuant.hidden=false;}
+    catch(err){currentAudit=null;tabBtnQuant.hidden=true;if(tabQuant.classList.contains('active'))switchTab('audit');saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditImageBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
   }
   function loadAuditFile(file){
     if(!file)return;
