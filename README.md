@@ -51,6 +51,27 @@ The Quant Analysis tab also computes an empirical binary-outcome Kelly cross-che
 
 The **WHAT IF · Kelly historical replay** runs the imported win/loss sequence at full, half, quarter, and one-eighth Kelly. It compares indexed compounded equity and percentage drawdown paths with the actual imported P/L path, plus a summary table of ending index and maximum drawdown. Because a Myfxbook export does not reliably reveal initial stop-risk for every position, the replay uses the empirical binary model: each loss is −1R and each win is the observed average payoff multiple. It is a sizing stress test, not an exact lot-by-lot reconstruction or an out-of-sample forecast.
 
+### Advanced Quant Lab
+
+The Quant Analysis tab now also includes a wider strategy-health and prop-survival laboratory. Every module regenerates from the newest imported CSV:
+
+- Monte Carlo prop survival with a 10th–90th percentile equity fan
+- Risk-per-trade sweep from 0.1% to 3.0%, pass probability and breach probability
+- Empirical current-risk, full-, half-, quarter- and one-eighth-Kelly survival scenarios
+- Rolling expectancy and win-rate stability with improving/weakening status
+- Sequence-shuffle drawdown testing and original-path percentile
+- Winner-removal stress tests for the best one, three and five trades
+- Bootstrap intervals for expectancy, win rate and probability of positive expectancy
+- Time-to-target, time-to-breach and unfinished-path estimates
+- Conditional win rates, runs-test warning and observed streak structure
+- Position-size behavior after losses, holding-time asymmetry and recovery-sizing flags
+- Symbol and direction concentration with group drawdown
+- MAE/MFE, MFE capture, profit giveback and positive-to-losing-close diagnostics
+- Closed-P/L daily-limit pressure, best-day share and consistency dilution estimate
+- A prioritized action board derived from the imported evidence
+
+Simulation output is deterministic for the same uploaded history. It uses a seeded bootstrap so reloading or resizing the page does not produce a cosmetically different conclusion. Prop-rule simulation remains an approximation: closed-trade exports do not contain reliable tick-by-tick floating equity, and day boundaries depend on the timezone written in the CSV.
+
 Distribution statistics include standard deviation, ±1σ coverage, worst-trade z-score, skewness, excess kurtosis, percentiles, and a Jarque–Bera shape-deviation diagnostic. Small-sample warnings remain visible because a fitted normal curve does not prove trade returns are normally distributed.
 
 All on-screen typography is enlarged by 30% for improved readability. Print-report typography remains independently sized so the audit still fits on one A4 page.

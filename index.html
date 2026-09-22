@@ -1114,6 +1114,31 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           <section class="quant-card"><h3>Risk behavior and sizing discipline</h3><div id="quantRisk"></div></section>
         </div>
         <section class="quant-card"><h3>Deep insights</h3><div class="quant-insights" id="quantInsights"></div></section>
+        <section class="quant-card" id="advancedQuantLab">
+          <div class="quant-chart-head"><div><h3>Advanced Quant Lab</h3><span>Prop survival · edge stability · sequence and behavior stress</span></div></div>
+          <p class="quant-copy">All modules recalculate from the uploaded closed-trade history. Simulated results are diagnostic ranges—not forecasts—and floating-equity breaches cannot be fully reconstructed from a closed-trade CSV.</p>
+          <div class="quant-score" id="aqlHeadline"></div>
+          <div class="quant-chart-grid">
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Monte Carlo survival</h3><span>Bootstrap fan · 10th–90th percentile</span></div><canvas class="quant-chart" id="aqlFanChart"></canvas><p class="quant-chart-note" id="aqlFanNote"></p></section>
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Risk versus outcome</h3><span>Pass and breach probabilities</span></div><canvas class="quant-chart" id="aqlRiskChart"></canvas><p class="quant-chart-note" id="aqlRiskNote"></p></section>
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Rolling edge stability</h3><span>Rolling expectancy and win rate</span></div><canvas class="quant-chart" id="aqlRollingChart"></canvas><p class="quant-chart-note" id="aqlRollingNote"></p></section>
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Sequence dependency</h3><span>Shuffled maximum-drawdown distribution</span></div><canvas class="quant-chart" id="aqlShuffleChart"></canvas><p class="quant-chart-note" id="aqlShuffleNote"></p></section>
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Outcome dependence</h3><span>Conditional win rate and streak structure</span></div><canvas class="quant-chart" id="aqlDependenceChart"></canvas><p class="quant-chart-note" id="aqlDependenceNote"></p></section>
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Daily rule pressure</h3><span>Closed-P/L consumption of daily limit</span></div><canvas class="quant-chart" id="aqlDailyChart"></canvas><p class="quant-chart-note" id="aqlDailyNote"></p></section>
+          </div>
+          <div class="quant-grid">
+            <section class="quant-card"><h3>Prop survival scenarios</h3><div id="aqlSurvival"></div></section>
+            <section class="quant-card"><h3>Confidence and sample quality</h3><div id="aqlConfidence"></div></section>
+            <section class="quant-card"><h3>Outlier dependency stress</h3><div id="aqlOutliers"></div></section>
+            <section class="quant-card"><h3>Time to target versus failure</h3><div id="aqlTiming"></div></section>
+            <section class="quant-card"><h3>Behavioral risk detector</h3><div id="aqlBehavior"></div></section>
+            <section class="quant-card"><h3>Exposure concentration</h3><div id="aqlExposure"></div></section>
+            <section class="quant-card"><h3>MAE/MFE and exit efficiency</h3><div id="aqlExcursion"></div></section>
+            <section class="quant-card"><h3>Best-day and rule management</h3><div id="aqlRules"></div></section>
+          </div>
+          <section class="quant-card"><h3>Quant action board</h3><div class="quant-insights" id="aqlActions"></div></section>
+          <p class="quant-method" id="aqlMethod"></p>
+        </section>
         <p class="quant-method" id="quantMethod"></p>
       </div>
     </div>
@@ -3234,6 +3259,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   }
   function drawQuantCharts(q){
     qDrawDistribution(q);qDrawRolling(q);qDrawDrawdown(q);drawKellyReplay(q);
+    if(typeof window.renderAdvancedQuantLab==='function')window.renderAdvancedQuantLab(q,currentAudit);
     qDrawScatter(quantLotScatter,q.trades.filter(t=>t.lots>0).map(t=>({x:t.lots,y:t.net})),'Lot size','Net P/L',v=>Number(v).toFixed(2));
     qDrawScatter(quantHoldScatter,q.trades.map(t=>({x:t.minutes,y:t.net})),'Holding time (log scale)','Net P/L',v=>qDuration(Math.expm1(v)),v=>Math.log1p(v));
     const excursions=q.trades.filter(t=>Number.isFinite(t.maxUSD)&&Number.isFinite(t.minUSD)).map(t=>({x:Math.abs(t.minUSD),y:Math.max(0,t.maxUSD),net:t.net}));
@@ -3784,5 +3810,6 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   applyLotDefaults();
 })();
 </script>
+<script src="quant-lab.js"></script>
 </body>
 </html>
