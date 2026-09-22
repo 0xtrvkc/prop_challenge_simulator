@@ -1086,6 +1086,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           <section class="quant-card"><div class="quant-kicker">quant diagnosis</div><h2 id="quantDiagnosis">—</h2><p class="quant-copy" id="quantDiagnosisCopy"></p></section>
         </div>
         <div class="quant-score" id="quantScore"></div>
+        <section class="quant-card"><h3>Kelly criterion · empirical sizing cross-check</h3><p class="quant-copy">Uses the imported closed trades—not the simulator inputs. Full Kelly maximizes theoretical long-run log growth under stable, independent outcomes; it is not a prop-firm risk recommendation.</p><div id="quantKelly"></div></section>
         <section class="quant-card"><h3>Strategy fingerprints</h3><p class="quant-copy">Pattern matches, not declarations of intent. Market-price context is not present in the CSV.</p><div class="quant-fingerprint-grid" id="quantFingerprints"></div></section>
         <div class="quant-chart-grid">
           <section class="quant-chart-card"><div class="quant-chart-head"><h3>Trade-return distribution</h3><span>Histogram + fitted normal curve</span></div><canvas class="quant-chart" id="quantDistributionChart"></canvas><div class="quant-chart-legend"><span class="quant-chart-key">Observed trades</span><span class="quant-chart-key green">Normal model</span><span class="quant-chart-key amber">Mean and σ bands</span></div><p class="quant-chart-note" id="quantDistributionChartNote"></p></section>
@@ -3102,6 +3103,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const quantDiagnosis = document.getElementById('quantDiagnosis');
   const quantDiagnosisCopy = document.getElementById('quantDiagnosisCopy');
   const quantScore = document.getElementById('quantScore');
+  const quantKelly = document.getElementById('quantKelly');
   const quantFingerprints = document.getElementById('quantFingerprints');
   const quantDistributionChart = document.getElementById('quantDistributionChart');
   const quantRollingChart = document.getElementById('quantRollingChart');
@@ -3228,7 +3230,16 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     else if(s.pf>=1){diagnosis='Marginal positive edge';diagnosisCopy='The history is profitable, but the cushion above break-even is thin or statistically fragile.';}
     else if(s.pf<1){diagnosis='Negative realized edge';diagnosisCopy='Gross losses exceed gross wins in the imported closed trades. More size would amplify the current problem.';}
     let underwater=0,maxUnderwater=0,total=0,peak=0;for(const t of trades){total+=t.net;peak=Math.max(peak,total);underwater=total<peak?underwater+1:0;maxUnderwater=Math.max(maxUnderwater,underwater);}
-    return {trades,s,streak,sd,sqn,recovery,skew,excessKurtosis,jarqueBera,worstZ,withinOneSigma,maxUnderwater,p10,p90,tail,top3Share,first:qStats(first),second:qStats(second),recent:qStats(recent),medianMinutes,avgWinMinutes,avgLossMinutes,lotCV,lotResultCorr,afterLossLot,afterWinLot,slUse,tpUse,buy:qStats(buy),sell:qStats(sell),direction,symbols,sessions,weekdays,style,baseStyle,qualifiers,fingerprints,confidence,diagnosis,diagnosisCopy,dominant};
+    // Empirical binary-outcome Kelly: f* = p - (1-p)/b, where b is the
+    // realized average winner / average loser. A Wilson lower bound on p
+    // provides a deliberately conservative edge check for finite samples.
+    const p=s.wr/100,b=s.payoff,z95=1.96,n=s.n,wilsonDen=1+z95*z95/n;
+    const pLower=(p+z95*z95/(2*n)-z95*Math.sqrt((p*(1-p)+z95*z95/(4*n))/n))/wilsonDen;
+    const kellyUsable=wins.length>0&&losses.length>0&&Number.isFinite(b)&&b>0;
+    const fullKelly=kellyUsable?Math.max(0,p-(1-p)/b):0;
+    const conservativeKelly=kellyUsable?Math.max(0,pLower-(1-pLower)/b):0;
+    const quarterKelly=fullKelly*.25;
+    return {trades,s,streak,sd,sqn,recovery,skew,excessKurtosis,jarqueBera,worstZ,withinOneSigma,maxUnderwater,p10,p90,tail,top3Share,first:qStats(first),second:qStats(second),recent:qStats(recent),medianMinutes,avgWinMinutes,avgLossMinutes,lotCV,lotResultCorr,afterLossLot,afterWinLot,slUse,tpUse,buy:qStats(buy),sell:qStats(sell),direction,symbols,sessions,weekdays,style,baseStyle,qualifiers,fingerprints,confidence,diagnosis,diagnosisCopy,dominant,kelly:{usable:kellyUsable,p,pLower,b,full:fullKelly,half:fullKelly*.5,quarter:quarterKelly,conservative:conservativeKelly}};
   }
 
   function renderQuant(rows){
@@ -3237,6 +3248,16 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     quantStyle.textContent=q.style;quantStyleCopy.textContent='Median holding time is '+qDuration(q.medianMinutes)+'. '+(q.dominant>=70?'One direction accounts for '+pct(q.dominant,0)+' of trades. ':'Direction use is reasonably balanced. ')+(q.lotCV<.12?'Lot size is highly consistent.':q.lotCV>.4?'Lot size varies materially across trades.':'Lot-size variation is moderate.');
     quantConfidenceFill.style.width=q.confidence+'%';quantConfidenceValue.textContent=q.confidence+'%';quantDiagnosis.textContent=q.diagnosis;quantDiagnosisCopy.textContent=q.diagnosisCopy;
     quantScore.innerHTML=qStat('Expectancy / trade',signedMoney(s.expectancy),'Average net result')+qStat('Profit factor',pfText(s.pf),'Gross wins ÷ gross losses')+qStat('SQN-like score',q.sqn.toFixed(2),'Sample-normalized expectancy')+qStat('Recovery factor',q.recovery.toFixed(2),'Net profit ÷ closed drawdown');
+    const k=q.kelly,paceCap=currentPacePlan&&currentPacePlan.mode!=='stop'?currentPacePlan.riskHigh/100:0;
+    const propCap=k.usable&&paceCap>0?Math.min(k.quarter,paceCap):0;
+    const kellyStatus=!k.usable?'Needs both winning and losing trades':k.full<=0?'No positive Kelly edge':s.n<30?'Small sample · reference only':k.conservative<=0?'Edge fails 95% win-rate stress':'Positive, but still model-sensitive';
+    quantKelly.innerHTML=qTable(['Sizing lens','Risk / trade','Use'],[
+      ['Full Kelly',k.usable?pct(k.full*100,2):'—','Theoretical growth optimum; too aggressive for prop constraints'],
+      ['Half Kelly',k.usable?pct(k.half*100,2):'—','Lower variance, still aggressive'],
+      ['Quarter Kelly',k.usable?pct(k.quarter*100,2):'—','Conservative Kelly fraction'],
+      ['95% stressed Kelly',k.usable?pct(k.conservative*100,2):'—','Wilson lower-bound win rate; payoff unchanged'],
+      ['Prop-aware cross-check',k.usable&&paceCap>0?pct(propCap*100,2):'0.00%','Lower of quarter Kelly and current pace-coach cap']
+    ])+'<div class="quant-insights"><div class="quant-insight '+(k.conservative>0&&s.n>=30?'good':'warn')+'"><strong>'+kellyStatus+'.</strong> Observed p = '+pct(k.p*100,1)+', 95% lower-bound p = '+pct(k.pLower*100,1)+', payoff b = '+(Number.isFinite(k.b)?k.b.toFixed(2)+'×':'—')+'. Kelly assumes the edge and payoff remain stable, trades are independent, and losses are limited to the measured average. FTMO drawdown rules can bind long before Kelly\'s long-run optimum becomes relevant.</div></div>';
     quantFingerprints.innerHTML=q.fingerprints.map(f=>'<div class="quant-fingerprint"><div class="quant-fingerprint-head"><span class="quant-fingerprint-name">'+f.name+'</span><span class="quant-fingerprint-score">'+f.score+'%</span></div><div class="quant-fingerprint-track"><div class="quant-fingerprint-fill" style="width:'+f.score+'%"></div></div><div class="quant-fingerprint-evidence">'+f.evidence+'</div></div>').join('');
     const breakeven=Number.isFinite(s.payoff)?100/(1+s.payoff):0;
     quantEdge.innerHTML=qTable(['Metric','Result','Context'],[

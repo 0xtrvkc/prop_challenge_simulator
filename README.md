@@ -47,6 +47,8 @@ The tab also infers a likely execution style from holding time, direction mix, s
 
 The visual diagnostics include a return histogram with a fitted normal curve and mean/standard-deviation bands, rolling five-trade expectancy against cumulative P/L, an underwater drawdown chart, lot-size/outcome and holding-time/outcome scatter plots, and an explicit MAE-versus-MFE chart when Myfxbook provides complete Max/Min USD fields. The excursion view adds a 1:1 reference line, outcome-sized winner/loser bubbles, median MAE, median MFE, MFE-to-MAE ratio, realized MFE capture, and median peak-profit giveback. MAE is approximated from the absolute `Min(USD)` field and MFE from `Max(USD)`; these broker-report fields may not reproduce a tick-level path.
 
+The Quant Analysis tab also computes an empirical binary-outcome Kelly cross-check from realized win rate and average winner-to-loser payoff. It shows full, half, and quarter Kelly; a sample-stressed Kelly using the 95% Wilson lower bound for win rate; and a prop-aware figure capped by the stricter of quarter Kelly and the current pace-coach limit. Full Kelly is clearly labeled as a theoretical growth optimum rather than a funded-account recommendation, and results are withheld when the history lacks both wins and losses.
+
 Distribution statistics include standard deviation, ±1σ coverage, worst-trade z-score, skewness, excess kurtosis, percentiles, and a Jarque–Bera shape-deviation diagnostic. Small-sample warnings remain visible because a fitted normal curve does not prove trade returns are normally distributed.
 
 All on-screen typography is enlarged by 30% for improved readability. Print-report typography remains independently sized so the audit still fits on one A4 page.
