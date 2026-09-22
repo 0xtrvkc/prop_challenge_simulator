@@ -1087,6 +1087,15 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         </div>
         <div class="quant-score" id="quantScore"></div>
         <section class="quant-card"><h3><a class="quant-card-link" href="kelly-criterion-for-kids.html" target="_blank" rel="noopener noreferrer" aria-label="Open the Kelly criterion guide in a new tab">Kelly criterion · empirical sizing cross-check <span class="quant-card-link-icon" aria-hidden="true">↗</span></a></h3><p class="quant-copy">Uses the imported closed trades—not the simulator inputs. Full Kelly maximizes theoretical long-run log growth under stable, independent outcomes; it is not a prop-firm risk recommendation.</p><div id="quantKelly"></div></section>
+        <section class="quant-card">
+          <div class="quant-chart-head"><div><h3>WHAT IF · Kelly historical replay</h3><span>Same historical win/loss order · bankroll compounds after every trade</span></div></div>
+          <p class="quant-copy">Replays the imported sequence using its observed win rate and average winner-to-loser payoff. A win earns <b>Kelly fraction × observed payoff</b>; a loss costs the Kelly fraction. This is a binary sizing stress test, not a reconstruction of exact stop risk.</p>
+          <div id="quantKellyReplaySummary"></div>
+          <div class="quant-chart-grid">
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Equity paths</h3><span>Indexed to 100</span></div><canvas class="quant-chart" id="quantKellyEquityChart"></canvas><div class="quant-chart-legend" id="quantKellyEquityLegend"></div><p class="quant-chart-note" id="quantKellyEquityNote"></p></section>
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Drawdown paths</h3><span>Peak-to-trough percentage</span></div><canvas class="quant-chart" id="quantKellyDDChart"></canvas><div class="quant-chart-legend" id="quantKellyDDLegend"></div><p class="quant-chart-note" id="quantKellyDDNote"></p></section>
+          </div>
+        </section>
         <section class="quant-card"><h3>Strategy fingerprints</h3><p class="quant-copy">Pattern matches, not declarations of intent. Market-price context is not present in the CSV.</p><div class="quant-fingerprint-grid" id="quantFingerprints"></div></section>
         <div class="quant-chart-grid">
           <section class="quant-chart-card"><div class="quant-chart-head"><h3>Trade-return distribution</h3><span>Histogram + fitted normal curve</span></div><canvas class="quant-chart" id="quantDistributionChart"></canvas><div class="quant-chart-legend"><span class="quant-chart-key">Observed trades</span><span class="quant-chart-key green">Normal model</span><span class="quant-chart-key amber">Mean and σ bands</span></div><p class="quant-chart-note" id="quantDistributionChartNote"></p></section>
@@ -3104,6 +3113,13 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const quantDiagnosisCopy = document.getElementById('quantDiagnosisCopy');
   const quantScore = document.getElementById('quantScore');
   const quantKelly = document.getElementById('quantKelly');
+  const quantKellyReplaySummary = document.getElementById('quantKellyReplaySummary');
+  const quantKellyEquityChart = document.getElementById('quantKellyEquityChart');
+  const quantKellyDDChart = document.getElementById('quantKellyDDChart');
+  const quantKellyEquityLegend = document.getElementById('quantKellyEquityLegend');
+  const quantKellyDDLegend = document.getElementById('quantKellyDDLegend');
+  const quantKellyEquityNote = document.getElementById('quantKellyEquityNote');
+  const quantKellyDDNote = document.getElementById('quantKellyDDNote');
   const quantFingerprints = document.getElementById('quantFingerprints');
   const quantDistributionChart = document.getElementById('quantDistributionChart');
   const quantRollingChart = document.getElementById('quantRollingChart');
@@ -3159,6 +3175,44 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     return {x,y,p,pw,ph};
   }
   function qEmptyChart(canvas,message){const set=qChartSetup(canvas);if(!set)return;const {ctx,w,h,c}=set;qChartText(ctx,message,w/2,h/2,c.faint,'center',13);}
+  function qKellyReplay(q){
+    if(!q.kelly.usable||q.kelly.full<=0)return null;
+    const actualStart=currentAudit&&currentAudit.initial>0?currentAudit.initial:Math.max(1,Math.abs(q.trades.reduce((s,t)=>s+Math.min(0,t.net),0))*2);
+    let actual=actualStart;const actualPath=[100];
+    q.trades.forEach(t=>{actual+=t.net;actualPath.push(actual/actualStart*100);});
+    const specs=[
+      {key:'actual',name:'Actual',fraction:null,color:'#9aa8ba'},
+      {key:'full',name:'Full Kelly',fraction:q.kelly.full,color:'#ff5c68'},
+      {key:'half',name:'Half Kelly',fraction:q.kelly.half,color:'#ffb547'},
+      {key:'quarter',name:'Quarter Kelly',fraction:q.kelly.quarter,color:'#35d07f'},
+      {key:'eighth',name:'⅛ Kelly',fraction:q.kelly.full*.125,color:'#57a8ff'}
+    ];
+    const series=specs.map(spec=>{
+      const path=spec.key==='actual'?actualPath:[100];
+      if(spec.fraction!==null){let equity=100;const f=Math.min(.99,Math.max(0,spec.fraction));q.trades.forEach(t=>{equity*=t.net>0?(1+f*q.kelly.b):t.net<0?(1-f):1;path.push(equity);});}
+      let peak=path[0],maxDD=0;const dd=path.map(v=>{peak=Math.max(peak,v);const d=peak>0?(v/peak-1)*100:0;maxDD=Math.min(maxDD,d);return d;});
+      return {...spec,path,dd,ending:path.at(-1),maxDD};
+    });
+    return {series};
+  }
+  function qDrawMultiLine(canvas,series,valueKey,yFormatter){
+    const set=qChartSetup(canvas);if(!set)return;const values=series.flatMap(s=>s[valueKey]).filter(Number.isFinite);
+    if(!values.length){qEmptyChart(canvas,'Replay unavailable');return;}
+    const minY=Math.min(...values,0),maxY=Math.max(...values,valueKey==='path'?100:0),span=Math.max(1e-9,maxY-minY),pad=span*.06;
+    const f=qChartFrame(set,0,Math.max(1,series[0][valueKey].length-1),minY-pad,maxY+pad,v=>String(Math.round(v)),yFormatter);
+    series.forEach(s=>{const arr=s[valueKey];set.ctx.strokeStyle=s.color;set.ctx.lineWidth=s.key==='actual'?1.5:2.2;set.ctx.setLineDash(s.key==='actual'?[5,4]:[]);set.ctx.beginPath();arr.forEach((v,i)=>i?set.ctx.lineTo(f.x(i),f.y(v)):set.ctx.moveTo(f.x(i),f.y(v)));set.ctx.stroke();});set.ctx.setLineDash([]);
+  }
+  function drawKellyReplay(q){
+    const replay=qKellyReplay(q);
+    if(!replay){quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight warn"><strong>Replay unavailable.</strong> The history needs at least one winner, one loser, and a positive empirical Kelly edge.</div></div>';qEmptyChart(quantKellyEquityChart,'No positive Kelly edge to replay');qEmptyChart(quantKellyDDChart,'No positive Kelly edge to replay');quantKellyEquityLegend.innerHTML=quantKellyDDLegend.innerHTML='';quantKellyEquityNote.textContent=quantKellyDDNote.textContent='';return;}
+    const {series}=replay;
+    quantKellyReplaySummary.innerHTML=qTable(['Scenario','Risk / trade','Ending index','Max drawdown'],series.map(s=>[s.name,s.fraction===null?'Historical lots':pct(s.fraction*100,2),s.ending.toFixed(2),pct(s.maxDD,2)]));
+    const legend=series.map(s=>'<span class="quant-chart-key"><i style="display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%;background:'+s.color+'"></i>'+s.name+'</span>').join('');quantKellyEquityLegend.innerHTML=legend;quantKellyDDLegend.innerHTML=legend;
+    qDrawMultiLine(quantKellyEquityChart,series,'path',v=>v.toFixed(0));qDrawMultiLine(quantKellyDDChart,series,'dd',v=>v.toFixed(0)+'%');
+    const full=series.find(s=>s.key==='full'),quarter=series.find(s=>s.key==='quarter');
+    quantKellyEquityNote.textContent='Each path starts at 100. Actual uses imported dollar P/L relative to the CSV starting deposit; Kelly paths use the same outcome order with a constant fraction of current equity.';
+    quantKellyDDNote.textContent='Full Kelly reached '+pct(full.maxDD,1)+' maximum drawdown in this sequence; quarter Kelly reached '+pct(quarter.maxDD,1)+'. Historical replay is not out-of-sample evidence.';
+  }
   function qDrawDistribution(q){
     const set=qChartSetup(quantDistributionChart);if(!set)return;const {ctx,w,h,c}=set,values=q.trades.map(t=>t.net),mean=qMean(values),sd=qStd(values),bins=Math.max(5,Math.min(12,Math.ceil(Math.sqrt(values.length)))),lo=Math.min(...values,mean-2.5*sd),hi=Math.max(...values,mean+2.5*sd),step=(hi-lo)/bins||1,counts=Array(bins).fill(0);values.forEach(v=>counts[Math.min(bins-1,Math.max(0,Math.floor((v-lo)/step)))]++);const normalPeak=sd>0?values.length*step/(sd*Math.sqrt(2*Math.PI)):0,maxCount=Math.max(...counts,normalPeak,1),f=qChartFrame(set,lo,hi,0,maxCount,v=>qCompact(v),v=>Math.round(v));
     const band=(a,b,color,alpha)=>{ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.fillRect(f.x(a),f.p.t,Math.max(0,f.x(b)-f.x(a)),f.ph);ctx.restore();};band(mean-2*sd,mean+2*sd,c.amber,.05);band(mean-sd,mean+sd,c.amber,.08);
@@ -3179,7 +3233,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const set=qChartSetup(canvas);if(!set)return;const {ctx,w,h,c}=set,xs=points.map(p=>xTransform(p.x)),ys=points.map(p=>p.y),xMin=Math.min(...xs),xMax=Math.max(...xs),yMin=Math.min(0,...ys),yMax=Math.max(0,...ys),f=qChartFrame(set,xMin,xMax,yMin,yMax,v=>xFormatter(v),qCompact);if(yMin<0&&yMax>0){ctx.strokeStyle=c.grid;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(f.p.l,f.y(0));ctx.lineTo(w-f.p.r,f.y(0));ctx.stroke();}points.forEach((p,i)=>{ctx.beginPath();ctx.arc(f.x(xs[i]),f.y(p.y),4.5,0,Math.PI*2);ctx.fillStyle=p.y>=0?c.green:c.red;ctx.globalAlpha=.78;ctx.fill();});ctx.globalAlpha=1;qChartText(ctx,xLabel,w/2,h-4,c.faint,'center',11);qChartText(ctx,yLabel,5,12,c.faint,'left',11);
   }
   function drawQuantCharts(q){
-    qDrawDistribution(q);qDrawRolling(q);qDrawDrawdown(q);
+    qDrawDistribution(q);qDrawRolling(q);qDrawDrawdown(q);drawKellyReplay(q);
     qDrawScatter(quantLotScatter,q.trades.filter(t=>t.lots>0).map(t=>({x:t.lots,y:t.net})),'Lot size','Net P/L',v=>Number(v).toFixed(2));
     qDrawScatter(quantHoldScatter,q.trades.map(t=>({x:t.minutes,y:t.net})),'Holding time (log scale)','Net P/L',v=>qDuration(Math.expm1(v)),v=>Math.log1p(v));
     const excursions=q.trades.filter(t=>Number.isFinite(t.maxUSD)&&Number.isFinite(t.minUSD)).map(t=>({x:Math.abs(t.minUSD),y:Math.max(0,t.maxUSD),net:t.net}));

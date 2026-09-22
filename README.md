@@ -49,6 +49,8 @@ The visual diagnostics include a return histogram with a fitted normal curve and
 
 The Quant Analysis tab also computes an empirical binary-outcome Kelly cross-check from realized win rate and average winner-to-loser payoff. It shows full, half, and quarter Kelly; a sample-stressed Kelly using the 95% Wilson lower bound for win rate; and a prop-aware figure capped by the stricter of quarter Kelly and the current pace-coach limit. Full Kelly is clearly labeled as a theoretical growth optimum rather than a funded-account recommendation, and results are withheld when the history lacks both wins and losses.
 
+The **WHAT IF · Kelly historical replay** runs the imported win/loss sequence at full, half, quarter, and one-eighth Kelly. It compares indexed compounded equity and percentage drawdown paths with the actual imported P/L path, plus a summary table of ending index and maximum drawdown. Because a Myfxbook export does not reliably reveal initial stop-risk for every position, the replay uses the empirical binary model: each loss is −1R and each win is the observed average payoff multiple. It is a sizing stress test, not an exact lot-by-lot reconstruction or an out-of-sample forecast.
+
 Distribution statistics include standard deviation, ±1σ coverage, worst-trade z-score, skewness, excess kurtosis, percentiles, and a Jarque–Bera shape-deviation diagnostic. Small-sample warnings remain visible because a fitted normal curve does not prove trade returns are normally distributed.
 
 All on-screen typography is enlarged by 30% for improved readability. Print-report typography remains independently sized so the audit still fits on one A4 page.
