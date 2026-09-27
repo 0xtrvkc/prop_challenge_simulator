@@ -778,6 +778,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 :root[data-theme="light"] .audit-print-btn:hover{background:var(--blue-dim)}
 :root[data-theme="light"] .balance-preset-row .preset-btn.active{background:var(--blue);color:#fff}
 :root[data-theme="light"] ::placeholder{color:#667085;opacity:1}
+.kelly-compare{margin-top:16px}.kelly-bars{display:grid;gap:12px;margin-top:14px}.kelly-bar-row{display:grid;grid-template-columns:minmax(105px,1fr) minmax(110px,2.4fr) minmax(95px,1fr);align-items:center;gap:10px;font-size:12px}.kelly-bar-name{color:var(--text);font-weight:600}.kelly-bar-name small{display:block;color:var(--text-faint);font-weight:400;margin-top:2px}.kelly-bar-track{height:16px;position:relative;border-radius:4px;background:var(--bg);border:1px solid var(--border-soft);overflow:hidden}.kelly-bar-zero{position:absolute;top:0;bottom:0;width:1px;background:var(--text-faint);opacity:.65}.kelly-bar-fill{position:absolute;top:2px;bottom:2px;border-radius:2px;min-width:2px}.kelly-bar-value{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--text)}.kelly-bar-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--text-faint);margin:6px 0 0}.kelly-compare[hidden]{display:none!important}@media(max-width:520px){.kelly-bar-row{grid-template-columns:minmax(75px,1fr) minmax(65px,1.8fr) minmax(80px,1fr);gap:6px;font-size:11px}}
 </style>
 </head>
 <body>
@@ -1094,6 +1095,10 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           <div class="quant-chart-grid">
             <section class="quant-chart-card"><div class="quant-chart-head"><h3>Equity paths</h3><span>Indexed to 100</span></div><canvas class="quant-chart" id="quantKellyEquityChart"></canvas><div class="quant-chart-legend values" id="quantKellyEquityLegend"></div><p class="quant-chart-note" id="quantKellyEquityNote"></p></section>
             <section class="quant-chart-card"><div class="quant-chart-head"><h3>Drawdown paths</h3><span>Peak-to-trough percentage</span></div><canvas class="quant-chart" id="quantKellyDDChart"></canvas><div class="quant-chart-legend values" id="quantKellyDDLegend"></div><p class="quant-chart-note" id="quantKellyDDNote"></p></section>
+          </div>
+          <div class="quant-chart-grid kelly-compare" id="quantKellyCompare" hidden>
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Final balance by Kelly ratio</h3><span>Same CSV starting deposit</span></div><div class="kelly-bars" id="quantKellyBalanceBars"></div><div class="kelly-bar-axis" id="quantKellyBalanceAxis"></div><p class="quant-chart-note" id="quantKellyBalanceNote"></p></section>
+            <section class="quant-chart-card"><div class="quant-chart-head"><h3>Balance change by Kelly ratio</h3><span>Return on CSV starting deposit</span></div><div class="kelly-bars" id="quantKellyReturnBars"></div><div class="kelly-bar-axis" id="quantKellyReturnAxis"></div><p class="quant-chart-note" id="quantKellyReturnNote"></p></section>
           </div>
         </section>
         <section class="quant-card"><h3>Strategy fingerprints</h3><p class="quant-copy">Pattern matches, not declarations of intent. Market-price context is not present in the CSV.</p><div class="quant-fingerprint-grid" id="quantFingerprints"></div></section>
@@ -3145,6 +3150,13 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const quantKellyDDLegend = document.getElementById('quantKellyDDLegend');
   const quantKellyEquityNote = document.getElementById('quantKellyEquityNote');
   const quantKellyDDNote = document.getElementById('quantKellyDDNote');
+  const quantKellyCompare = document.getElementById('quantKellyCompare');
+  const quantKellyBalanceBars = document.getElementById('quantKellyBalanceBars');
+  const quantKellyReturnBars = document.getElementById('quantKellyReturnBars');
+  const quantKellyBalanceAxis = document.getElementById('quantKellyBalanceAxis');
+  const quantKellyReturnAxis = document.getElementById('quantKellyReturnAxis');
+  const quantKellyBalanceNote = document.getElementById('quantKellyBalanceNote');
+  const quantKellyReturnNote = document.getElementById('quantKellyReturnNote');
   const quantFingerprints = document.getElementById('quantFingerprints');
   const quantDistributionChart = document.getElementById('quantDistributionChart');
   const quantRollingChart = document.getElementById('quantRollingChart');
@@ -3227,10 +3239,42 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const f=qChartFrame(set,0,Math.max(1,series[0][valueKey].length-1),minY-pad,maxY+pad,v=>String(Math.round(v)),yFormatter);
     series.forEach(s=>{const arr=s[valueKey];set.ctx.strokeStyle=s.color;set.ctx.lineWidth=s.key==='actual'?1.5:2.2;set.ctx.setLineDash(s.key==='actual'?[5,4]:[]);set.ctx.beginPath();arr.forEach((v,i)=>i?set.ctx.lineTo(f.x(i),f.y(v)):set.ctx.moveTo(f.x(i),f.y(v)));set.ctx.stroke();});set.ctx.setLineDash([]);
   }
+  function qKellyComparisonBars(container,axis,series,metric,formatter){
+    const values=series.map(metric);
+    const lo=Math.min(0,...values),hi=Math.max(0,...values);
+    const range=hi-lo||1,zero=(-lo/range)*100;
+    container.replaceChildren();
+    series.forEach((s,i)=>{
+      const value=values[i],position=(value-lo)/range*100;
+      const row=document.createElement('div');row.className='kelly-bar-row';
+      const label=document.createElement('div');label.className='kelly-bar-name';label.textContent=s.name;
+      const risk=document.createElement('small');risk.textContent=s.fraction===null?'CSV actual':pct(s.fraction*100,2)+' per loss';label.append(risk);
+      const track=document.createElement('div');track.className='kelly-bar-track';
+      const line=document.createElement('span');line.className='kelly-bar-zero';line.style.left=zero+'%';track.append(line);
+      const fill=document.createElement('span');fill.className='kelly-bar-fill';fill.style.background=s.color;
+      fill.style.left=Math.min(zero,position)+'%';fill.style.width=Math.abs(position-zero)+'%';track.append(fill);
+      const number=document.createElement('div');number.className='kelly-bar-value';number.textContent=formatter(value);
+      row.append(label,track,number);container.append(row);
+    });
+    axis.replaceChildren();
+    [formatter(lo),formatter(hi)].forEach(value=>{const tick=document.createElement('span');tick.textContent=value;axis.append(tick);});
+  }
   function drawKellyReplay(q){
     const replay=qKellyReplay(q);
-    if(!replay){quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight warn"><strong>Replay unavailable.</strong> The history needs at least one winner, one loser, and a positive empirical Kelly edge.</div></div>';qEmptyChart(quantKellyEquityChart,'No positive Kelly edge to replay');qEmptyChart(quantKellyDDChart,'No positive Kelly edge to replay');quantKellyEquityLegend.innerHTML=quantKellyDDLegend.innerHTML='';quantKellyEquityNote.textContent=quantKellyDDNote.textContent='';return;}
+    if(!replay){quantKellyCompare.hidden=true;quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight warn"><strong>Replay unavailable.</strong> The history needs at least one winner, one loser, and a positive empirical Kelly edge.</div></div>';qEmptyChart(quantKellyEquityChart,'No positive Kelly edge to replay');qEmptyChart(quantKellyDDChart,'No positive Kelly edge to replay');quantKellyEquityLegend.innerHTML=quantKellyDDLegend.innerHTML='';quantKellyEquityNote.textContent=quantKellyDDNote.textContent='';return;}
     const {series}=replay;
+    const initial=currentAudit.initial;
+    const balances=series.map(s=>s.ending*initial/100);
+    if(balances.every(Number.isFinite)){
+      quantKellyCompare.hidden=false;
+      const balanceCard=quantKellyBalanceBars.closest('.quant-chart-card');
+      balanceCard.hidden=auditPrivacy;
+      quantKellyCompare.style.gridTemplateColumns=auditPrivacy?'1fr':'';
+      if(!auditPrivacy)qKellyComparisonBars(quantKellyBalanceBars,quantKellyBalanceAxis,series,s=>s.ending*initial/100,v=>money(v));
+      qKellyComparisonBars(quantKellyReturnBars,quantKellyReturnAxis,series,s=>s.ending-100,v=>pct(v,2));
+      quantKellyBalanceNote.textContent='Starting deposit '+money(initial)+' for every path. Actual uses recorded net P/L; modeled Kelly applies average win/loss payoff to each result.';
+      quantKellyReturnNote.textContent='Percentage change from the same starting deposit; negative bars extend left of zero. Closed trades only, before any prop-firm rule stop.';
+    }else quantKellyCompare.hidden=true;
     const sized=series.filter(s=>s.fraction!==null);
     quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight"><strong>Replay sizing:</strong> '+sized.map(s=>s.name+' '+pct(s.fraction*100,2)).join(' · ')+'</div></div>';
     const legendDot=s=>'<i style="display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%;background:'+s.color+'"></i>';
@@ -3792,6 +3836,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     tabAudit.classList.toggle('audit-private',auditPrivacy);
     refreshCheckpointNote();
     if(currentAudit)renderAudit(currentAudit);
+    if(currentQuant)drawKellyReplay(currentQuant);
   });
   auditPrintBtn.addEventListener('click',()=>{if(!currentAudit)return;renderPrintReport(currentAudit);window.print();});
   auditImageBtn.addEventListener('click',openAuditImage);

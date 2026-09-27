@@ -51,6 +51,8 @@ The Quant Analysis tab also computes an empirical binary-outcome Kelly cross-che
 
 The **WHAT IF · Kelly historical replay** runs the imported win/loss sequence at full, half, quarter, and one-eighth Kelly. It compares indexed compounded equity and percentage drawdown paths with the actual imported P/L path. The equity legend shows every path's final index, while the drawdown legend shows every path's maximum drawdown; a compact line above the charts retains the Kelly risk fractions without repeating the same results in a large table. Because a Myfxbook export does not reliably reveal initial stop-risk for every position, the replay uses the empirical binary model: each loss is −1R and each win is the observed average payoff multiple. It is a sizing stress test, not an exact lot-by-lot reconstruction or an out-of-sample forecast.
 
+Below the paths, **Final balance by Kelly ratio** and **Balance change by Kelly ratio** compare the actual CSV outcome with all four Kelly fractions on the same starting deposit. The bars show the final dollar balance and percentage return, including losses extending left of zero. Values refresh whenever a new CSV is imported. Percentage-only privacy mode hides the dollar panel while leaving percentage returns visible. The comparison uses closed-trade outcomes and does not stop the replay when a prop-firm rule would have failed.
+
 ### Advanced Quant Lab
 
 The Quant Analysis tab now also includes a wider strategy-health and prop-survival laboratory. Every module regenerates from the newest imported CSV:
