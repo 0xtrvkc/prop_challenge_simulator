@@ -1091,8 +1091,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         <section class="quant-card"><h3><a class="quant-card-link" href="kelly-criterion-for-kids.html" target="_blank" rel="noopener noreferrer" aria-label="Open the Kelly criterion guide in a new tab">Kelly criterion · empirical sizing cross-check <span class="quant-card-link-icon" aria-hidden="true">↗</span></a></h3><p class="quant-copy">Uses the imported closed trades—not the simulator inputs. Full Kelly maximizes theoretical long-run log growth under stable, independent outcomes; it is not a prop-firm risk recommendation.</p><div id="quantKelly"></div></section>
         <section class="quant-card">
           <div class="quant-chart-head"><div><h3>WHAT IF · Kelly historical replay</h3><span>Historical outcome order · selected FTMO audit rules</span></div></div>
-          <p class="quant-copy">Replays the imported sequence using its observed average winner-to-loser payoff. A win earns <b>Kelly fraction × observed payoff</b>; a loss costs the Kelly fraction. The modeled paths stop at a closed-trade FTMO loss breach or eligible target. This is a binary sizing stress test, not a reconstruction of exact stop risk.</p>
+          <p class="quant-copy">Replays the imported sequence using its observed average winner-to-loser payoff. A win earns <b>Kelly fraction × observed payoff</b>; a loss costs the Kelly fraction. FTMO outcome markers identify where a challenge would stop; later trades in the full-history view are hypothetical.</p>
           <label class="kelly-replay-controls" for="kellyReplaySizing">Risk amount based on <select id="kellyReplaySizing"><option value="initial">Initial deposit (FTMO-oriented)</option><option value="current">Balance before each trade (compound)</option></select></label>
+          <label class="kelly-replay-controls" for="kellyReplayScope">Show <select id="kellyReplayScope"><option value="full">Full historical sequence (zigzag)</option><option value="stop">Stop at FTMO outcome</option></select></label>
           <div id="quantKellyReplaySummary"></div>
           <div class="quant-chart-grid">
             <section class="quant-chart-card"><div class="quant-chart-head"><h3>Equity paths</h3><span>Indexed to 100</span></div><canvas class="quant-chart" id="quantKellyEquityChart"></canvas><div class="quant-chart-legend values" id="quantKellyEquityLegend"></div><p class="quant-chart-note" id="quantKellyEquityNote"></p></section>
@@ -3146,6 +3147,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const quantScore = document.getElementById('quantScore');
   const quantKelly = document.getElementById('quantKelly');
   const kellyReplaySizing = document.getElementById('kellyReplaySizing');
+  const kellyReplayScope = document.getElementById('kellyReplayScope');
   const quantKellyReplaySummary = document.getElementById('quantKellyReplaySummary');
   const quantKellyEquityChart = document.getElementById('quantKellyEquityChart');
   const quantKellyDDChart = document.getElementById('quantKellyDDChart');
@@ -3220,6 +3222,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const actualStart=currentAudit.initial;
     const rules=AUDIT_PRESETS[currentAudit.presetKey];
     const compound=kellyReplaySizing.value==='current';
+    const fullHistory=kellyReplayScope.value==='full';
     let actual=actualStart;const actualPath=[100];
     q.trades.forEach(t=>{actual+=t.net;actualPath.push(actual/actualStart*100);});
     const specs=[
@@ -3242,11 +3245,14 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         };
         const targetEligible=()=>balance>=actualStart*(1+rules.target/100)&&openDays.size>=rules.minDays&&(!rules.bestDay||(positiveDaysProfit>0&&bestDay/positiveDaysProfit<=.5));
         q.trades.forEach((t,i)=>{
-          if(stopTrade){path.push(null);return;}
+          if(stopTrade&&!fullHistory){path.push(null);return;}
           const closeDay=dayKey(t.close);
           if(day!==null&&day!==closeDay){
             endDay();
-            if(targetEligible()){status='Target eligible';stopTrade=i;path.push(null);return;}
+            if(!stopTrade&&targetEligible()){
+              status='Target eligible';stopTrade=i;
+              if(!fullHistory){path.push(null);return;}
+            }
           }
           day=closeDay;openDays.add(dayKey(t.open));
           const risk=f*(compound?balance:actualStart);
@@ -3254,8 +3260,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           balance+=pnl;dayPnl+=pnl;path.push(balance/actualStart*100);
           const dailyFloor=dayStart-actualStart*rules.daily/100;
           const maxFloor=(rules.trailing?Math.max(actualStart,peakEod):actualStart)-actualStart*rules.max/100;
-          if(balance<dailyFloor||balance<maxFloor){status=balance<dailyFloor&&balance<maxFloor?'Daily + max loss':balance<dailyFloor?'Daily loss':'Max loss';stopTrade=i+1;return;}
-          if(!rules.bestDay&&targetEligible()){status='Target eligible';stopTrade=i+1;}
+          if(!stopTrade&&(balance<dailyFloor||balance<maxFloor)){status=balance<dailyFloor&&balance<maxFloor?'Daily + max loss':balance<dailyFloor?'Daily loss':'Max loss';stopTrade=i+1;return;}
+          if(!stopTrade&&!rules.bestDay&&targetEligible()){status='Target eligible';stopTrade=i+1;}
         });
         if(!stopTrade&&day!==null){endDay();if(targetEligible()){status='Target eligible';stopTrade=q.trades.length;}}
         if(!stopTrade&&balance>=actualStart*(1+rules.target/100))status='Target pending rules';
@@ -3270,7 +3276,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     if(!values.length){qEmptyChart(canvas,'Replay unavailable');return;}
     const minY=Math.min(...values,0),maxY=Math.max(...values,valueKey==='path'?100:0),span=Math.max(1e-9,maxY-minY),pad=span*.06;
     const f=qChartFrame(set,0,Math.max(1,series[0][valueKey].length-1),minY-pad,maxY+pad,v=>String(Math.round(v)),yFormatter);
-    series.forEach(s=>{const arr=s[valueKey];set.ctx.strokeStyle=s.color;set.ctx.lineWidth=s.key==='actual'?1.5:2.2;set.ctx.setLineDash(s.key==='actual'?[5,4]:[]);set.ctx.beginPath();let started=false,lastIndex=0,lastValue=0;arr.forEach((v,i)=>{if(!Number.isFinite(v)){started=false;return;}if(started)set.ctx.lineTo(f.x(i),f.y(v));else set.ctx.moveTo(f.x(i),f.y(v));started=true;lastIndex=i;lastValue=v;});set.ctx.stroke();set.ctx.setLineDash([]);if(s.stopTrade){set.ctx.beginPath();set.ctx.arc(f.x(lastIndex),f.y(lastValue),3.5,0,Math.PI*2);set.ctx.fillStyle=s.color;set.ctx.fill();}});
+    series.forEach(s=>{const arr=s[valueKey];set.ctx.strokeStyle=s.color;set.ctx.lineWidth=s.key==='actual'?1.5:2.2;set.ctx.setLineDash(s.key==='actual'?[5,4]:[]);set.ctx.beginPath();let started=false;arr.forEach((v,i)=>{if(!Number.isFinite(v)){started=false;return;}if(started)set.ctx.lineTo(f.x(i),f.y(v));else set.ctx.moveTo(f.x(i),f.y(v));started=true;});set.ctx.stroke();set.ctx.setLineDash([]);if(s.stopTrade&&Number.isFinite(arr[s.stopTrade])){set.ctx.beginPath();set.ctx.arc(f.x(s.stopTrade),f.y(arr[s.stopTrade]),3.5,0,Math.PI*2);set.ctx.fillStyle=s.color;set.ctx.fill();}});
   }
   function qKellyComparisonBars(container,axis,series,metric,formatter){
     const values=series.map(metric);
@@ -3305,16 +3311,16 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       quantKellyCompare.style.gridTemplateColumns=auditPrivacy?'1fr':'';
       if(!auditPrivacy)qKellyComparisonBars(quantKellyBalanceBars,quantKellyBalanceAxis,series,s=>s.ending*initial/100,v=>money(v));
       qKellyComparisonBars(quantKellyReturnBars,quantKellyReturnAxis,series,s=>s.ending-100,v=>pct(v,2));
-      quantKellyBalanceNote.textContent='Starting deposit '+money(initial)+' for every path. Actual uses recorded net P/L across the full CSV. Kelly paths size from '+(kellyReplaySizing.value==='initial'?'initial deposit':'current balance')+' and stop on modeled outcomes.';
-      quantKellyReturnNote.textContent='Percentage change from the same starting deposit. Kelly results end at each modeled stop; Actual includes all imported trades.';
+      quantKellyBalanceNote.textContent='Starting deposit '+money(initial)+' for every path. Actual uses recorded net P/L. Kelly sizes from '+(kellyReplaySizing.value==='initial'?'initial deposit':'current balance')+'; '+(kellyReplayScope.value==='full'?'balances continue hypothetically beyond the FTMO marker.':'balances end at the first FTMO outcome.');
+      quantKellyReturnNote.textContent='Percentage change from the same starting deposit. '+(kellyReplayScope.value==='full'?'Full-history results include hypothetical trades after FTMO outcome.':'Stopped Kelly results end at their first FTMO outcome.')+' Actual includes all imported trades.';
     }else quantKellyCompare.hidden=true;
     const sized=series.filter(s=>s.fraction!==null);
-    quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight"><strong>'+AUDIT_PRESETS[currentAudit.presetKey].name+' closed-trade lens:</strong> '+sized.map(s=>s.name+' '+pct(s.fraction*100,2)+' · '+s.status+(s.stopTrade?' at trade '+s.stopTrade:'')).join(' · ')+'</div><div class="quant-insight warn">Kelly fractions are uncapped stress tests, not FTMO-approved trade sizes. CSV close dates are assumed to match FTMO CE(S)T days. Floating equity, overlapping positions, exact intraday order, and official compliance cannot be verified.</div></div>';
+    quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight"><strong>'+AUDIT_PRESETS[currentAudit.presetKey].name+' first modeled outcome:</strong> '+sized.map(s=>s.name+' '+pct(s.fraction*100,2)+' · '+s.status+(s.stopTrade?' at trade '+s.stopTrade:'')).join(' · ')+'</div><div class="quant-insight warn">'+(kellyReplayScope.value==='full'?'Lines continue through all trades; values after an FTMO outcome are hypothetical. ':'')+'Kelly fractions are uncapped stress tests, not FTMO-approved trade sizes. CSV close dates are assumed to match FTMO CE(S)T days. Floating equity, overlapping positions, exact intraday order, and official compliance cannot be verified.</div></div>';
     const legendDot=s=>'<i style="display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%;background:'+s.color+'"></i>';
     quantKellyEquityLegend.innerHTML=series.map(s=>'<span class="quant-chart-key">'+legendDot(s)+s.name+' <strong>'+s.ending.toFixed(2)+'</strong></span>').join('');
     quantKellyDDLegend.innerHTML=series.map(s=>'<span class="quant-chart-key">'+legendDot(s)+s.name+' <strong>'+pct(s.maxDD,1)+'</strong></span>').join('');
     qDrawMultiLine(quantKellyEquityChart,series,'path',v=>v.toFixed(0));qDrawMultiLine(quantKellyDDChart,series,'dd',v=>v.toFixed(0)+'%');
-    quantKellyEquityNote.textContent='Each path starts at 100. Actual uses imported dollar P/L. Kelly uses '+(kellyReplaySizing.value==='initial'?'a fixed fraction of the initial deposit':'a fraction of the balance before each trade')+'. Dots mark modeled stop trades; no Kelly path is drawn afterward.';
+    quantKellyEquityNote.textContent='Each path starts at 100. Actual uses imported dollar P/L. Kelly uses '+(kellyReplaySizing.value==='initial'?'a fixed fraction of the initial deposit':'a fraction of the balance before each trade')+'. Dots mark the first modeled FTMO outcome; '+(kellyReplayScope.value==='full'?'later trades are hypothetical.':'paths end there.');
     quantKellyDDNote.textContent='Maximum drawdown for every path is shown in the legend. Historical replay is not out-of-sample evidence.';
   }
   function qDrawDistribution(q){
@@ -3863,6 +3869,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   auditDropZone.addEventListener('drop',e=>loadAuditFile(e.dataTransfer.files[0]));
   auditPresetSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(!b)return;[...auditPresetSeg.children].forEach(x=>x.classList.toggle('active',x===b));auditPreset=b.dataset.auditPreset;runJourneyAudit();});
   kellyReplaySizing.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
+  kellyReplayScope.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
   auditPrivacyToggle.addEventListener('click',()=>{
     auditPrivacy=!auditPrivacy;
     auditPrivacyToggle.classList.toggle('on',auditPrivacy);
