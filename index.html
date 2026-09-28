@@ -779,6 +779,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 :root[data-theme="light"] .balance-preset-row .preset-btn.active{background:var(--blue);color:#fff}
 :root[data-theme="light"] ::placeholder{color:#667085;opacity:1}
 .kelly-compare{margin-top:16px}.kelly-bars{display:grid;gap:12px;margin-top:14px}.kelly-bar-row{display:grid;grid-template-columns:minmax(105px,1fr) minmax(110px,2.4fr) minmax(95px,1fr);align-items:center;gap:10px;font-size:12px}.kelly-bar-name{color:var(--text);font-weight:600}.kelly-bar-name small{display:block;color:var(--text-faint);font-weight:400;margin-top:2px}.kelly-bar-track{height:16px;position:relative;border-radius:4px;background:var(--bg);border:1px solid var(--border-soft);overflow:hidden}.kelly-bar-zero{position:absolute;top:0;bottom:0;width:1px;background:var(--text-faint);opacity:.65}.kelly-bar-fill{position:absolute;top:2px;bottom:2px;border-radius:2px;min-width:2px}.kelly-bar-value{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--text)}.kelly-bar-axis{display:flex;justify-content:space-between;font-size:11px;color:var(--text-faint);margin:6px 0 0}.kelly-compare[hidden]{display:none!important}@media(max-width:520px){.kelly-bar-row{grid-template-columns:minmax(75px,1fr) minmax(65px,1.8fr) minmax(80px,1fr);gap:6px;font-size:11px}}
+.kelly-replay-controls{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:13px 0;color:var(--text-dim);font-size:12px}.kelly-replay-controls select{max-width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);font:inherit}
 </style>
 </head>
 <body>
@@ -1089,8 +1090,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         <div class="quant-score" id="quantScore"></div>
         <section class="quant-card"><h3><a class="quant-card-link" href="kelly-criterion-for-kids.html" target="_blank" rel="noopener noreferrer" aria-label="Open the Kelly criterion guide in a new tab">Kelly criterion · empirical sizing cross-check <span class="quant-card-link-icon" aria-hidden="true">↗</span></a></h3><p class="quant-copy">Uses the imported closed trades—not the simulator inputs. Full Kelly maximizes theoretical long-run log growth under stable, independent outcomes; it is not a prop-firm risk recommendation.</p><div id="quantKelly"></div></section>
         <section class="quant-card">
-          <div class="quant-chart-head"><div><h3>WHAT IF · Kelly historical replay</h3><span>Same historical win/loss order · bankroll compounds after every trade</span></div></div>
-          <p class="quant-copy">Replays the imported sequence using its observed win rate and average winner-to-loser payoff. A win earns <b>Kelly fraction × observed payoff</b>; a loss costs the Kelly fraction. This is a binary sizing stress test, not a reconstruction of exact stop risk.</p>
+          <div class="quant-chart-head"><div><h3>WHAT IF · Kelly historical replay</h3><span>Historical outcome order · selected FTMO audit rules</span></div></div>
+          <p class="quant-copy">Replays the imported sequence using its observed average winner-to-loser payoff. A win earns <b>Kelly fraction × observed payoff</b>; a loss costs the Kelly fraction. The modeled paths stop at a closed-trade FTMO loss breach or eligible target. This is a binary sizing stress test, not a reconstruction of exact stop risk.</p>
+          <label class="kelly-replay-controls" for="kellyReplaySizing">Risk amount based on <select id="kellyReplaySizing"><option value="initial">Initial deposit (FTMO-oriented)</option><option value="current">Balance before each trade (compound)</option></select></label>
           <div id="quantKellyReplaySummary"></div>
           <div class="quant-chart-grid">
             <section class="quant-chart-card"><div class="quant-chart-head"><h3>Equity paths</h3><span>Indexed to 100</span></div><canvas class="quant-chart" id="quantKellyEquityChart"></canvas><div class="quant-chart-legend values" id="quantKellyEquityLegend"></div><p class="quant-chart-note" id="quantKellyEquityNote"></p></section>
@@ -3143,6 +3145,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const quantDiagnosisCopy = document.getElementById('quantDiagnosisCopy');
   const quantScore = document.getElementById('quantScore');
   const quantKelly = document.getElementById('quantKelly');
+  const kellyReplaySizing = document.getElementById('kellyReplaySizing');
   const quantKellyReplaySummary = document.getElementById('quantKellyReplaySummary');
   const quantKellyEquityChart = document.getElementById('quantKellyEquityChart');
   const quantKellyDDChart = document.getElementById('quantKellyDDChart');
@@ -3214,7 +3217,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   function qEmptyChart(canvas,message){const set=qChartSetup(canvas);if(!set)return;const {ctx,w,h,c}=set;qChartText(ctx,message,w/2,h/2,c.faint,'center',13);}
   function qKellyReplay(q){
     if(!q.kelly.usable||q.kelly.full<=0)return null;
-    const actualStart=currentAudit&&currentAudit.initial>0?currentAudit.initial:Math.max(1,Math.abs(q.trades.reduce((s,t)=>s+Math.min(0,t.net),0))*2);
+    const actualStart=currentAudit.initial;
+    const rules=AUDIT_PRESETS[currentAudit.presetKey];
+    const compound=kellyReplaySizing.value==='current';
     let actual=actualStart;const actualPath=[100];
     q.trades.forEach(t=>{actual+=t.net;actualPath.push(actual/actualStart*100);});
     const specs=[
@@ -3226,9 +3231,37 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     ];
     const series=specs.map(spec=>{
       const path=spec.key==='actual'?actualPath:[100];
-      if(spec.fraction!==null){let equity=100;const f=Math.min(.99,Math.max(0,spec.fraction));q.trades.forEach(t=>{equity*=t.net>0?(1+f*q.kelly.b):t.net<0?(1-f):1;path.push(equity);});}
+      let status='Full CSV',stopTrade=0;
+      if(spec.fraction!==null){
+        let balance=actualStart,dayStart=actualStart,peakEod=actualStart,day=null,positiveDaysProfit=0,bestDay=0,dayPnl=0;
+        const openDays=new Set(),f=Math.min(.99,Math.max(0,spec.fraction));
+        const endDay=()=>{
+          if(dayPnl>0){positiveDaysProfit+=dayPnl;bestDay=Math.max(bestDay,dayPnl);}
+          peakEod=Math.max(peakEod,balance);
+          dayStart=balance;dayPnl=0;
+        };
+        const targetEligible=()=>balance>=actualStart*(1+rules.target/100)&&openDays.size>=rules.minDays&&(!rules.bestDay||(positiveDaysProfit>0&&bestDay/positiveDaysProfit<=.5));
+        q.trades.forEach((t,i)=>{
+          if(stopTrade){path.push(balance/actualStart*100);return;}
+          const closeDay=dayKey(t.close);
+          if(day!==null&&day!==closeDay){
+            endDay();
+            if(targetEligible()){status='Target eligible';stopTrade=i;path.push(balance/actualStart*100);return;}
+          }
+          day=closeDay;openDays.add(dayKey(t.open));
+          const risk=f*(compound?balance:actualStart);
+          const pnl=t.net>0?risk*q.kelly.b:t.net<0?-risk:0;
+          balance+=pnl;dayPnl+=pnl;path.push(balance/actualStart*100);
+          const dailyFloor=dayStart-actualStart*rules.daily/100;
+          const maxFloor=(rules.trailing?Math.max(actualStart,peakEod):actualStart)-actualStart*rules.max/100;
+          if(balance<dailyFloor||balance<maxFloor){status=balance<dailyFloor&&balance<maxFloor?'Daily + max loss':balance<dailyFloor?'Daily loss':'Max loss';stopTrade=i+1;return;}
+          if(!rules.bestDay&&targetEligible()){status='Target eligible';stopTrade=i+1;}
+        });
+        if(!stopTrade&&day!==null){endDay();if(targetEligible()){status='Target eligible';stopTrade=q.trades.length;}}
+        if(!stopTrade&&balance>=actualStart*(1+rules.target/100))status='Target pending rules';
+      }
       let peak=path[0],maxDD=0;const dd=path.map(v=>{peak=Math.max(peak,v);const d=peak>0?(v/peak-1)*100:0;maxDD=Math.min(maxDD,d);return d;});
-      return {...spec,path,dd,ending:path.at(-1),maxDD};
+      return {...spec,path,dd,ending:path.at(-1),maxDD,status,stopTrade};
     });
     return {series};
   }
@@ -3248,7 +3281,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       const value=values[i],position=(value-lo)/range*100;
       const row=document.createElement('div');row.className='kelly-bar-row';
       const label=document.createElement('div');label.className='kelly-bar-name';label.textContent=s.name;
-      const risk=document.createElement('small');risk.textContent=s.fraction===null?'CSV actual':pct(s.fraction*100,2)+' per loss';label.append(risk);
+      const risk=document.createElement('small');risk.textContent=s.fraction===null?'CSV actual':pct(s.fraction*100,2)+' per loss · '+s.status+(s.stopTrade?' · #'+s.stopTrade:'');label.append(risk);
       const track=document.createElement('div');track.className='kelly-bar-track';
       const line=document.createElement('span');line.className='kelly-bar-zero';line.style.left=zero+'%';track.append(line);
       const fill=document.createElement('span');fill.className='kelly-bar-fill';fill.style.background=s.color;
@@ -3272,16 +3305,16 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       quantKellyCompare.style.gridTemplateColumns=auditPrivacy?'1fr':'';
       if(!auditPrivacy)qKellyComparisonBars(quantKellyBalanceBars,quantKellyBalanceAxis,series,s=>s.ending*initial/100,v=>money(v));
       qKellyComparisonBars(quantKellyReturnBars,quantKellyReturnAxis,series,s=>s.ending-100,v=>pct(v,2));
-      quantKellyBalanceNote.textContent='Starting deposit '+money(initial)+' for every path. Actual uses recorded net P/L; modeled Kelly applies average win/loss payoff to each result.';
-      quantKellyReturnNote.textContent='Percentage change from the same starting deposit; negative bars extend left of zero. Closed trades only, before any prop-firm rule stop.';
+      quantKellyBalanceNote.textContent='Starting deposit '+money(initial)+' for every path. Actual uses recorded net P/L across the full CSV. Kelly paths size from '+(kellyReplaySizing.value==='initial'?'initial deposit':'current balance')+' and stop on modeled outcomes.';
+      quantKellyReturnNote.textContent='Percentage change from the same starting deposit. Kelly paths hold flat after a modeled stop; Actual continues through all imported trades.';
     }else quantKellyCompare.hidden=true;
     const sized=series.filter(s=>s.fraction!==null);
-    quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight"><strong>Replay sizing:</strong> '+sized.map(s=>s.name+' '+pct(s.fraction*100,2)).join(' · ')+'</div></div>';
+    quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight"><strong>'+AUDIT_PRESETS[currentAudit.presetKey].name+' closed-trade lens:</strong> '+sized.map(s=>s.name+' '+pct(s.fraction*100,2)+' · '+s.status+(s.stopTrade?' at trade '+s.stopTrade:'')).join(' · ')+'</div><div class="quant-insight warn">Kelly fractions are uncapped stress tests, not FTMO-approved trade sizes. CSV close dates are assumed to match FTMO CE(S)T days. Floating equity, overlapping positions, exact intraday order, and official compliance cannot be verified.</div></div>';
     const legendDot=s=>'<i style="display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%;background:'+s.color+'"></i>';
     quantKellyEquityLegend.innerHTML=series.map(s=>'<span class="quant-chart-key">'+legendDot(s)+s.name+' <strong>'+s.ending.toFixed(2)+'</strong></span>').join('');
     quantKellyDDLegend.innerHTML=series.map(s=>'<span class="quant-chart-key">'+legendDot(s)+s.name+' <strong>'+pct(s.maxDD,1)+'</strong></span>').join('');
     qDrawMultiLine(quantKellyEquityChart,series,'path',v=>v.toFixed(0));qDrawMultiLine(quantKellyDDChart,series,'dd',v=>v.toFixed(0)+'%');
-    quantKellyEquityNote.textContent='Each path starts at 100. Actual uses imported dollar P/L relative to the CSV starting deposit; Kelly paths use the same outcome order with a constant fraction of current equity.';
+    quantKellyEquityNote.textContent='Each path starts at 100. Actual uses imported dollar P/L. Kelly uses '+(kellyReplaySizing.value==='initial'?'a fixed fraction of the initial deposit':'a fraction of the balance before each trade')+'; flat tails show a stopped replay.';
     quantKellyDDNote.textContent='Maximum drawdown for every path is shown in the legend. Historical replay is not out-of-sample evidence.';
   }
   function qDrawDistribution(q){
@@ -3829,6 +3862,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   ['dragleave','drop'].forEach(ev=>auditDropZone.addEventListener(ev,e=>{e.preventDefault();auditDropZone.classList.remove('drag');}));
   auditDropZone.addEventListener('drop',e=>loadAuditFile(e.dataTransfer.files[0]));
   auditPresetSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(!b)return;[...auditPresetSeg.children].forEach(x=>x.classList.toggle('active',x===b));auditPreset=b.dataset.auditPreset;runJourneyAudit();});
+  kellyReplaySizing.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
   auditPrivacyToggle.addEventListener('click',()=>{
     auditPrivacy=!auditPrivacy;
     auditPrivacyToggle.classList.toggle('on',auditPrivacy);
