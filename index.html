@@ -3618,6 +3618,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     }
     return card1+card2+card3+card4;
   }
+  function pfText(v){return Number.isFinite(v)?v.toFixed(2):'∞';}
   function pacePlanCard(kind,label,risk,lot,stop,riskWidth){return '<div class="pace-plan '+kind+'"><div class="pace-plan-label">'+label+'</div><div class="pace-plan-row"><span>Risk / trade</span><strong>'+risk+'</strong></div><div class="pace-plan-row"><span>Max lot</span><strong>'+lot+'</strong></div><div class="pace-plan-row"><span>2-loss stop</span><strong>'+stop+'</strong></div><div class="pace-risk-track"><div class="pace-risk-fill" style="width:'+Math.max(0,Math.min(100,riskWidth)).toFixed(0)+'%"></div></div></div>';}
   function floorToStep(value,step){return Math.max(0,Math.floor(value/step+1e-9)*step);}
   function lotDecimals(step){return step<.1?2:step<1?1:0;}
