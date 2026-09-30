@@ -175,3 +175,9 @@ open prop_challenge_simulator.html   # macOS
 ```
 
 No install, no server, no internet connection required (aside from the font CDN, which degrades gracefully to a system monospace font if unavailable).
+
+### Monthly ledger and current-state forecast
+
+Journey Audit includes a monthly closed-P/L calendar, opening automatically on the latest month in each imported history. Monday-first weeks, month totals, per-week net, active-day counts and daily trade drilldowns use net P/L including reported commissions and swaps. Month navigation and Latest CSV month return control are provided. Percentage-only mode applies to the calendar, daily ledger and forecast.
+
+The pass/failure race starts at the latest audited balance and state, rather than restarting the challenge. It resamples complete observed days (latest 20 active days by default, or all history) into 2,000 deterministic paths over 30, 90 or 180 future active trading days. Within-day losses, the selected preset’s EOD trailing/static floor, minimum-day and Best Day conditions are modeled. It reports pass-first, fail-first and unfinished probabilities, conditional median and 10th–90th percentile timing, and cumulative outcome probability curves. Already failed or target-eligible histories are shown as resolved. Futures assume distinct new opening days; overnight/overlapping trades are an approximation. Calendar-time estimates use observed activity density. Fixed observed dollar P/L is resampled; this does not resize risk or verify intratrade equity.
