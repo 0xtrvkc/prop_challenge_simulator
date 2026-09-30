@@ -248,6 +248,12 @@ body{
 .risk-fill{height:100%;background:var(--green);animation:none;transition:none;box-shadow:none;border-radius:0}.risk-meter.progress .risk-fill{background:var(--blue)}.risk-meter.watch .risk-fill,.risk-meter.danger .risk-fill{background:var(--amber)}.risk-meter.failed .risk-fill{background:var(--red)}.risk-fill::after{content:none;animation:none}
 .risk-detail-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;font-size:11px;line-height:1.55;padding:5px 0;color:var(--text-dim)}.risk-detail-row strong{font-size:12px;font-weight:500;color:var(--text);text-align:right}.risk-detail-row+.risk-detail-row{border-top:1px solid var(--border-soft)}
 .risk-note{font-size:10px;line-height:1.6;color:var(--text-faint);margin:10px 0 0}.objective-cash-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:4px}.objective-cash-summary div{display:flex;flex-direction:column;gap:6px;min-width:0}.objective-cash-summary span{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint)}.objective-cash-summary strong{font-size:17px;color:var(--text);letter-spacing:-.04em;overflow-wrap:anywhere}.objective-cash-summary small{font-size:10px;color:var(--text-faint);line-height:1.6}.objective-cash-summary .earned{color:var(--green)}.objective-cash-summary .lost{color:var(--red)}.objective-ledger-note{font-size:10px;color:var(--text-faint);line-height:1.6;margin:0 0 8px}@media(max-width:480px){.risk-primary strong{font-size:20px}.objective-cash-summary{gap:8px}.objective-cash-summary strong{font-size:14px}.risk-detail-row{font-size:10px}}
+
+.ledger-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin:20px 0 10px}.ledger-heading .panel-label{margin:0 0 6px}.ledger-subtitle{font-size:11px;color:var(--text-faint);line-height:1.5;margin:0}.ledger-presets{max-width:360px;flex:1 1 280px}.ledger-presets .seg-btn{min-height:36px}.ledger-rule-summary{font-size:11px;line-height:1.65;color:var(--text-dim);margin:0 0 12px;padding:8px 10px;border:1px solid var(--border-soft);border-radius:4px}
+.audit-visuals{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:10px}.risk-meter{padding:14px}.risk-meter-head{align-items:flex-start;gap:8px;margin-bottom:12px}.risk-badge{white-space:normal;text-align:right;font-size:9px;line-height:1.4}.risk-primary{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin-bottom:10px}.risk-primary strong{font-size:25px;line-height:1.2;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.risk-primary span{font-size:11px;line-height:1.5}.risk-preview .risk-detail-row{min-height:36px;font-size:10px}.risk-preview .risk-detail-row strong{font-size:11px;font-variant-numeric:tabular-nums}.risk-details{margin-top:8px;border-top:1px solid var(--border-soft)}.risk-details summary{display:flex;justify-content:space-between;align-items:center;cursor:pointer;list-style:none;font-size:11px;color:var(--text-dim);padding:10px 0 0;gap:10px}.risk-details summary::-webkit-details-marker,.ledger-deep-dive summary::-webkit-details-marker{display:none}.risk-details summary span{font-size:16px;line-height:1}.risk-details[open] summary span{font-size:0}.risk-details[open] summary span::after{content:'−';font-size:16px}.risk-details-body{padding-top:10px}.risk-details .risk-detail-row{flex-direction:column;align-items:flex-start;gap:3px;padding:7px 0}.risk-details .risk-detail-row strong{text-align:left;overflow-wrap:anywhere}.risk-details summary:focus-visible,.ledger-deep-dive summary:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.ledger-deep-dive{border:1px solid var(--border);border-radius:6px;margin-bottom:12px}.ledger-deep-dive>summary{display:flex;flex-direction:column;gap:5px;cursor:pointer;list-style:none;padding:13px 14px;font-size:12px;font-weight:600;color:var(--text)}.ledger-deep-dive>summary::before{content:'＋ Full breakdown';font-size:10px;color:var(--blue);font-weight:500}.ledger-deep-dive[open]>summary::before{content:'− Hide breakdown'}.ledger-deep-dive>summary span{font-size:10px;color:var(--text-faint);font-weight:400}.ledger-deep-body{padding:0 14px 14px}.objective-cash-summary{padding-top:8px;margin-bottom:14px}.objective-cash-summary strong{font-size:20px;font-variant-numeric:tabular-nums}.objective-cash-summary>div:first-child strong{font-size:23px}.objective-ledger-note{font-size:11px}.ledger-deep-dive .audit-rule{font-size:12px}.ledger-deep-dive .audit-metric-label{font-size:10px}.ledger-deep-dive .audit-metric-value{font-size:17px}.ledger-deep-dive .audit-metric-sub{font-size:11px}
+@media(max-width:600px){.audit-visuals{grid-template-columns:1fr}.ledger-presets{max-width:none;flex-basis:100%}.ledger-deep-dive .audit-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.risk-details .risk-detail-row{flex-direction:row;align-items:baseline;gap:12px}.risk-details .risk-detail-row strong{text-align:right}.objective-cash-summary strong{font-size:16px}.objective-cash-summary>div:first-child strong{font-size:19px}}
+
 .audit-list{display:grid;gap:7px;}
 .audit-rule{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border-soft);padding:10px 0;font-size:14.95px;line-height:1.5;}
 .audit-rule:last-child{border-bottom:0}.audit-rule span:first-child{color:var(--text-dim)}.audit-rule strong{text-align:right;color:var(--text)}
@@ -1009,9 +1015,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           <div class="field">
             <div class="field-head"><span class="field-name">FTMO_PRESET</span></div>
             <div class="seg" id="auditPresetSeg">
-              <button class="seg-btn active" data-audit-preset="ftmo1">1-Step</button>
-              <button class="seg-btn" data-audit-preset="ftmo2">2-Step</button>
-              <button class="seg-btn" data-audit-preset="ftmo2v">Verification</button>
+              <button type="button" class="seg-btn active" aria-pressed="true" data-audit-preset="ftmo1">1-Step</button>
+              <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2">2-Step</button>
+              <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2v">Verification</button>
             </div>
           </div>
           <div class="upload-box" id="auditDropZone">
@@ -1041,12 +1047,26 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
               </div>
             </div>
 
-            <p class="panel-label" style="margin-top:18px;">profit &amp; loss · objective ledger</p>
-            <div class="audit-metrics" id="auditMetrics"></div>
+            <div class="ledger-heading">
+              <div><p class="panel-label">profit &amp; loss · objective ledger</p><p class="ledger-subtitle">Closed-trade overview · expand any objective for the full breakdown</p></div>
+              <div class="seg ledger-presets" id="ledgerPresetSeg" role="group" aria-label="FTMO evaluation rules">
+                <button type="button" class="seg-btn active" aria-pressed="true" data-audit-preset="ftmo1">1-Step</button>
+                <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2">2-Step</button>
+                <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2v">Verification</button>
+              </div>
+            </div>
+            <p class="ledger-rule-summary" id="ledgerRuleSummary"></p>
             <div id="auditCashSummary"></div>
             <div class="audit-visuals" id="auditVisuals"></div>
-            <div class="audit-list" id="auditRules"></div>
-            <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
+            <details class="ledger-deep-dive">
+              <summary>Full account details &amp; rule audit<span>Balances, costs, history &amp; checkpoint</span></summary>
+              <div class="ledger-deep-body">
+                <div class="audit-metrics" id="auditMetrics"></div>
+                <p class="objective-ledger-note" id="auditCostSummary"></p>
+                <div class="audit-list" id="auditRules"></div>
+                <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
+              </div>
+            </details>
             <div class="checkpoint-row">
               <button class="reset-btn" id="saveCheckpointBtn" disabled>＋ save weekly checkpoint</button>
               <button class="reset-btn" id="clearCheckpointBtn">clear checkpoint</button>
@@ -3600,23 +3620,25 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   function riskState(value){return value>=100?'failed':value>=75?'danger':value>=50?'watch':'safe';}
   function objectiveCard(title,primary,reading,state,badge,value,rows,note){
     const width=Math.max(0,Math.min(100,value));
-    return '<section class="risk-meter '+state+'"><div class="risk-meter-head"><div class="risk-meter-title">'+title+'</div><span class="risk-badge">'+badge+'</span></div><div class="risk-primary"><strong>'+primary+'</strong><span>'+reading+'</span></div><div class="risk-track" role="progressbar" aria-label="'+title+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+width.toFixed(2)+'" aria-valuetext="'+reading+'"><div class="risk-fill" style="width:'+width.toFixed(2)+'%"></div></div>'+rows.map(([label,val])=>'<div class="risk-detail-row"><span>'+label+'</span><strong>'+val+'</strong></div>').join('')+'<p class="risk-note">'+note+'</p></section>';
+    const row=([label,val])=>'<div class="risk-detail-row"><span>'+label+'</span><strong>'+val+'</strong></div>';
+    return '<section class="risk-meter '+state+'"><div class="risk-meter-head"><div class="risk-meter-title">'+title+'</div><span class="risk-badge">'+badge+'</span></div><div class="risk-primary"><strong>'+primary+'</strong><span>'+reading+'</span></div><div class="risk-track" role="progressbar" aria-label="'+title+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+width.toFixed(2)+'" aria-valuetext="'+reading+'"><div class="risk-fill" style="width:'+width.toFixed(2)+'%"></div></div><div class="risk-preview">'+row(rows[0])+'</div><details class="risk-details"><summary>View breakdown<span aria-hidden="true">+</span></summary><div class="risk-details-body">'+rows.map(row).join('')+'<p class="risk-note">'+note+'</p></div></details></section>';
   }
+
   function objectiveLedger(a,p){
     const amt=v=>auditAmount(v,a.initial),signed=v=>auditSignedAmount(v,a.initial);
     const dailyAllowance=a.initial*p.daily/100,dailyUsed=Math.abs(Math.min(0,a.worstDayExcursion)),dailyPct=dailyUsed/dailyAllowance*100;
     const maxAllowance=a.initial*p.max/100,maxReference=p.trailing?Math.max(a.initial,a.peakEod):a.initial,maxUsed=Math.max(0,maxReference-a.balance),maxPct=maxUsed/maxAllowance*100;
     const targetProfit=a.targetBalance-a.initial,progress=Math.max(0,a.net)/targetProfit*100;
     const badge=(breach,value)=>breach?'Breached in history':value>=75?'Tight buffer':value>=50?'Monitor':'Within limit';
-    const card1=objectiveCard('Profit target',signed(a.net),pct(a.returnPct)+' return','progress',a.targetMet?'Target reached':'In progress',progress,[['Required net profit',amt(targetProfit)],['Still to earn',amt(Math.max(0,a.targetBalance-a.balance))],['Current / target balance',amt(a.balance)+' / '+amt(a.targetBalance)]],pct(Math.max(0,a.net)/targetProfit*100,1)+' of the profit target earned. Eligibility also depends on the remaining objectives.');
-    const card2=objectiveCard('Daily loss · worst observed',amt(dailyUsed),pct(dailyPct,1)+' of allowance used',a.breachDaily?'failed':riskState(dailyPct),badge(a.breachDaily,dailyPct),dailyPct,[['Daily loss allowance',amt(dailyAllowance)],['Buffer at worst point',signed(dailyAllowance-dailyUsed)],['Worst day ending net P/L',signed(a.worstDayNet)]],(a.worstDayExcursionDay?'Lowest point: '+a.worstDayExcursionDay+'. ':'No negative closed P/L excursion observed. ')+'Used amount is the largest closed loss from that day’s starting balance; it can differ from the final daily loss.');
+    const card1=objectiveCard('Profit target',signed(a.net),pct(a.returnPct)+' return','progress',a.targetMet?'Target reached':'In progress',progress,[['Still to earn',amt(Math.max(0,a.targetBalance-a.balance))],['Required net profit',amt(targetProfit)],['Current / target balance',amt(a.balance)+' / '+amt(a.targetBalance)]],pct(Math.max(0,a.net)/targetProfit*100,1)+' of the profit target earned. Eligibility also depends on the remaining objectives.');
+    const card2=objectiveCard('Daily loss',amt(dailyUsed),'worst observed loss · '+pct(dailyPct,1)+' used',a.breachDaily?'failed':riskState(dailyPct),badge(a.breachDaily,dailyPct),dailyPct,[['Buffer at worst point',signed(dailyAllowance-dailyUsed)],['Daily loss allowance',amt(dailyAllowance)],['Worst day ending net P/L',signed(a.worstDayNet)]],(a.worstDayExcursionDay?'Lowest point: '+a.worstDayExcursionDay+'. ':'No negative closed P/L excursion observed. ')+'Used amount is the largest closed loss from that day’s starting balance; it can differ from the final daily loss.');
     const worst=a.worstMaxLoss;
     const historyRows=worst?[['Worst historical buffer',signed(worst.buffer)],['Worst point · CSV date / time',worst.day+' · '+worst.time],['Balance / floor at worst point',amt(worst.balance)+' / '+amt(worst.floor)]]:[];
-    const card3=objectiveCard('Maximum loss · current & history',signed(a.balance-a.maxFloorNow),'current remaining buffer',a.breachMax?'failed':riskState(maxPct),badge(a.breachMax,maxPct),maxPct,[['Current allowance used',amt(maxUsed)+' · '+pct(maxPct,1)],['Maximum loss allowance',amt(maxAllowance)],['Current reference / loss floor',amt(maxReference)+' / '+amt(a.maxFloorNow)],...historyRows],(p.trailing?'The current floor uses the highest recorded end-of-day balance.':'The current floor uses the initial deposit.')+' The bar shows current allowance use. Worst historical buffer is the smallest distance to the applicable floor across the starting deposit and every imported closed trade. Negative buffer means a breach; recovery does not erase it. Floating-equity lows cannot be verified from this CSV.');
+    const card3=objectiveCard('Maximum loss',signed(a.balance-a.maxFloorNow),'current remaining buffer',a.breachMax?'failed':riskState(maxPct),badge(a.breachMax,maxPct),maxPct,[['Current drawdown from reference',amt(maxUsed)+' · '+pct(maxPct,1)],['Maximum loss allowance',amt(maxAllowance)],['Current reference / loss floor',amt(maxReference)+' / '+amt(a.maxFloorNow)],...historyRows],(p.trailing?'The current floor uses the highest recorded end-of-day balance.':'The current floor uses the initial deposit.')+' The bar shows current allowance use. Worst historical buffer is the smallest distance to the applicable floor across the starting deposit and every imported closed trade. Negative buffer means a breach; recovery does not erase it. Floating-equity lows cannot be verified from this CSV.');
     let card4='';
     if(p.bestDay){
       const share=Number.isFinite(a.bestDayShare)?a.bestDayShare:0,dilution=Math.max(0,2*a.bestDay-a.positiveDaysProfit);
-      card4=objectiveCard('Best Day consistency',amt(a.bestDay),Number.isFinite(a.bestDayShare)?pct(share,2)+' of positive-day profit':'No positive days',a.bestDayMet?'safe':'watch',a.bestDayMet?'Within 50%':'Above 50%',share/50*100,[['All positive-day profit',amt(a.positiveDaysProfit)],['Best day ceiling · 50%',amt(a.positiveDaysProfit*.5)],['Extra positive profit needed',amt(dilution)]],'Positive-day profit sums profitable days only. The extra amount assumes the existing best day stays unchanged; a larger new best day raises the requirement.');
+      card4=objectiveCard('Best Day consistency',Number.isFinite(a.bestDayShare)?pct(share,2):'—','share of positive-day profit',a.bestDayMet?'safe':'watch',a.bestDayMet?'Within 50%':'Above 50%',share/50*100,[['Extra positive profit needed',amt(dilution)],['Best day net profit',amt(a.bestDay)],['All positive-day profit',amt(a.positiveDaysProfit)],['Best day ceiling · 50%',amt(a.positiveDaysProfit*.5)]],'Positive-day profit sums profitable days only. The extra amount assumes the existing best day stays unchanged; a larger new best day raises the requirement.');
     }else{
       card4=objectiveCard('Minimum trading days',a.tradingDays+' days',a.tradingDays+' / '+p.minDays+' required','progress',a.minDaysMet?'Requirement met':'In progress',p.minDays?a.tradingDays/p.minDays*100:100,[['Days still needed',String(Math.max(0,p.minDays-a.tradingDays))],['Count basis','Distinct position-opening dates']],'Reaching the profit target alone does not satisfy the minimum-day condition.');
     }
@@ -3846,7 +3868,10 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       metric('Closed drawdown',auditAmount(a.maxClosedDD,a.initial),pct(a.maxClosedDD/a.initial*100)+' from closed peak')+
       metric('Next daily cushion',auditAmount(a.balance-a.dailyFloorNow,a.initial),p.daily+'% initial capital')+
       metric('Max-loss cushion',auditAmount(a.balance-a.maxFloorNow,a.initial),p.trailing?'EOD trailing floor':'static floor');
-    document.getElementById('auditCashSummary').innerHTML='<div class="objective-cash-summary"><div><span>Winning trades · net</span><strong class="earned">'+auditSignedAmount(a.winningNet,a.initial)+'</strong><small>'+a.wins+' winning trades</small></div><div><span>Losing trades · net</span><strong class="lost">'+auditSignedAmount(-a.losingNet,a.initial)+'</strong><small>'+a.losses+' losing trades</small></div><div><span>Total net P/L</span><strong>'+auditSignedAmount(a.net,a.initial)+'</strong><small>'+pct(a.returnPct)+' on initial deposit</small></div></div><p class="objective-ledger-note">Reported commissions & swaps: '+auditSignedAmount(a.commissionSwap,a.initial)+' · already included in net P/L. Loss totals measure money lost; objective buffers measure rule capacity used.</p>';
+    document.getElementById('auditCashSummary').innerHTML='<div class="objective-cash-summary"><div><span>Net P/L</span><strong class="'+(a.net>=0?'earned':'lost')+'">'+auditSignedAmount(a.net,a.initial)+'</strong><small>'+pct(a.returnPct)+' return · '+a.trades+' trades</small></div><div><span>Profits · winning trades</span><strong class="earned">'+auditSignedAmount(a.winningNet,a.initial)+'</strong><small>'+a.wins+' winners · net of costs</small></div><div><span>Losses · losing trades</span><strong class="lost">'+auditSignedAmount(-a.losingNet,a.initial)+'</strong><small>'+a.losses+' losers · net of costs</small></div></div>';
+    document.getElementById('auditCostSummary').textContent='Reported commissions & swaps: '+auditSignedAmount(a.commissionSwap,a.initial)+' · already included in net P/L. Loss totals measure money lost; objective buffers measure distance to a rule floor.';
+    document.getElementById('ledgerRuleSummary').textContent=p.name+' · Target '+p.target+'% · Daily loss '+p.daily+'% · Maximum loss '+p.max+'% ('+(p.trailing?'EOD trailing':'fixed floor')+') · '+(p.bestDay?'Best Day ≤ 50%':p.minDays+' minimum trading days')+'. Switching rules replays the entire imported history.';
+    syncAuditPresetControls(a.presetKey);
     auditVisuals.innerHTML=objectiveLedger(a,p);
     const dailyState=a.breachDaily?'fail':'safe', maxState=a.breachMax?'fail':'safe';
     auditRules.innerHTML=
@@ -3886,7 +3911,14 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   ['dragenter','dragover'].forEach(ev=>auditDropZone.addEventListener(ev,e=>{e.preventDefault();auditDropZone.classList.add('drag');}));
   ['dragleave','drop'].forEach(ev=>auditDropZone.addEventListener(ev,e=>{e.preventDefault();auditDropZone.classList.remove('drag');}));
   auditDropZone.addEventListener('drop',e=>loadAuditFile(e.dataTransfer.files[0]));
-  auditPresetSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(!b)return;[...auditPresetSeg.children].forEach(x=>x.classList.toggle('active',x===b));auditPreset=b.dataset.auditPreset;runJourneyAudit();});
+  function syncAuditPresetControls(key){
+    for(const id of ['auditPresetSeg','ledgerPresetSeg'])document.getElementById(id).querySelectorAll('[data-audit-preset]').forEach(b=>{const active=b.dataset.auditPreset===key;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+  }
+  function selectAuditPreset(key){
+    if(!AUDIT_PRESETS[key])return;
+    auditPreset=key;syncAuditPresetControls(key);runJourneyAudit();
+  }
+  for(const id of ['auditPresetSeg','ledgerPresetSeg'])document.getElementById(id).addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(b)selectAuditPreset(b.dataset.auditPreset);});
   kellyReplaySizing.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
   kellyReplayScope.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
   kellyReplayRange.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
