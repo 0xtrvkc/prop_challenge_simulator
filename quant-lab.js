@@ -11,7 +11,7 @@
   const shuffle=(a,r)=>{const x=[...a];for(let i=x.length-1;i;i--){const j=Math.floor(r()*(i+1));[x[i],x[j]]=[x[j],x[i]];}return x;};
   const table=(heads,rows)=>'<table class="quant-table"><thead><tr>'+heads.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((x,i)=>'<td>'+(i?'<strong>'+x+'</strong>':x)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';
   const insight=(kind,title,text)=>'<div class="quant-insight '+kind+'"><strong>'+title+':</strong> '+text+'</div>';
-  function colors(){const c=getComputedStyle(document.documentElement),v=n=>c.getPropertyValue(n).trim();return {grid:v('--border'),text:v('--text-faint'),green:v('--green'),red:v('--red'),amber:v('--amber'),blue:v('--blue'),bg:v('--surface')};}
+  function colors(){const c=getComputedStyle(document.getElementById('tabQuant')),v=n=>c.getPropertyValue(n).trim();return {grid:v('--border'),text:v('--text-faint'),green:v('--green'),red:v('--red'),amber:v('--amber'),blue:v('--blue'),bg:v('--surface')};}
   function canvas(id){const el=$(id),w=Math.floor(el.clientWidth),h=Math.floor(el.clientHeight),d=Math.min(2,devicePixelRatio||1);if(w<30||h<30)return null;el.width=w*d;el.height=h*d;const x=el.getContext('2d');x.setTransform(d,0,0,d,0,0);x.clearRect(0,0,w,h);return {el,x,w,h,c:colors(),p:{l:52,r:14,t:15,b:35}};}
   function frame(s,x0,x1,y0,y1,xf=v=>String(Math.round(v)),yf=v=>fmt(v,0)){const {x,w,h,c,p}=s,pw=w-p.l-p.r,ph=h-p.t-p.b,X=v=>p.l+(v-x0)/Math.max(1e-9,x1-x0)*pw,Y=v=>p.t+ph-(v-y0)/Math.max(1e-9,y1-y0)*ph;x.font="11px 'JetBrains Mono',monospace";x.textBaseline='middle';for(let i=0;i<5;i++){const yy=p.t+ph*i/4;x.strokeStyle=c.grid;x.beginPath();x.moveTo(p.l,yy);x.lineTo(w-p.r,yy);x.stroke();x.fillStyle=c.text;x.textAlign='right';x.fillText(yf(y1-(y1-y0)*i/4),p.l-6,yy);const xx=p.l+pw*i/4;x.textAlign='center';x.fillText(xf(x0+(x1-x0)*i/4),xx,h-14);}return {X,Y,pw,ph};}
   function lineChart(id,series,{yPct=false,xLabel='Trade'}={}){const s=canvas(id);if(!s)return;const all=series.flatMap(z=>z.v).filter(Number.isFinite);if(!all.length)return;let lo=Math.min(0,...all),hi=Math.max(0,...all);if(hi===lo)hi=lo+1;const pad=(hi-lo)*.06,f=frame(s,0,Math.max(1,series[0].v.length-1),lo-pad,hi+pad,v=>String(Math.round(v)),v=>yPct?pct(v,0):fmt(v,0));series.forEach(z=>{s.x.strokeStyle=z.color;s.x.lineWidth=z.width||2;s.x.setLineDash(z.dash||[]);s.x.beginPath();z.v.forEach((v,i)=>i?s.x.lineTo(f.X(i),f.Y(v)):s.x.moveTo(f.X(i),f.Y(v)));s.x.stroke();});s.x.setLineDash([]);s.x.fillStyle=s.c.text;s.x.textAlign='center';s.x.fillText(xLabel,s.w/2,s.h-4);}
@@ -64,4 +64,5 @@
   }
   window.renderAdvancedQuantLab=render;
 })();
+
 
