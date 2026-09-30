@@ -3546,6 +3546,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     trades.forEach(t=>{const k=dayKey(t.close);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(t);});
     let balance=initial,peakEod=initial,peakClosed=initial,maxClosedDD=0,worstDayExcursion=0,worstDayExcursionDay='',worstDayNet=0;
     const balancePath=[initial];
+    let worstMaxLoss={buffer:initial*p.max/100,balance:initial,floor:initial*(1-p.max/100),day:dayKey(trades[0].open),time:'Starting deposit'};
     let breachDaily=null,breachMax=null,positiveDays=0,positiveDaysProfit=0,bestDay=0;
     for(const [day,dayTrades] of groups){
       const dayStart=balance, dailyFloor=dayStart-initial*p.daily/100;
@@ -3558,6 +3559,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         peakClosed=Math.max(peakClosed,balance);
         maxClosedDD=Math.min(maxClosedDD,balance-peakClosed);
         if(!breachDaily&&balance<dailyFloor) breachDaily={day,balance,floor:dailyFloor};
+        if(balance-maxFloor<worstMaxLoss.buffer)worstMaxLoss={buffer:balance-maxFloor,balance,floor:maxFloor,day,time:String(t.close.getHours()).padStart(2,'0')+':'+String(t.close.getMinutes()).padStart(2,'0')};
         if(!breachMax&&balance<maxFloor) breachMax={day,balance,floor:maxFloor};
       }
       const dayPnl=balance-dayStart;
@@ -3588,7 +3590,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const observedLots=trades.map(t=>t.lots).filter(v=>v>0).sort((x,y)=>x-y);
     const medianObservedLot=observedLots.length?observedLots[Math.floor(observedLots.length/2)]:0;
     return {presetKey,preset:p.name,initial,balance,net:balance-initial,returnPct:(balance/initial-1)*100,trades:trades.length,tradingDays,
-      firstDate:trades[0].open.toISOString(),lastDate:trades[trades.length-1].close.toISOString(),peakEod,maxClosedDD,worstDayExcursion,
+      firstDate:trades[0].open.toISOString(),lastDate:trades[trades.length-1].close.toISOString(),peakEod,maxClosedDD,worstDayExcursion,worstMaxLoss,
       winningNet:grossWin,losingNet:grossLoss,commissionSwap:trades.reduce((n,t)=>n+t.commissionSwap,0),worstDayExcursionDay,worstDayNet,breachDaily,breachMax,positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed,
       wins:wins.length,losses:losses.length,winRate:wins.length/trades.length*100,profitFactor,recentProfitFactor,currentLossStreak,medianObservedLot,balancePath};
   }
@@ -3608,7 +3610,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const badge=(breach,value)=>breach?'Breached in history':value>=75?'Tight buffer':value>=50?'Monitor':'Within limit';
     const card1=objectiveCard('Profit target',signed(a.net),pct(a.returnPct)+' return','progress',a.targetMet?'Target reached':'In progress',progress,[['Required net profit',amt(targetProfit)],['Still to earn',amt(Math.max(0,a.targetBalance-a.balance))],['Current / target balance',amt(a.balance)+' / '+amt(a.targetBalance)]],pct(Math.max(0,a.net)/targetProfit*100,1)+' of the profit target earned. Eligibility also depends on the remaining objectives.');
     const card2=objectiveCard('Daily loss · worst observed',amt(dailyUsed),pct(dailyPct,1)+' of allowance used',a.breachDaily?'failed':riskState(dailyPct),badge(a.breachDaily,dailyPct),dailyPct,[['Daily loss allowance',amt(dailyAllowance)],['Buffer at worst point',signed(dailyAllowance-dailyUsed)],['Worst day ending net P/L',signed(a.worstDayNet)]],(a.worstDayExcursionDay?'Lowest point: '+a.worstDayExcursionDay+'. ':'No negative closed P/L excursion observed. ')+'Used amount is the largest closed loss from that day’s starting balance; it can differ from the final daily loss.');
-    const card3=objectiveCard('Maximum loss · current',amt(maxUsed),pct(maxPct,1)+' of allowance used',a.breachMax?'failed':riskState(maxPct),badge(a.breachMax,maxPct),maxPct,[['Maximum loss allowance',amt(maxAllowance)],['Remaining buffer',signed(a.balance-a.maxFloorNow)],['Reference / loss floor',amt(maxReference)+' / '+amt(a.maxFloorNow)]],(p.trailing?'Reference follows the highest end-of-day balance.':'Reference is the initial deposit.')+' Used amount is current shortfall from that reference; realized losing trades are shown separately above.'+(a.breachMax?' A past breach remains a failure even after recovery.':''));
+    const worst=a.worstMaxLoss;
+    const historyRows=worst?[['Worst historical buffer',signed(worst.buffer)],['Worst point · CSV date / time',worst.day+' · '+worst.time],['Balance / floor at worst point',amt(worst.balance)+' / '+amt(worst.floor)]]:[];
+    const card3=objectiveCard('Maximum loss · current & history',signed(a.balance-a.maxFloorNow),'current remaining buffer',a.breachMax?'failed':riskState(maxPct),badge(a.breachMax,maxPct),maxPct,[['Current allowance used',amt(maxUsed)+' · '+pct(maxPct,1)],['Maximum loss allowance',amt(maxAllowance)],['Current reference / loss floor',amt(maxReference)+' / '+amt(a.maxFloorNow)],...historyRows],(p.trailing?'The current floor uses the highest recorded end-of-day balance.':'The current floor uses the initial deposit.')+' The bar shows current allowance use. Worst historical buffer is the smallest distance to the applicable floor across the starting deposit and every imported closed trade. Negative buffer means a breach; recovery does not erase it. Floating-equity lows cannot be verified from this CSV.');
     let card4='';
     if(p.bestDay){
       const share=Number.isFinite(a.bestDayShare)?a.bestDayShare:0,dilution=Math.max(0,2*a.bestDay-a.positiveDaysProfit);
