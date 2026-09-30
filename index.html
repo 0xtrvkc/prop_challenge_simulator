@@ -840,6 +840,17 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 :root[data-theme="dark"] .tab-btn.active[data-firm="ftmo"]{color:#fff;background:#000;box-shadow:inset 0 3px 0 #fff}
 .tab-panel[data-firm="ftmo"] .audit-print-report{--report-brand:#000000}.tab-panel[data-firm="wmt"] .audit-print-report{--report-brand:#086775}
 .audit-print-report .print-head{border-bottom-color:var(--report-brand,#000)}.audit-print-report .print-brand{color:var(--report-brand,#000)}.audit-print-report .print-section-title{background:var(--report-brand,#000)}.audit-print-report .print-pace-badge{border-color:var(--report-brand,#000)}.audit-print-report .print-pace-head strong{color:var(--report-brand,#000)}
+
+.day-allowance-intro{font-size:11px;line-height:1.6;color:var(--text-dim);margin:14px 0}
+.day-allowance-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.day-allowance-card{padding:14px;border:1px solid var(--border);border-radius:6px;background:var(--surface);min-width:0}
+.day-allowance-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:14px}.day-allowance-heading>span{font-size:10px;color:var(--text-faint)}
+.day-allowance-meter+.day-allowance-meter{margin-top:16px;padding-top:14px;border-top:1px solid var(--border-soft)}
+.day-meter-heading,.day-meter-reading,.day-meter-scale{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.day-meter-heading{font-size:11px;color:var(--text)}.day-meter-heading strong{font-variant-numeric:tabular-nums}
+.day-meter-track{height:10px;background:var(--border-soft);border:1px solid var(--border);border-radius:3px;overflow:hidden;margin-top:8px}.day-meter-track>span{display:block;height:100%;background:var(--blue)}
+.day-allowance-meter.watch .day-meter-track>span{background:var(--amber)}.day-allowance-meter.danger .day-meter-track>span{background:var(--red)}.day-allowance-meter.watch .day-meter-reading>span{color:var(--amber)}.day-allowance-meter.danger .day-meter-reading>span{color:var(--red)}
+.day-meter-scale{color:var(--text-faint);font-size:9px;margin:3px 0 8px}.day-meter-reading{font-size:10px;line-height:1.5;color:var(--text-dim)}.day-meter-reading strong{color:var(--text);font-variant-numeric:tabular-nums}.day-allowance-meter small{display:block;color:var(--text-faint);font-size:10px;line-height:1.6;margin-top:3px}
+@media(max-width:600px){.day-allowance-grid{grid-template-columns:1fr}.day-allowance-card{padding:12px}}
 </style>
 </head>
 <body>
@@ -3559,6 +3570,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     if(q.slUse<70)insights.push({c:'warn',h:'Stop-loss visibility',t:'Only '+pct(q.slUse,0)+' of trades contain an SL value or an SL closing comment. This cannot distinguish hidden, discretionary, or removed stops.'});
     quantInsights.innerHTML=insights.map(x=>'<div class="quant-insight '+x.c+'"><strong>'+x.h+':</strong> '+x.t+'</div>').join('');
     quantMethod.textContent='Method: closed trades only. Commission and swap are included where present. MAE approximates maximum adverse excursion as the absolute Myfxbook Min(USD) value; MFE uses Max(USD). These broker-report fields may be sampled or rounded and are not guaranteed tick-level paths. “Likely trading style” is inferred from holding time, direction mix, lot-size variation and visible stop evidence. The CSV cannot reveal strategy intent, full floating-equity risk, pending orders, deleted trades or timezone alignment. Small samples can change these conclusions sharply.';
+    if(window.renderFirmComparison)window.renderFirmComparison(q,currentAudit,auditPrivacy,selectAuditPreset);
     if(typeof window.renderJourneyAnalytics==='function')window.renderJourneyAnalytics(q,currentAudit,AUDIT_PRESETS[currentAudit.presetKey],auditPrivacy);
     requestAnimationFrame(()=>drawQuantCharts(q));
   }

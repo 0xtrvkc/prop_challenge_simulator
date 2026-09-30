@@ -40,7 +40,7 @@ function renderCalendar(){
  $('jaCells').innerHTML=html;$('jaCalendarNote').textContent='Monday–Friday view. Closed trades grouped by the CSV close date. Week totals include this month only. Latest CSV month: '+days.at(-1).date.slice(0,7)+'. No-closes days are not zero-return observations.';
  renderDay();
 }
-function renderDay(){const d=state.days.find(d=>d.date===selected);$('jaDayTitle').textContent=selected?'Daily ledger · '+selected:'Select a date to inspect its trades';$('jaDayLedger').innerHTML=d?'<div class="ja-day-total">Net '+amount(d.net)+' · '+d.trades.length+' closed trades</div><table class="quant-table"><thead><tr><th>Close time</th><th>Symbol</th><th>Side</th><th>Net P/L</th></tr></thead><tbody>'+d.trades.map(t=>'<tr><td>'+t.close.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'</td><td>'+escapeText(t.symbol||'—')+'</td><td>'+escapeText(t.direction||'—')+'</td><td>'+amount(t.net)+'</td></tr>').join('')+'</tbody></table>':selected?'No closed trades recorded on this date.':'Click any day in the calendar.';if(d&&window.firmComparisonDay)$('jaDayLedger').innerHTML+=window.firmComparisonDay(selected);}
+function renderDay(){if(window.rememberFirmDayDisclosure)window.rememberFirmDayDisclosure();const d=state.days.find(d=>d.date===selected);$('jaDayTitle').textContent=selected?'Daily ledger · '+selected:'Select a date to inspect its trades';$('jaDayLedger').innerHTML=d?'<div class="ja-day-total">Net '+amount(d.net)+' · '+d.trades.length+' closed trades</div><table class="quant-table"><thead><tr><th>Close time</th><th>Symbol</th><th>Side</th><th>Net P/L</th></tr></thead><tbody>'+d.trades.map(t=>'<tr><td>'+t.close.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'</td><td>'+escapeText(t.symbol||'—')+'</td><td>'+escapeText(t.direction||'—')+'</td><td>'+amount(t.net)+'</td></tr>').join('')+'</tbody></table>':selected?'No closed trades recorded on this date.':'Click any day in the calendar.';if(d&&window.firmComparisonDay)$('jaDayLedger').innerHTML+=window.firmComparisonDay(selected);}
 function escapeText(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function renderForecast(){
  const {a,p,days}=state,windowSize=Number($('jaSample').value),sample=windowSize?days.slice(-windowSize):days,horizon=Number($('jaHorizon').value),f=cachedForecast||(cachedForecast=forecast(sample,a,p,{horizon}));
@@ -67,4 +67,5 @@ if(typeof document!=='undefined'){
 }
 function shiftMonth(n){if(!state)return;const [y,m]=month.split('-').map(Number);month=key(new Date(y,m-1+n,1)).slice(0,7);selected='';renderCalendar();}
 })();
+
 
