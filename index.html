@@ -1094,6 +1094,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           <p class="quant-copy">Replays the imported sequence using its observed average winner-to-loser payoff. A win earns <b>Kelly fraction × observed payoff</b>; a loss costs the Kelly fraction. FTMO outcome markers identify where a challenge would stop; later trades in the full-history view are hypothetical.</p>
           <label class="kelly-replay-controls" for="kellyReplaySizing">Risk amount based on <select id="kellyReplaySizing"><option value="initial">Initial deposit (FTMO-oriented)</option><option value="current">Balance before each trade (compound)</option></select></label>
           <label class="kelly-replay-controls" for="kellyReplayScope">Show <select id="kellyReplayScope"><option value="full">Full historical sequence (zigzag)</option><option value="stop">Stop at FTMO outcome</option></select></label>
+          <label class="kelly-replay-controls" id="kellyReplayRangeControl" for="kellyReplayRange" hidden>Chart range <select id="kellyReplayRange"><option value="outcome">Zoom to Kelly outcomes</option><option value="all">All imported trades</option></select></label>
           <div id="quantKellyReplaySummary"></div>
           <div class="quant-chart-grid">
             <section class="quant-chart-card"><div class="quant-chart-head"><h3>Equity paths</h3><span>Indexed to 100</span></div><canvas class="quant-chart" id="quantKellyEquityChart"></canvas><div class="quant-chart-legend values" id="quantKellyEquityLegend"></div><p class="quant-chart-note" id="quantKellyEquityNote"></p></section>
@@ -3148,6 +3149,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const quantKelly = document.getElementById('quantKelly');
   const kellyReplaySizing = document.getElementById('kellyReplaySizing');
   const kellyReplayScope = document.getElementById('kellyReplayScope');
+  const kellyReplayRange = document.getElementById('kellyReplayRange');
+  const kellyReplayRangeControl = document.getElementById('kellyReplayRangeControl');
   const quantKellyReplaySummary = document.getElementById('quantKellyReplaySummary');
   const quantKellyEquityChart = document.getElementById('quantKellyEquityChart');
   const quantKellyDDChart = document.getElementById('quantKellyDDChart');
@@ -3271,12 +3274,16 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     });
     return {series};
   }
-  function qDrawMultiLine(canvas,series,valueKey,yFormatter){
-    const set=qChartSetup(canvas);if(!set)return;const values=series.flatMap(s=>s[valueKey]).filter(Number.isFinite);
+  function qKellyChartEnd(series,zoom){
+    if(!zoom)return Math.max(1,series[0].path.length-1);
+    return Math.max(1,...series.filter(s=>s.fraction!==null).map(s=>s.path.reduce((last,v,i)=>Number.isFinite(v)?i:last,0)));
+  }
+  function qDrawMultiLine(canvas,series,valueKey,yFormatter,maxTrade=series[0][valueKey].length-1){
+    const set=qChartSetup(canvas);if(!set)return;const values=series.flatMap(s=>s[valueKey].slice(0,maxTrade+1)).filter(Number.isFinite);
     if(!values.length){qEmptyChart(canvas,'Replay unavailable');return;}
-    const minY=Math.min(...values,0),maxY=Math.max(...values,valueKey==='path'?100:0),span=Math.max(1e-9,maxY-minY),pad=span*.06;
-    const f=qChartFrame(set,0,Math.max(1,series[0][valueKey].length-1),minY-pad,maxY+pad,v=>String(Math.round(v)),yFormatter);
-    series.forEach(s=>{const arr=s[valueKey];set.ctx.strokeStyle=s.color;set.ctx.lineWidth=s.key==='actual'?1.5:2.2;set.ctx.setLineDash(s.key==='actual'?[5,4]:[]);set.ctx.beginPath();let started=false;arr.forEach((v,i)=>{if(!Number.isFinite(v)){started=false;return;}if(started)set.ctx.lineTo(f.x(i),f.y(v));else set.ctx.moveTo(f.x(i),f.y(v));started=true;});set.ctx.stroke();set.ctx.setLineDash([]);if(s.stopTrade&&Number.isFinite(arr[s.stopTrade])){set.ctx.beginPath();set.ctx.arc(f.x(s.stopTrade),f.y(arr[s.stopTrade]),3.5,0,Math.PI*2);set.ctx.fillStyle=s.color;set.ctx.fill();}});
+    const minY=Math.min(...values),maxY=Math.max(...values,valueKey==='path'?100:0),span=Math.max(valueKey==='path'?1:.1,maxY-minY),pad=span*.06;
+    const f=qChartFrame(set,0,Math.max(1,maxTrade),minY-pad,valueKey==='dd'?0:maxY+pad,v=>String(Math.round(v)),yFormatter);
+    series.forEach(s=>{const arr=s[valueKey].slice(0,maxTrade+1);set.ctx.strokeStyle=s.color;set.ctx.lineWidth=s.key==='actual'?1.5:2.2;set.ctx.setLineDash(s.key==='actual'?[5,4]:[]);set.ctx.beginPath();let started=false;arr.forEach((v,i)=>{if(!Number.isFinite(v)){started=false;return;}if(started)set.ctx.lineTo(f.x(i),f.y(v));else set.ctx.moveTo(f.x(i),f.y(v));started=true;});set.ctx.stroke();set.ctx.setLineDash([]);if(s.stopTrade&&Number.isFinite(arr[s.stopTrade])){set.ctx.beginPath();set.ctx.arc(f.x(s.stopTrade),f.y(arr[s.stopTrade]),3.5,0,Math.PI*2);set.ctx.fillStyle=s.color;set.ctx.fill();}});
   }
   function qKellyComparisonBars(container,axis,series,metric,formatter){
     const values=series.map(metric);
@@ -3299,6 +3306,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     [formatter(lo),formatter(hi)].forEach(value=>{const tick=document.createElement('span');tick.textContent=value;axis.append(tick);});
   }
   function drawKellyReplay(q){
+    kellyReplayRangeControl.hidden=kellyReplayScope.value!=='stop';
     const replay=qKellyReplay(q);
     if(!replay){quantKellyCompare.hidden=true;quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight warn"><strong>Replay unavailable.</strong> The history needs at least one winner, one loser, and a positive empirical Kelly edge.</div></div>';qEmptyChart(quantKellyEquityChart,'No positive Kelly edge to replay');qEmptyChart(quantKellyDDChart,'No positive Kelly edge to replay');quantKellyEquityLegend.innerHTML=quantKellyDDLegend.innerHTML='';quantKellyEquityNote.textContent=quantKellyDDNote.textContent='';return;}
     const {series}=replay;
@@ -3319,9 +3327,12 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const legendDot=s=>'<i style="display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%;background:'+s.color+'"></i>';
     quantKellyEquityLegend.innerHTML=series.map(s=>'<span class="quant-chart-key">'+legendDot(s)+s.name+' <strong>'+s.ending.toFixed(2)+'</strong></span>').join('');
     quantKellyDDLegend.innerHTML=series.map(s=>'<span class="quant-chart-key">'+legendDot(s)+s.name+' <strong>'+pct(s.maxDD,1)+'</strong></span>').join('');
-    qDrawMultiLine(quantKellyEquityChart,series,'path',v=>v.toFixed(0));qDrawMultiLine(quantKellyDDChart,series,'dd',v=>v.toFixed(0)+'%');
+    const zoom=kellyReplayScope.value==='stop'&&kellyReplayRange.value==='outcome';
+    const chartEnd=qKellyChartEnd(series,zoom);
+    qDrawMultiLine(quantKellyEquityChart,series,'path',v=>v.toFixed(0),chartEnd);qDrawMultiLine(quantKellyDDChart,series,'dd',v=>v.toFixed(2)+'%',chartEnd);
     quantKellyEquityNote.textContent='Each path starts at 100. Actual uses imported dollar P/L. Kelly uses '+(kellyReplaySizing.value==='initial'?'a fixed fraction of the initial deposit':'a fraction of the balance before each trade')+'. Dots mark the first modeled FTMO outcome; '+(kellyReplayScope.value==='full'?'later trades are hypothetical.':'paths end there.');
-    quantKellyDDNote.textContent='Maximum drawdown for every path is shown in the legend. Historical replay is not out-of-sample evidence.';
+    if(zoom)quantKellyEquityNote.textContent+=' Chart zoom: trades 0–'+chartEnd+'. Actual is cropped to this window; its legend and comparison bars retain full CSV results.';
+    quantKellyDDNote.textContent='Maximum drawdown for every path is shown in the legend. '+(zoom?'Chart zoom: trades 0–'+chartEnd+'; Actual legend retains full CSV drawdown. ':'')+'Historical replay is not out-of-sample evidence.';
   }
   function qDrawDistribution(q){
     const set=qChartSetup(quantDistributionChart);if(!set)return;const {ctx,w,h,c}=set,values=q.trades.map(t=>t.net),mean=qMean(values),sd=qStd(values),bins=Math.max(5,Math.min(12,Math.ceil(Math.sqrt(values.length)))),lo=Math.min(...values,mean-2.5*sd),hi=Math.max(...values,mean+2.5*sd),step=(hi-lo)/bins||1,counts=Array(bins).fill(0);values.forEach(v=>counts[Math.min(bins-1,Math.max(0,Math.floor((v-lo)/step)))]++);const normalPeak=sd>0?values.length*step/(sd*Math.sqrt(2*Math.PI)):0,maxCount=Math.max(...counts,normalPeak,1),f=qChartFrame(set,lo,hi,0,maxCount,v=>qCompact(v),v=>Math.round(v));
@@ -3870,6 +3881,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   auditPresetSeg.addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(!b)return;[...auditPresetSeg.children].forEach(x=>x.classList.toggle('active',x===b));auditPreset=b.dataset.auditPreset;runJourneyAudit();});
   kellyReplaySizing.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
   kellyReplayScope.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
+  kellyReplayRange.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
   auditPrivacyToggle.addEventListener('click',()=>{
     auditPrivacy=!auditPrivacy;
     auditPrivacyToggle.classList.toggle('on',auditPrivacy);
