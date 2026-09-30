@@ -783,6 +783,34 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 
 .ja-panel{margin:22px 0;padding:20px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);min-width:0}.ja-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}.ja-heading h3{margin:0;font-size:18px;letter-spacing:-.03em;color:var(--text)}.ja-heading .panel-label{margin:0 0 6px}.ja-nav,.ja-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ja-nav button,.ja-controls select{font:inherit;font-size:12px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);padding:8px 10px}.ja-nav button{cursor:pointer}.ja-nav strong{font-size:13px;min-width:130px;text-align:center}.ja-controls label{display:grid;gap:4px;font-size:10px;text-transform:uppercase;color:var(--text-faint)}.ja-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin:18px 0}.ja-stat{display:flex;flex-direction:column;gap:7px;background:var(--surface);padding:14px;min-width:0}.ja-stat span{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint)}.ja-stat strong{font-size:20px;color:var(--text);letter-spacing:-.05em;overflow-wrap:anywhere}.ja-stat small{font-size:11px;line-height:1.6;color:var(--text-dim)}.ja-calendar-scroll{overflow-x:auto}.ja-calendar{min-width:760px}.ja-weekdays,.ja-cells{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 92px;gap:3px}.ja-weekdays span{font-size:10px;letter-spacing:.06em;padding:8px;color:var(--text-faint)}.ja-day,.ja-week{min-width:0;min-height:103px;border:1px solid var(--border-soft);border-radius:5px;padding:9px;display:flex;flex-direction:column;gap:9px;text-align:left;font:inherit;background:var(--bg);color:var(--text-dim)}.ja-day{cursor:pointer;transition:border-color .15s}.ja-day:hover,.ja-day:focus-visible{border-color:var(--blue)}.ja-day.selected{outline:2px solid var(--blue);outline-offset:-2px}.ja-day.profit{background:color-mix(in srgb,var(--green) calc(var(--heat)*100%),var(--bg))}.ja-day.loss{background:color-mix(in srgb,var(--red) calc(var(--heat)*100%),var(--bg))}.ja-day.profit strong{color:var(--green)}.ja-day.loss strong{color:var(--red)}.ja-date{display:flex;justify-content:space-between;font-size:12px;color:var(--text)}.ja-date i{font-size:8px;font-style:normal;color:var(--blue)}.ja-day strong,.ja-week strong{font-size:12px;letter-spacing:-.04em;overflow-wrap:anywhere}.ja-day small,.ja-week small,.ja-week>span{font-size:9px;line-height:1.5;color:var(--text-faint)}.ja-day.outside{opacity:.35;cursor:default}.ja-week{background:var(--surface);justify-content:center}.ja-note{font-size:11px;line-height:1.75;color:var(--text-faint);margin:12px 0 0}.ja-copy{font-size:13px;line-height:1.7;color:var(--text-dim)}.ja-ledger{padding:12px;border:1px solid var(--border);border-radius:6px;margin-top:15px;font-size:12px;color:var(--text-dim);overflow-x:auto}.ja-ledger summary{cursor:pointer;color:var(--text)}.ja-day-total{margin:12px 0 4px}.ja-prob-bar{display:flex;height:10px;border-radius:8px;overflow:hidden;background:var(--border)}.ja-prob-bar .profit{background:var(--green)}.ja-prob-bar .loss{background:var(--red)}.ja-prob-bar .pending{background:var(--text-faint)}.ja-prob-labels{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--text-dim);margin-top:8px;flex-wrap:wrap}.ja-race{margin-top:18px}.ja-race svg{display:block;width:100%;max-height:260px}.ja-svg-grid path{stroke:var(--border);fill:none}.ja-svg-grid text,.ja-svg-text{fill:var(--text-faint);font:11px monospace}.ja-pass-line{fill:none;stroke:var(--green);stroke-width:2.5}.ja-fail-line{fill:none;stroke:var(--red);stroke-width:2.5}.ja-day:disabled{pointer-events:none}@media(max-width:700px){.ja-panel{padding:12px}.ja-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.ja-stat strong{font-size:17px}.ja-calendar{min-width:720px}.ja-nav{width:100%;justify-content:space-between}}@media print{.ja-panel{display:none}}
 
+
+/* Full-width audit workspace; no persistent upload sidebar. */
+#tabAudit .audit-grid{grid-template-columns:minmax(0,1fr);gap:14px}
+#tabAudit .journey-flow{display:block;font-size:11px;line-height:1.5;color:var(--text-faint);margin:-4px 0 12px;padding:0;border:0;background:none}
+#tabAudit .journey-flow.has-data{color:var(--green)}
+#tabAudit .audit-upload-toolbar{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:10px 24px;padding:14px 18px;align-items:start}
+.toolbar-label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);margin-bottom:7px}
+#tabAudit .audit-upload-toolbar .upload-box{display:flex;gap:12px;align-items:center;padding:0;border:0;background:none;border-radius:0;min-height:36px;text-align:left}
+#tabAudit .audit-upload-toolbar .upload-box.drag{outline:2px dashed var(--blue);outline-offset:5px}
+#tabAudit .audit-upload-toolbar .upload-btn{white-space:nowrap;margin:0;padding:10px 14px;flex-shrink:0;font-size:12px}
+#tabAudit .audit-upload-toolbar .upload-meta{margin:0;font-size:11px;line-height:1.5;overflow-wrap:anywhere;min-width:0}
+#tabAudit .audit-preset-control .seg-btn{min-height:36px}
+.audit-import-help{grid-column:1/-1;font-size:10px;color:var(--text-faint)}.audit-import-help summary{cursor:pointer;width:fit-content}.audit-import-help p{margin:8px 0 0;font-size:11px}
+#tabAudit .audit-decision-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px;align-items:start}
+.audit-status-column{min-width:0}.audit-status-column>.panel-label{margin-bottom:10px}
+#tabAudit .audit-status{margin:0 0 10px;padding:15px}#tabAudit .audit-headline{font-size:21px;line-height:1.25}#tabAudit .audit-copy{font-size:12px;line-height:1.65}
+#tabAudit .audit-sticky-summary{position:static;margin:0 0 10px;padding:9px 11px;box-shadow:none;backdrop-filter:none;font-size:11px;line-height:1.55;background:var(--surface-2)}
+.audit-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.audit-context .audit-metric-label{font-size:10px}.audit-context .audit-metric-value{font-size:19px;font-variant-numeric:tabular-nums}.audit-context .audit-metric-sub{font-size:10px}
+#tabAudit .pace-coach{margin:0}#tabAudit .pace-head{padding:12px 14px}#tabAudit .pace-title{font-size:12px}#tabAudit .pace-body{padding:14px}#tabAudit .pace-summary{font-size:12px;line-height:1.6;margin-bottom:10px}
+.pace-details{margin-top:12px;border-top:1px solid var(--border-soft);font-size:11px}.pace-details summary{padding-top:10px;cursor:pointer;color:var(--text-dim)}.pace-details-body{padding-top:10px}#tabAudit .pace-actions li{font-size:11px}#tabAudit .pace-coach *{animation:none!important;transition:none!important}
+#tabAudit .audit-visuals{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}#tabAudit .risk-meter-head{flex-wrap:wrap;min-height:43px;align-content:flex-start;gap:5px}#tabAudit .risk-badge{text-align:left;font-size:8px}#tabAudit .risk-primary strong{font-size:23px}#tabAudit .risk-preview .risk-detail-row{flex-direction:column;align-items:flex-start;gap:3px;min-height:44px}#tabAudit .risk-preview .risk-detail-row strong{text-align:left}
+#tabAudit .ledger-heading{border-top:1px solid var(--border);padding-top:18px;margin-top:20px}#tabAudit .objective-cash-summary{gap:24px;padding:12px 0 18px}#tabAudit .objective-cash-summary strong{font-size:24px}#tabAudit .objective-cash-summary>div:first-child strong{font-size:27px}
+.audit-footer-toolbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}#tabAudit .audit-export-block{margin:0;padding:0}#tabAudit .checkpoint-row{margin:0;flex-wrap:wrap}#tabAudit .checkpoint-note{font-size:10px;margin-bottom:0}#tabAudit .audit-export-block .panel-label{margin-bottom:8px}#tabAudit .audit-tools{padding:9px 11px}#tabAudit .audit-tools-title{font-size:11px}#tabAudit .audit-tools-sub{font-size:10px}
+@media(max-width:1000px){#tabAudit .audit-visuals{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){#tabAudit .audit-decision-grid{grid-template-columns:1fr}#tabAudit .audit-upload-toolbar{grid-template-columns:1fr;gap:14px}.audit-footer-toolbar{grid-template-columns:1fr;gap:18px}#tabAudit .objective-cash-summary{gap:12px}#tabAudit .objective-cash-summary strong{font-size:18px}#tabAudit .objective-cash-summary>div:first-child strong{font-size:21px}}
+@media(max-width:480px){#tabAudit .audit-upload-toolbar{padding:12px}#tabAudit .audit-upload-toolbar .upload-box{gap:10px;flex-wrap:wrap}#tabAudit .risk-meter{padding:10px}#tabAudit .risk-primary strong{font-size:19px}#tabAudit .risk-meter-title{font-size:11px}#tabAudit .risk-primary span{font-size:10px}#tabAudit .objective-cash-summary{gap:8px}#tabAudit .objective-cash-summary strong{font-size:15px}#tabAudit .objective-cash-summary>div:first-child strong{font-size:18px}}
+@media(max-width:360px){#tabAudit .audit-visuals{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -1008,52 +1036,57 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         <h1>FTMO Journey Audit</h1>
         <p class="sub">Upload your latest Myfxbook CSV once a week. The audit answers the right early-stage question: “Has this forward test failed an FTMO objective yet?” Everything runs locally in your browser—no API, account login, or upload to a server.</p>
       </div>
-      <div class="journey-flow" id="journeyFlow"><div class="journey-flow-step"><strong>1 · Upload</strong>Latest cumulative CSV</div><div class="journey-flow-step"><strong>2 · Audit</strong>Check FTMO survival</div><div class="journey-flow-step"><strong>3 · Size</strong>Set the next-trade pace</div><div class="journey-flow-step"><strong>4 · Analyze</strong>Open Quant Analysis</div></div>
+      <div class="journey-flow" id="journeyFlow" role="status">Awaiting CSV · select evaluation rules and load a statement</div>
       <div class="audit-grid">
-        <aside class="panel controls">
-          <p class="panel-label">1 · upload weekly statement</p>
-          <div class="field">
-            <div class="field-head"><span class="field-name">FTMO_PRESET</span></div>
-            <div class="seg" id="auditPresetSeg">
+        <section class="panel audit-upload-toolbar" aria-label="Statement and evaluation rules">
+          <div class="audit-upload-control">
+            <span class="toolbar-label">Statement</span>
+            <div class="upload-box" id="auditDropZone">
+              <label class="upload-btn" id="auditUploadLabel" for="auditFile">Load CSV</label>
+              <input type="file" id="auditFile" accept=".csv,text/csv">
+              <p class="upload-meta" id="auditFileMeta">Myfxbook CSV · choose a file or drop it here</p>
+            </div>
+          </div>
+          <div class="audit-preset-control">
+            <span class="toolbar-label">Evaluation rules</span>
+            <div class="seg" id="auditPresetSeg" role="group" aria-label="FTMO evaluation rules">
               <button type="button" class="seg-btn active" aria-pressed="true" data-audit-preset="ftmo1">1-Step</button>
               <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2">2-Step</button>
               <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2v">Verification</button>
             </div>
           </div>
-          <div class="upload-box" id="auditDropZone">
-            <label class="upload-btn" for="auditFile">Choose Myfxbook CSV</label>
-            <input type="file" id="auditFile" accept=".csv,text/csv">
-            <p class="upload-meta" id="auditFileMeta">or drag and drop here<br>Expected fields include Open Date, Close Date, Action and Profit.</p>
-          </div>
-          <div class="rule-note" style="margin-top:12px;">Time grouping assumes the CSV dates already match FTMO's CE(S)T day. Trades near midnight may need timezone correction. Closed trades cannot prove floating-equity compliance.</div>
-        </aside>
+          <details class="audit-import-help"><summary>CSV requirements</summary><p class="rule-note">Expected fields: Open Date, Close Date, Action and Profit. Dates must match FTMO CE(S)T trading days. Closed trades cannot verify floating-equity compliance. Processing stays in your browser.</p></details>
+        </section>
         <section class="panel output">
-          <p class="panel-label">2 · survival status &amp; action</p>
           <div class="audit-empty" id="auditEmpty">Upload the latest cumulative Myfxbook statement.<br>The result will distinguish <b>no failure found</b> from <b>fully verified</b>.</div>
           <div id="auditResults" hidden>
+            <div class="audit-decision-grid">
+            <div class="audit-status-column">
+            <p class="panel-label">survival status</p>
             <div class="audit-status" id="auditStatus">
               <div class="audit-kicker" id="auditStatusKicker">Closed-trade assessment</div>
               <div class="audit-headline" id="auditHeadline">—</div>
               <div class="audit-copy" id="auditStatusCopy">—</div>
             </div>
             <div class="audit-sticky-summary" id="auditStickySummary">ACTIVE · awaiting sizing decision</div>
+            <div class="audit-context" id="auditContext"></div>
+            </div>
             <div class="pace-coach" id="paceCoach">
-              <div class="pace-head"><span class="pace-title">3 · XAU/USD pace &amp; sizing coach</span><span class="pace-badge" id="paceBadge">—</span></div>
+              <div class="pace-head"><span class="pace-title">XAU/USD pace &amp; sizing</span><span class="pace-badge" id="paceBadge">—</span></div>
               <div class="pace-body">
                 <p class="pace-summary" id="paceSummary">Upload a statement to generate a sizing plan.</p>
                 <div class="pace-grid" id="paceGrid"></div>
-                <ul class="pace-actions" id="paceActions"></ul>
-                <div class="pace-evidence" id="paceEvidence"></div>
+                <details class="pace-details"><summary>Sizing details &amp; rationale</summary><div class="pace-details-body">
+                  <ul class="pace-actions" id="paceActions"></ul>
+                  <div class="pace-evidence" id="paceEvidence"></div>
+                </div></details>
               </div>
             </div>
 
+            </div>
             <div class="ledger-heading">
               <div><p class="panel-label">profit &amp; loss · objective ledger</p><p class="ledger-subtitle">Closed-trade overview · expand any objective for the full breakdown</p></div>
-              <div class="seg ledger-presets" id="ledgerPresetSeg" role="group" aria-label="FTMO evaluation rules">
-                <button type="button" class="seg-btn active" aria-pressed="true" data-audit-preset="ftmo1">1-Step</button>
-                <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2">2-Step</button>
-                <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2v">Verification</button>
-              </div>
+
             </div>
             <p class="ledger-rule-summary" id="ledgerRuleSummary"></p>
             <div id="auditCashSummary"></div>
@@ -1067,18 +1100,22 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
                 <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
               </div>
             </details>
+            <div class="audit-footer-toolbar">
+            <div class="audit-checkpoint-block">
             <div class="checkpoint-row">
               <button class="reset-btn" id="saveCheckpointBtn" disabled>＋ save weekly checkpoint</button>
               <button class="reset-btn" id="clearCheckpointBtn">clear checkpoint</button>
             </div>
             <p class="checkpoint-note" id="checkpointNote">No previous weekly checkpoint saved on this device.</p>
+            </div>
             <div class="audit-export-block">
-              <p class="panel-label">4 · export report</p>
+              <p class="panel-label">share &amp; export</p>
               <div class="audit-tools"><div class="audit-tools-copy"><span class="audit-tools-title">Percentage-only privacy mode</span><span class="audit-tools-sub">Hide money and absolute lot values before sharing</span></div><button type="button" class="adv-switch" id="auditPrivacyToggle" role="switch" aria-checked="false" aria-label="Toggle percentage-only privacy mode"></button></div>
               <div class="audit-export-actions">
                 <button class="audit-print-btn" id="auditPrintBtn" disabled>▣ print / save A4 PDF</button>
                 <button class="audit-print-btn" id="auditImageBtn" disabled>↗ generate share image</button>
               </div>
+            </div>
             </div>
           </div>
         </section>
@@ -3872,6 +3909,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     document.getElementById('auditCostSummary').textContent='Reported commissions & swaps: '+auditSignedAmount(a.commissionSwap,a.initial)+' · already included in net P/L. Loss totals measure money lost; objective buffers measure distance to a rule floor.';
     document.getElementById('ledgerRuleSummary').textContent=p.name+' · Target '+p.target+'% · Daily loss '+p.daily+'% · Maximum loss '+p.max+'% ('+(p.trailing?'EOD trailing':'fixed floor')+') · '+(p.bestDay?'Best Day ≤ 50%':p.minDays+' minimum trading days')+'. Switching rules replays the entire imported history.';
     syncAuditPresetControls(a.presetKey);
+    journeyFlow.textContent='CSV loaded · '+a.trades+' closed trades · '+p.name+' rules applied';
+    document.getElementById('auditContext').innerHTML=metric('Current balance',auditAmount(a.balance,a.initial),'As of '+a.lastDate.slice(0,10))+metric('Trading activity',a.trades+' trades',a.tradingDays+' position-opening days');
     auditVisuals.innerHTML=objectiveLedger(a,p);
     const dailyState=a.breachDaily?'fail':'safe', maxState=a.breachMax?'fail':'safe';
     auditRules.innerHTML=
@@ -3898,12 +3937,12 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   function runJourneyAudit(){
     if(!auditRows)return;
     try{currentAudit=analyzeJourney(auditRows,auditPreset);renderAudit(currentAudit);renderQuant(auditRows);tabBtnQuant.hidden=false;journeyFlow.classList.add('has-data');}
-    catch(err){document.getElementById('jaAnalytics').hidden=true;currentAudit=null;tabBtnQuant.hidden=true;journeyFlow.classList.remove('has-data');if(tabQuant.classList.contains('active'))switchTab('audit');saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditImageBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
+    catch(err){journeyFlow.textContent='CSV could not be audited · review the statement';document.getElementById('jaAnalytics').hidden=true;currentAudit=null;tabBtnQuant.hidden=true;journeyFlow.classList.remove('has-data');if(tabQuant.classList.contains('active'))switchTab('audit');saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditImageBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
   }
   function loadAuditFile(file){
     if(!file)return;
     const reader=new FileReader();
-    reader.onload=()=>{try{auditFileName=file.name;auditRows=parseCSV(String(reader.result));auditFileMeta.textContent=file.name+' · '+auditRows.length+' rows · processed locally';runJourneyAudit();}catch(err){journeyFlow.classList.remove('has-data');tabBtnQuant.hidden=true;auditEmpty.textContent='Could not read this CSV: '+err.message;}};
+    reader.onload=()=>{try{auditFileName=file.name;auditRows=parseCSV(String(reader.result));auditFileMeta.textContent=file.name+' · '+auditRows.length+' rows · processed locally';document.getElementById('auditUploadLabel').textContent='Replace CSV';runJourneyAudit();}catch(err){journeyFlow.textContent='CSV could not be read · choose another statement';journeyFlow.classList.remove('has-data');tabBtnQuant.hidden=true;auditEmpty.textContent='Could not read this CSV: '+err.message;}};
     reader.onerror=()=>{auditEmpty.textContent='The file could not be read. Try exporting the statement again.';};
     reader.readAsText(file);
   }
@@ -3912,13 +3951,13 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   ['dragleave','drop'].forEach(ev=>auditDropZone.addEventListener(ev,e=>{e.preventDefault();auditDropZone.classList.remove('drag');}));
   auditDropZone.addEventListener('drop',e=>loadAuditFile(e.dataTransfer.files[0]));
   function syncAuditPresetControls(key){
-    for(const id of ['auditPresetSeg','ledgerPresetSeg'])document.getElementById(id).querySelectorAll('[data-audit-preset]').forEach(b=>{const active=b.dataset.auditPreset===key;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
+    for(const id of ['auditPresetSeg'])document.getElementById(id).querySelectorAll('[data-audit-preset]').forEach(b=>{const active=b.dataset.auditPreset===key;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active));});
   }
   function selectAuditPreset(key){
     if(!AUDIT_PRESETS[key])return;
     auditPreset=key;syncAuditPresetControls(key);runJourneyAudit();
   }
-  for(const id of ['auditPresetSeg','ledgerPresetSeg'])document.getElementById(id).addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(b)selectAuditPreset(b.dataset.auditPreset);});
+  for(const id of ['auditPresetSeg'])document.getElementById(id).addEventListener('click',e=>{const b=e.target.closest('[data-audit-preset]');if(b)selectAuditPreset(b.dataset.auditPreset);});
   kellyReplaySizing.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
   kellyReplayScope.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
   kellyReplayRange.addEventListener('change',()=>{if(currentQuant)drawKellyReplay(currentQuant);});
