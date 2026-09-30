@@ -811,6 +811,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 @media(max-width:480px){#tabAudit .audit-upload-toolbar{padding:12px}#tabAudit .audit-upload-toolbar .upload-box{gap:10px;flex-wrap:wrap}#tabAudit .risk-meter{padding:10px}#tabAudit .risk-primary strong{font-size:19px}#tabAudit .risk-meter-title{font-size:11px}#tabAudit .risk-primary span{font-size:10px}#tabAudit .objective-cash-summary{gap:8px}#tabAudit .objective-cash-summary strong{font-size:15px}#tabAudit .objective-cash-summary>div:first-child strong{font-size:18px}}
 @media(max-width:360px){#tabAudit .audit-visuals{grid-template-columns:1fr}}
 
+
+.firm-compare{margin:20px 0;padding:18px;border:1px solid var(--border);border-radius:6px;background:var(--surface)}.firm-scroll{overflow-x:auto}.firm-compare table{width:100%;border-collapse:collapse;font-size:11px}.firm-compare th,.firm-compare td{padding:10px 8px;border-bottom:1px solid var(--border-soft);text-align:left;vertical-align:top;min-width:120px}.firm-compare th{color:var(--text-faint);font-weight:500}.firm-detail{padding:12px 0;border-bottom:1px solid var(--border-soft);font-size:12px;line-height:1.6}.firm-detail summary{cursor:pointer}.firm-detail p{font-size:11px}.firm-compare button{cursor:pointer;padding:6px 9px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:4px}.firm-compare small{display:block;color:var(--text-faint);margin-top:5px;line-height:1.5}.firm-compare .breach{color:var(--red)}.firm-compare .reached{color:var(--green)}.firm-compare a{color:var(--blue)}#auditPresetSeg{flex-wrap:wrap}#auditPresetSeg .seg-btn{flex:1 1 110px}[hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -851,6 +853,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           <div class="challenge-presets" id="challengePresets">
             <button class="challenge-preset active" data-preset="ftmo1"><strong>FTMO 1-Step</strong>10% target · 3% daily · 10% EOD trailing</button>
             <button class="challenge-preset" data-preset="ftmo2"><strong>FTMO 2-Step · Challenge</strong>10% target · 5% daily · 10% static · 4 days</button>
+            <button class="challenge-preset" data-preset="wmtNoPC"><strong>WMT NoPC–EU · Instant</strong>6% payout target · 2% daily · 4% static · 1% idea risk</button>
             <button class="challenge-preset" data-preset="ftmo2v"><strong>FTMO 2-Step · Verification</strong>5% target · 5% daily · 10% static · 4 days</button>
             <button class="challenge-preset" data-preset="custom"><strong>Custom</strong>Keep values and edit freely</button>
           </div>
@@ -1025,7 +1028,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       </div>
 
       <div class="footnote">
-        <b>Assumptions:</b> trades are independent Bernoulli outcomes; each simulated trade is opened and closed within the same CE(S)T trading day. Daily loss is tested against start-of-day balance and includes simulated intraday equity. FTMO 1-Step max loss trails only from the highest end-of-day balance; FTMO 2-Step uses a static floor. Position risk stays fixed, with no compounding, slippage, spread, commission, swaps, or martingale. This planning estimate is not a guarantee and is not affiliated with FTMO.
+        <b>Assumptions:</b> trades are independent Bernoulli outcomes; each simulated trade is opened and closed within the same modeled trading day. Daily loss is tested against start-of-day balance and includes simulated intraday equity. FTMO 1-Step max loss trails only from the highest end-of-day balance; FTMO 2-Step uses a static floor. Position risk stays fixed, with no compounding, slippage, spread, commission, swaps, or martingale. WMT NoPC–EU uses a fixed 4% floor and a 1% trade-idea cap; overnight equity and official payout approval are not modeled.
       </div>
     </div>
 
@@ -1033,8 +1036,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     <div class="tab-panel active" id="tabAudit">
       <div class="intro">
         <p class="prompt">audit --weekly --closed-trades</p>
-        <h1>FTMO Journey Audit</h1>
-        <p class="sub">Upload your latest Myfxbook CSV once a week. The audit answers the right early-stage question: “Has this forward test failed an FTMO objective yet?” Everything runs locally in your browser—no API, account login, or upload to a server.</p>
+        <h1>Prop Firm Journey Audit</h1>
+        <p class="sub">Upload your latest Myfxbook CSV once a week. The audit answers the right early-stage question: “Has this forward test breached the selected plan’s objectives?” Everything runs locally in your browser—no API, account login, or upload to a server.</p>
       </div>
       <div class="journey-flow" id="journeyFlow" role="status">Awaiting CSV · select evaluation rules and load a statement</div>
       <div class="audit-grid">
@@ -1049,13 +1052,14 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           </div>
           <div class="audit-preset-control">
             <span class="toolbar-label">Evaluation rules</span>
-            <div class="seg" id="auditPresetSeg" role="group" aria-label="FTMO evaluation rules">
+            <div class="seg" id="auditPresetSeg" role="group" aria-label="Prop firm and stage rules">
               <button type="button" class="seg-btn active" aria-pressed="true" data-audit-preset="ftmo1">1-Step</button>
               <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2">2-Step</button>
+              <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="wmtNoPC">WMT NoPC–EU</button>
               <button type="button" class="seg-btn" aria-pressed="false" data-audit-preset="ftmo2v">Verification</button>
             </div>
           </div>
-          <details class="audit-import-help"><summary>CSV requirements</summary><p class="rule-note">Expected fields: Open Date, Close Date, Action and Profit. Dates must match FTMO CE(S)T trading days. Closed trades cannot verify floating-equity compliance. Processing stays in your browser.</p></details>
+          <details class="audit-import-help"><summary>CSV requirements</summary><p class="rule-note">Expected fields: Open Date, Close Date, Action and Profit. Close-date days are assumed to match the selected firm’s reset days. CSV timestamps have no timezone; verify the export before relying on daily results. Closed trades cannot verify floating-equity compliance. Processing stays in your browser.</p></details>
         </section>
         <section class="panel output">
           <div class="audit-empty" id="auditEmpty">Upload the latest cumulative Myfxbook statement.<br>The result will distinguish <b>no failure found</b> from <b>fully verified</b>.</div>
@@ -1096,7 +1100,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
               <div class="ledger-deep-body">
                 <div class="audit-metrics" id="auditMetrics"></div>
                 <p class="objective-ledger-note" id="auditCostSummary"></p>
-                <div class="audit-list" id="auditRules"></div>
+                <p class="rule-note" id="firmRuleNote"></p>
+            <div class="audit-list" id="auditRules"></div>
                 <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
               </div>
             </details>
@@ -1132,12 +1137,21 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
               <p class="ja-copy" id="jaForecastCopy"></p><div class="ja-stats" id="jaForecastStats"></div><div id="jaRaceBars"></div><div id="jaRace" class="ja-race"></div><p class="ja-note" id="jaForecastMethod"></p>
             </section>
       </div>
-      <div class="footnote"><b>Status language:</b> “No failure found” means the imported closed-trade history has not crossed a calculated FTMO floor. “Cannot fully verify” means the file lacks tick-by-tick floating equity, so it is not proof of official compliance. “Failed” is shown only when the CSV itself contains a clear breach.</div>
+      <section id="firmCompare" class="firm-compare" hidden>
+        <div class="ledger-heading"><div><p class="panel-label">COMPARE FIRMS · SAME HISTORY</p><p class="ledger-subtitle">Same deposit, reported costs and trade order. Each plan is evaluated separately; a phase target is not completion of a two-stage challenge.</p></div></div>
+        <div id="firmCompareTable" class="firm-scroll"></div>
+        <details class="firm-detail"><summary>Model assumptions and verified rule sources</summary><div id="firmSources"></div></details>
+        <details class="firm-detail" id="firmRiskSweep"><summary>Risk sweep · same outcome draws for every plan</summary>
+          <p class="rule-note">Fresh-account binary simulations use observed win rate and average payoff. Risk compounds from the balance before each trade; limits remain based on initial capital. Each simulated trade is a separate idea, with no overnight positions or costs beyond the observed payoff. WMT trade-idea caps are enforced before entry. These are conditional diagnostics.</p>
+          <div class="firm-scroll" id="firmSweepTable"></div>
+        </details>
+      </section>
+      <div class="footnote"><b>Status language:</b> “No failure found” means the imported closed-trade history has not crossed a calculated plan floor. “Cannot fully verify” means the file lacks tick-by-tick floating equity, so it is not proof of official compliance. “Failed” is shown only when the CSV itself contains a clear breach.</div>
       <section class="audit-print-report" id="auditPrintReport" aria-hidden="true"></section>
       <div class="audit-image-modal" id="auditImageModal" hidden role="dialog" aria-modal="true" aria-labelledby="auditImageTitle">
         <div class="audit-image-dialog">
-          <div class="audit-image-head"><strong id="auditImageTitle">Shareable FTMO journey audit</strong><button class="audit-image-close" id="auditImageClose" aria-label="Close image preview">×</button></div>
-          <div class="audit-image-preview-wrap"><img class="audit-image-preview" id="auditImagePreview" alt="Generated FTMO journey audit report"></div>
+          <div class="audit-image-head"><strong id="auditImageTitle">Shareable prop firm journey audit</strong><button class="audit-image-close" id="auditImageClose" aria-label="Close image preview">×</button></div>
+          <div class="audit-image-preview-wrap"><img class="audit-image-preview" id="auditImagePreview" alt="Generated prop firm journey audit report"></div>
           <div class="audit-image-actions"><button class="audit-print-btn" id="auditDownloadImageBtn">↓ save PNG</button><button class="audit-print-btn" id="auditNativeShareBtn">↗ share image</button></div>
         </div>
       </div>
@@ -1158,10 +1172,10 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         <div class="quant-score" id="quantScore"></div>
         <section class="quant-card"><h3><a class="quant-card-link" href="kelly-criterion-for-kids.html" target="_blank" rel="noopener noreferrer" aria-label="Open the Kelly criterion guide in a new tab">Kelly criterion · empirical sizing cross-check <span class="quant-card-link-icon" aria-hidden="true">↗</span></a></h3><p class="quant-copy">Uses the imported closed trades—not the simulator inputs. Full Kelly maximizes theoretical long-run log growth under stable, independent outcomes; it is not a prop-firm risk recommendation.</p><div id="quantKelly"></div></section>
         <section class="quant-card">
-          <div class="quant-chart-head"><div><h3>WHAT IF · Kelly historical replay</h3><span>Historical outcome order · selected FTMO audit rules</span></div></div>
-          <p class="quant-copy">Replays the imported sequence using its observed average winner-to-loser payoff. A win earns <b>Kelly fraction × observed payoff</b>; a loss costs the Kelly fraction. FTMO outcome markers identify where a challenge would stop; later trades in the full-history view are hypothetical.</p>
-          <label class="kelly-replay-controls" for="kellyReplaySizing">Risk amount based on <select id="kellyReplaySizing"><option value="initial">Initial deposit (FTMO-oriented)</option><option value="current">Balance before each trade (compound)</option></select></label>
-          <label class="kelly-replay-controls" for="kellyReplayScope">Show <select id="kellyReplayScope"><option value="full">Full historical sequence (zigzag)</option><option value="stop">Stop at FTMO outcome</option></select></label>
+          <div class="quant-chart-head"><div><h3>WHAT IF · Kelly historical replay</h3><span>Historical outcome order · selected prop firm audit rules</span></div></div>
+          <p class="quant-copy">Replays the imported sequence using its observed average winner-to-loser payoff. A win earns <b>Kelly fraction × observed payoff</b>; a loss costs the Kelly fraction. Selected-plan outcome markers identify where a challenge would stop; later trades in the full-history view are hypothetical.</p>
+          <label class="kelly-replay-controls" for="kellyReplaySizing">Risk amount based on <select id="kellyReplaySizing"><option value="initial">Initial deposit (fixed risk)</option><option value="current">Balance before each trade (compound)</option></select></label>
+          <label class="kelly-replay-controls" for="kellyReplayScope">Show <select id="kellyReplayScope"><option value="full">Full historical sequence (zigzag)</option><option value="stop">Stop at modeled outcome</option></select></label>
           <label class="kelly-replay-controls" id="kellyReplayRangeControl" for="kellyReplayRange" hidden>Chart range <select id="kellyReplayRange"><option value="outcome">Zoom to Kelly outcomes</option><option value="all">All imported trades</option></select></label>
           <div id="quantKellyReplaySummary"></div>
           <div class="quant-chart-grid">
@@ -1259,7 +1273,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
             <p class="hint">Closed-trade balance right now. Selecting an account-size button resets all live account-state fields to that starting value.</p>
           </div>
 
-          <p class="panel-label" style="margin-top:24px;">live FTMO account state</p>
+          <p class="panel-label" style="margin-top:24px;">live account state</p>
 
           <div class="field-row">
             <div class="field">
@@ -1282,12 +1296,16 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
               <input type="text" inputmode="decimal" class="input-field" id="lotHighestEod" value="10000">
             </div>
           </div>
-          <p class="hint">Equity should already include floating P/L, commissions and swaps. FTMO recalculates its daily reference at 00:00 CE(S)T.</p>
+          <div class="field-row" id="wmtLiveInputs" hidden>
+            <div class="field"><div class="field-head"><span class="field-name">DAY_START_EQUITY</span></div><input type="text" inputmode="decimal" class="input-field" id="lotDayStartEquity" value="10000"></div>
+            <div class="field"><div class="field-head"><span class="field-name">EXISTING_IDEA_RISK_USD</span></div><input type="text" inputmode="decimal" class="input-field" id="lotIdeaRisk" value="0"></div>
+          </div>
+          <p class="hint" id="liveResetNote">Equity includes floating P/L, commissions and swaps. FTMO resets at 00:00 CE(S)T.</p>
 
           <div class="field">
             <div class="field-head"><span class="field-name">MAX_BUFFER_USE_PER_TRADE</span><span class="field-value" id="valBufferUse">20%</span></div>
             <input type="range" id="lotBufferUse" min="5" max="100" step="5" value="20">
-            <p class="hint">Veteran safety cap: one stopped trade may consume at most this share of the tighter remaining FTMO buffer.</p>
+            <p class="hint">Veteran safety cap: one stopped trade may consume at most this share of the tighter remaining plan buffer.</p>
           </div>
 
           <div class="field">
@@ -1389,6 +1407,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           <div class="challenge-presets" id="lotChallengePresets">
             <button class="challenge-preset active" data-preset="ftmo1"><strong>FTMO 1-Step</strong>3% daily · 10% EOD trailing</button>
             <button class="challenge-preset" data-preset="ftmo2"><strong>FTMO 2-Step · Challenge</strong>5% daily · 10% static</button>
+            <button class="challenge-preset" data-preset="wmtNoPC"><strong>WMT NoPC–EU · Instant</strong>6% payout target · 2% daily · 4% static · 1% idea risk</button>
             <button class="challenge-preset" data-preset="ftmo2v"><strong>FTMO 2-Step · Verification</strong>5% daily · 10% static</button>
             <button class="challenge-preset" data-preset="custom"><strong>Custom</strong>Keep values and edit freely</button>
           </div>
@@ -1502,7 +1521,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 
           <div class="safety-banner" id="lotSafetyBanner">
             <strong id="lotSafetyStatus">SAFE TO SIZE</strong>
-            <span id="lotSafetyReason">Live FTMO buffers are available</span>
+            <span id="lotSafetyReason">Live plan buffers are available</span>
           </div>
 
           <div class="stat-grid">
@@ -1689,6 +1708,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   </div>
 </div>
 
+<script src="prop-rules.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1758,14 +1778,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const statFailMaxSub = document.getElementById('statFailMaxSub');
   const statFailDailySub = document.getElementById('statFailDailySub');
 
-  const PRESETS = {
-    ftmo1: { label:'FTMO 1-Step', profitTarget:10, maxLoss:10, dailyLoss:3, maxLossMode:'eodTrailing', minTradingDays:0, bestDayRule:true,
-      note:'FTMO 1-Step: 10% target, 3% maximum daily loss, 10% end-of-day trailing maximum loss, and Best Day ≤ 50% of positive-day profit.' },
-    ftmo2: { label:'FTMO 2-Step · Challenge', profitTarget:10, maxLoss:10, dailyLoss:5, maxLossMode:'static', minTradingDays:4, bestDayRule:false,
-      note:'FTMO 2-Step Challenge: 10% target, 5% maximum daily loss, 10% static maximum loss, and at least 4 trading days.' },
-    ftmo2v: { label:'FTMO 2-Step · Verification', profitTarget:5, maxLoss:10, dailyLoss:5, maxLossMode:'static', minTradingDays:4, bestDayRule:false,
-      note:'FTMO 2-Step Verification: 5% target, 5% maximum daily loss, 10% static maximum loss, and at least 4 trading days.' }
-  };
+  const PRESETS = Object.fromEntries(Object.entries(PropRules.presets).map(([key,p])=>[key,{label:p.name,profitTarget:p.target,maxLoss:p.max,dailyLoss:p.daily,maxLossMode:p.trailing?'eodTrailing':'static',minTradingDays:p.minDays,bestDayRule:p.bestDay,note:p.note||p.name+': '+p.target+'% target, '+p.daily+'% daily, '+p.max+'% total; '+p.reset} ]));
   const DEFAULTS = {
     preset:'ftmo1', profitTarget:10, maxLoss:10, dailyLoss:3, maxLossMode:'eodTrailing', minTradingDays:0, bestDayRule:true,
     winRate: 65, rr: 1, risk: 1.0, tpd: 1, horizon: 30, simRuns: 10000
@@ -1927,58 +1940,12 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const MAX_SAMPLE_CURVES = 40;
 
   function simulate(p, RR, riskPct, tradesPerDay, horizonDays, iterations, targetPct, maxLossPct, dailyLossPct, lossMode, minDays, useBestDay){
-    const profitTarget = INITIAL + targetPct;
-    let pass = 0, failMax = 0, failDaily = 0, timeout = 0;
-    const daysToPass = [];
-    const curves = [];
-
-    for (let i = 0; i < iterations; i++){
-      let equity = INITIAL;
-      let outcome = 'timeout';
-      let passDay = null;
-      let highestEodBalance = INITIAL;
-      let positiveDaysProfit = 0;
-      let bestDayProfit = 0;
-      const keep = i < MAX_SAMPLE_CURVES;
-      const curve = keep ? [equity] : null;
-
-      outer:
-      for (let day = 1; day <= horizonDays; day++){
-        const dayStart = equity;
-        const maxLossFloor = (lossMode === 'eodTrailing' ? highestEodBalance : INITIAL) - maxLossPct;
-        for (let t = 0; t < tradesPerDay; t++){
-          const win = Math.random() < p;
-          equity += win ? riskPct * RR : -riskPct;
-          if (curve) curve.push(equity);
-
-          if (equity < maxLossFloor){ outcome = 'failMax'; break outer; }
-          if (equity < dayStart - dailyLossPct){ outcome = 'failDaily'; break outer; }
-        }
-        const dayProfit = equity - dayStart;
-        if (dayProfit > 0){ positiveDaysProfit += dayProfit; bestDayProfit = Math.max(bestDayProfit, dayProfit); }
-        const bestDaySatisfied = !useBestDay || (positiveDaysProfit > 0 && bestDayProfit <= positiveDaysProfit * 0.5 + 1e-9);
-        if (equity >= profitTarget && day >= minDays && bestDaySatisfied){ outcome = 'pass'; passDay = day; break outer; }
-        highestEodBalance = Math.max(highestEodBalance, equity);
-      }
-
-      if (outcome === 'pass'){ pass++; daysToPass.push(passDay); }
-      else if (outcome === 'failMax') failMax++;
-      else if (outcome === 'failDaily') failDaily++;
-      else timeout++;
-
-      if (keep) curves.push({ points: curve, outcome: outcome });
-    }
-
-    const avgDays = daysToPass.length ? daysToPass.reduce((a,b)=>a+b,0) / daysToPass.length : null;
-
-    return {
-      pass: pass / iterations * 100,
-      failMax: failMax / iterations * 100,
-      failDaily: failDaily / iterations * 100,
-      timeout: timeout / iterations * 100,
-      avgDays: avgDays,
-      curves: curves
-    };
+    const base=PropRules.presets[activePreset]||PropRules.presets.ftmo1;
+    const rules={...base,target:targetPct,max:maxLossPct,daily:dailyLossPct,trailing:lossMode==='eodTrailing',minDays,bestDay:useBestDay,ideaRisk:activePreset==='custom'?undefined:base.ideaRisk};
+    const result=PropRules.simulate({rules,payoff:RR,winRate:p,risk:riskPct,tradesPerDay,horizon:horizonDays*tradesPerDay,paths:iterations,compound:false});
+    return {pass:result.pass,failMax:result.max+result.idea,failDaily:result.daily,timeout:result.unfinished,ideaFailure:result.idea,
+      avgDays:result.passTimes.length?result.passTimes.reduce((a,b)=>a+Math.ceil(b/tradesPerDay),0)/result.passTimes.length:null,
+      curves:result.curves.slice(0,MAX_SAMPLE_CURVES).map((points,i)=>({points,outcome:result.curveOutcomes[i]}))};
   }
 
   function runSimulation(){
@@ -2013,7 +1980,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     statTimeout.textContent = res.timeout.toFixed(1) + '%';
 
     statPassSub.textContent = 'hits +' + cfg.target + '% before any breach';
-    statFailMaxSub.textContent = cfg.maxLossMode === 'eodTrailing' ? 'equity below EOD high −' + cfg.maxLoss + '%' : 'equity below start −' + cfg.maxLoss + '%';
+    statFailMaxSub.textContent = (res.ideaFailure?res.ideaFailure.toFixed(1)+'% idea-risk cap · ':'')+(cfg.maxLossMode === 'eodTrailing' ? 'equity below EOD high −' + cfg.maxLoss + '%' : 'equity below start −' + cfg.maxLoss + '%');
     statFailDailySub.textContent = 'single day ≤ −' + cfg.dailyLoss + '%';
 
     avgDaysOut.textContent = res.avgDays ? res.avgDays.toFixed(1) + ' days' : '—';
@@ -2048,7 +2015,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 
     return lead + ' At ' + (cfg.p*100).toFixed(0) + '% win rate, 1:' + cfg.RR + ' R:R and ' + cfg.risk.toFixed(1) + '% risk/trade, '
       + pass.toFixed(1) + '% of simulated runs satisfied the target' + (cfg.minDays ? ', minimum days' : '') + (cfg.bestDay ? ' and Best Day rule' : '') + ' before breaching either drawdown rule ('
-      + res.failMax.toFixed(1) + '% blow the ' + cfg.maxLoss + '% max loss, ' + res.failDaily.toFixed(1) + '% blow the ' + cfg.dailyLoss + '% daily limit). '
+      + res.failMax.toFixed(1) + '% breach total loss or trade-idea risk (idea cap: '+(res.ideaFailure||0).toFixed(1)+'%); total allowance ' + cfg.maxLoss + '% max loss, ' + res.failDaily.toFixed(1) + '% blow the ' + cfg.dailyLoss + '% daily limit). '
       + riskNote;
   }
 
@@ -2240,14 +2207,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     deriskCut: 50
   };
 
-  const LOT_PRESETS = {
-    ftmo1: { title:'FTMO 1-Step objectives', target:10, dailyLoss:3, maxLoss:10, ddType:'eodTrailing', days:'None',
-      extra:'Best Day must be no more than 50% of total positive-day profit. Daily limits reset at 00:00 CE(S)T. Dollar budgets below are sizing references, not exact remaining breach-floor room.' },
-    ftmo2: { title:'FTMO 2-Step · Challenge objectives', target:10, dailyLoss:5, maxLoss:10, ddType:'static', days:'4',
-      extra:'At least four trading days are required. A trading day counts when at least one position is opened, measured in CE(S)T. Dollar budgets below are sizing references.' },
-    ftmo2v: { title:'FTMO 2-Step · Verification objectives', target:5, dailyLoss:5, maxLoss:10, ddType:'static', days:'4',
-      extra:'At least four trading days are required. A trading day counts when at least one position is opened, measured in CE(S)T. Dollar budgets below are sizing references.' }
-  };
+  const LOT_PRESETS = Object.fromEntries(Object.entries(PropRules.presets).map(([key,p])=>[key,{title:p.name+' objectives',target:p.target,dailyLoss:p.daily,maxLoss:p.max,ddType:p.trailing?'eodTrailing':'static',days:p.minDays||'None',extra:p.note||p.reset}]));
 
   const lotBalanceEl = document.getElementById('lotBalance');
   const lotInitialCapitalEl = document.getElementById('lotInitialCapital');
@@ -2713,6 +2673,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 
   function markLotCustom(){
     activeLotPreset = 'custom';
+    document.getElementById('wmtLiveInputs').hidden=true;
+    document.getElementById('liveResetNote').textContent='Custom loss rules use day-start balance; no firm-specific trade-idea cap.';
     syncLotPresetActive();
     renderLotObjectives(null);
   }
@@ -2721,6 +2683,10 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const preset = LOT_PRESETS[name];
     if (!preset){ markLotCustom(); return; }
     activeLotPreset = name;
+    const shared=PropRules.get(name);
+    document.getElementById('wmtLiveInputs').hidden=shared.dailyReference!=='higher';
+    document.getElementById('liveResetNote').textContent=shared.dailyReference==='higher'?'WMT: daily reference = higher of day-start balance and equity. Enter existing combined risk for the same trade idea, including costs. Reset timezone requires account confirmation. Imported closed history assumes no overnight float.': 'Equity includes floating P/L, commissions and swaps. '+shared.reset;
+
     lotDailyLossEl.value = preset.dailyLoss;
     lotMaxLossEl.value = preset.maxLoss;
     lotDDType = preset.ddType;
@@ -2825,13 +2791,17 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const requestedRiskDollar = currentEquity * (riskPct / 100);
     const dailyLossAmount = initialCapital * (dailyPct / 100);
     const maxLossAmount = initialCapital * (maxPct / 100);
-    const dailyFloor = dayStartBalance - dailyLossAmount;
+    const sharedRules=PropRules.presets[activeLotPreset];
+    const startEquity=parseMoneyInput(document.getElementById('lotDayStartEquity'));
+    const dailyFloor = (sharedRules?.dailyReference==='higher'?Math.max(dayStartBalance,startEquity):dayStartBalance) - dailyLossAmount;
     const maxReference = lotDDType === 'eodTrailing' ? Math.max(initialCapital, highestEod) : initialCapital;
     const maxFloor = maxReference - maxLossAmount;
     const dailyBuffer = currentEquity - dailyFloor;
     const maxBuffer = currentEquity - maxFloor;
     const tightBuffer = Math.max(0, Math.min(dailyBuffer, maxBuffer));
-    const safeRiskDollar = tightBuffer * (bufferUsePct / 100);
+    const committedIdeaRisk=Math.max(0,parseMoneyInput(document.getElementById('lotIdeaRisk')));
+    const ideaAllowance=sharedRules?.ideaRisk?Math.max(0,initialCapital*sharedRules.ideaRisk/100-committedIdeaRisk):Infinity;
+    const safeRiskDollar = Math.min(tightBuffer * (bufferUsePct / 100),ideaAllowance);
     const riskDollar = Math.max(0, Math.min(requestedRiskDollar, safeRiskDollar));
 
     // pip value per 1.00 (standard) lot = pipValue001 * 100
@@ -2879,16 +2849,16 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     } else if (wasCapped || tightBuffer / initialCapital < 0.01){
       lotSafetyBanner.classList.add('warn');
       lotSafetyStatus.textContent = 'REDUCE SIZE';
-      lotSafetyReason.textContent = wasCapped ? 'Requested risk exceeds the veteran buffer cap' : 'Less than 1% of initial capital remains';
+      lotSafetyReason.textContent = wasCapped ? 'Requested risk exceeds the buffer or combined trade-idea cap' : 'Less than 1% of initial capital remains';
     } else {
-      lotSafetyStatus.textContent = 'SAFE TO SIZE';
+      lotSafetyStatus.textContent = sharedRules?.firm==='WeMasterTrade'?'WITHIN MODELED SIZING CAPS':'SAFE TO SIZE';
       lotSafetyReason.textContent = 'Post-stop buffer remains inside the selected safety plan';
     }
 
     if (roundedLot <= 0){
       lotOut.textContent = '0.00';
-      lotOutSub.textContent = tightBuffer <= 0 ? 'no trade — account is at or beyond an FTMO floor' : 'safe cap is below the broker minimum — skip this trade';
-      lotWarn.textContent = tightBuffer <= 0 ? '⚠ Stop trading: current equity has no remaining room to the tighter FTMO floor.' : '⚠ The prop-safe size is below the broker minimum. Do not round up; skip the trade or use a tighter valid setup.';
+      lotOutSub.textContent = tightBuffer <= 0 ? 'no trade — account is at or beyond a plan floor' : 'safe cap is below the broker minimum — skip this trade';
+      lotWarn.textContent = tightBuffer <= 0 ? '⚠ Stop trading: current equity has no remaining room to the tighter plan floor.' : '⚠ The prop-safe size is below the broker minimum. Do not round up; skip the trade or use a tighter valid setup.';
       lotWarn.classList.add('show');
     } else {
       lotOut.textContent = roundedLot.toFixed(decimals);
@@ -3002,7 +2972,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       verdict = 'This combination of stop-loss and risk % rounds down to below your broker\'s minimum lot. Widen the stop, raise risk %, or pick a smaller lot step if your broker supports it.';
     } else {
       verdict = 'At ' + roundedLot.toFixed(decimals) + ' lots with a ' + slPips.toFixed(0) + '-pip stop (' + effSLPips.toFixed(0) + ' effective incl. spread), a full loser costs ' + fmtUSD(actualRiskDollar)
-        + (wasCapped ? '. The prop-safety engine reduced the requested ' + requestedRoundedLot.toFixed(decimals) + ' lots to preserve the tighter FTMO buffer' : '')
+        + (wasCapped ? '. The prop-safety engine reduced the requested ' + requestedRoundedLot.toFixed(decimals) + ' lots to preserve the tighter plan buffer' : '')
         + '. You can absorb ' + lossesDaily + ' losing trade' + (lossesDaily === 1 ? '' : 's') + ' in a row before breaching your ' + dailyPct.toFixed(1) + '% daily limit ('
         + (streakProbDaily < 0.01 ? '<0.01' : streakProbDaily.toFixed(1)) + '% chance of that at a ' + winRatePct.toFixed(0) + '% win rate), and '
         + lossesMax + ' before breaching your ' + maxPct.toFixed(1) + '% max drawdown'
@@ -3092,7 +3062,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       b.classList.toggle('active', b.dataset.ddtype === lotDDType);
     });
     ddTypeHint.textContent = lotDDType === 'static'
-      ? 'FTMO 2-Step: maximum loss is a static floor measured from the initial simulated capital.'
+      ? 'Static maximum loss is a fixed floor measured from initial capital.'
       : 'FTMO 1-Step: the floor is recalculated at 00:00 CE(S)T from the highest end-of-day balance and can only rise.';
   }
 
@@ -3109,7 +3079,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 
   [lotBalanceEl, lotRiskEl, lotSLEl, lotPipValueEl, lotSpreadEl, lotCommEl,
    lotDailyLossEl, lotMaxLossEl, lotConcurrentCapEl, lotDeriskAfterEl, lotDeriskCutEl,
-   lotInitialCapitalEl, lotCurrentEquityEl, lotDayStartBalanceEl, lotHighestEodEl,
+   document.getElementById('lotDayStartEquity'), document.getElementById('lotIdeaRisk'), lotInitialCapitalEl, lotCurrentEquityEl, lotDayStartBalanceEl, lotHighestEodEl,
    lotBufferUseEl, lotPositiveDaysProfitEl, lotBestDayProfitEl].forEach(el => {
     el.addEventListener('input', () => {
       if (el === lotBalanceEl) syncBalancePresetActive();
@@ -3124,6 +3094,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     lotInitialCapitalEl.value = LOT_DEFAULTS.initialCapital;
     lotCurrentEquityEl.value = LOT_DEFAULTS.currentEquity;
     lotDayStartBalanceEl.value = LOT_DEFAULTS.dayStartBalance;
+    document.getElementById('lotDayStartEquity').value=LOT_DEFAULTS.dayStartBalance;
+    document.getElementById('lotIdeaRisk').value='0';
     lotHighestEodEl.value = LOT_DEFAULTS.highestEod;
     lotBufferUseEl.value = LOT_DEFAULTS.bufferUse;
     lotPositiveDaysProfitEl.value = LOT_DEFAULTS.positiveDaysProfit;
@@ -3152,7 +3124,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 
   lotResetBtn.addEventListener('click', applyLotDefaults);
 
-  // ---------- WEEKLY FTMO JOURNEY AUDIT ----------
+  // ---------- WEEKLY PROP FIRM JOURNEY AUDIT ----------
   const auditFile = document.getElementById('auditFile');
   const journeyFlow = document.getElementById('journeyFlow');
   const auditDropZone = document.getElementById('auditDropZone');
@@ -3192,11 +3164,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   const auditDownloadImageBtn = document.getElementById('auditDownloadImageBtn');
   const auditNativeShareBtn = document.getElementById('auditNativeShareBtn');
   const AUDIT_CHECKPOINT_KEY = 'challenge_sim_ftmo_weekly_checkpoint_v1';
-  const AUDIT_PRESETS = {
-    ftmo1:{name:'FTMO 1-Step',target:10,daily:3,max:10,trailing:true,minDays:0,bestDay:true},
-    ftmo2:{name:'FTMO 2-Step · Challenge',target:10,daily:5,max:10,trailing:false,minDays:4,bestDay:false},
-    ftmo2v:{name:'FTMO 2-Step · Verification',target:5,daily:5,max:10,trailing:false,minDays:4,bestDay:false}
-  };
+  const AUDIT_PRESETS = PropRules.presets;
   let auditPreset = 'ftmo1';
   let auditLotStep = lotStep;
   let auditRows = null;
@@ -3314,27 +3282,28 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           peakEod=Math.max(peakEod,balance);
           dayStart=balance;dayPnl=0;
         };
-        const targetEligible=()=>balance>=actualStart*(1+rules.target/100)&&openDays.size>=rules.minDays&&(!rules.bestDay||(positiveDaysProfit>0&&bestDay/positiveDaysProfit<=.5));
+        const targetEligible=()=>balance>=actualStart*(1+rules.target/100)&&openDays.size>=rules.minDays&&PropRules.consistent(rules,bestDay,positiveDaysProfit,balance-actualStart);
         q.trades.forEach((t,i)=>{
           if(stopTrade&&!fullHistory){path.push(null);return;}
           const closeDay=dayKey(t.close);
           if(day!==null&&day!==closeDay){
             endDay();
             if(!stopTrade&&targetEligible()){
-              status='Target eligible';stopTrade=i;
+              status=rules.outcome;stopTrade=i;
               if(!fullHistory){path.push(null);return;}
             }
           }
           day=closeDay;openDays.add(dayKey(t.open));
           const risk=f*(compound?balance:actualStart);
+          if(!stopTrade&&rules.ideaRisk&&risk>actualStart*rules.ideaRisk/100+1e-9){status='Trade-idea risk exceeds cap';stopTrade=i+1;if(!fullHistory){path.push(null);return;}}
           const pnl=t.net>0?risk*q.kelly.b:t.net<0?-risk:0;
           balance+=pnl;dayPnl+=pnl;path.push(balance/actualStart*100);
-          const dailyFloor=dayStart-actualStart*rules.daily/100;
+          const dailyFloor=PropRules.dailyFloor(rules,actualStart,dayStart);
           const maxFloor=(rules.trailing?Math.max(actualStart,peakEod):actualStart)-actualStart*rules.max/100;
-          if(!stopTrade&&(balance<dailyFloor||balance<maxFloor)){status=balance<dailyFloor&&balance<maxFloor?'Daily + max loss':balance<dailyFloor?'Daily loss':'Max loss';stopTrade=i+1;return;}
-          if(!stopTrade&&!rules.bestDay&&targetEligible()){status='Target eligible';stopTrade=i+1;}
+          if(!stopTrade&&(PropRules.hit(balance,dailyFloor,rules)||PropRules.hit(balance,maxFloor,rules))){status=PropRules.hit(balance,dailyFloor,rules)&&PropRules.hit(balance,maxFloor,rules)?'Daily + max loss':PropRules.hit(balance,dailyFloor,rules)?'Daily loss':'Max loss';stopTrade=i+1;return;}
+          if(!stopTrade&&!rules.bestDay&&targetEligible()){status=rules.outcome;stopTrade=i+1;}
         });
-        if(!stopTrade&&day!==null){endDay();if(targetEligible()){status='Target eligible';stopTrade=q.trades.length;}}
+        if(!stopTrade&&day!==null){endDay();if(targetEligible()){status=rules.outcome;stopTrade=q.trades.length;}}
         if(!stopTrade&&balance>=actualStart*(1+rules.target/100))status='Target pending rules';
       }
       let peak=path[0],maxDD=0;const dd=path.map(v=>{if(v===null)return null;peak=Math.max(peak,v);const d=peak>0?(v/peak-1)*100:0;maxDD=Math.min(maxDD,d);return d;});
@@ -3387,18 +3356,18 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       quantKellyCompare.style.gridTemplateColumns=auditPrivacy?'1fr':'';
       if(!auditPrivacy)qKellyComparisonBars(quantKellyBalanceBars,quantKellyBalanceAxis,series,s=>s.ending*initial/100,v=>money(v));
       qKellyComparisonBars(quantKellyReturnBars,quantKellyReturnAxis,series,s=>s.ending-100,v=>pct(v,2));
-      quantKellyBalanceNote.textContent='Starting deposit '+money(initial)+' for every path. Actual uses recorded net P/L. Kelly sizes from '+(kellyReplaySizing.value==='initial'?'initial deposit':'current balance')+'; '+(kellyReplayScope.value==='full'?'balances continue hypothetically beyond the FTMO marker.':'balances end at the first FTMO outcome.');
-      quantKellyReturnNote.textContent='Percentage change from the same starting deposit. '+(kellyReplayScope.value==='full'?'Full-history results include hypothetical trades after FTMO outcome.':'Stopped Kelly results end at their first FTMO outcome.')+' Actual includes all imported trades.';
+      quantKellyBalanceNote.textContent='Starting deposit '+money(initial)+' for every path. Actual uses recorded net P/L. Kelly sizes from '+(kellyReplaySizing.value==='initial'?'initial deposit':'current balance')+'; '+(kellyReplayScope.value==='full'?'balances continue hypothetically beyond the modeled marker.':'balances end at the first modeled outcome.');
+      quantKellyReturnNote.textContent='Percentage change from the same starting deposit. '+(kellyReplayScope.value==='full'?'Full-history results include hypothetical trades after modeled outcome.':'Stopped Kelly results end at their first modeled outcome.')+' Actual includes all imported trades.';
     }else quantKellyCompare.hidden=true;
     const sized=series.filter(s=>s.fraction!==null);
-    quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight"><strong>'+AUDIT_PRESETS[currentAudit.presetKey].name+' first modeled outcome:</strong> '+sized.map(s=>s.name+' '+pct(s.fraction*100,2)+' · '+s.status+(s.stopTrade?' at trade '+s.stopTrade:'')).join(' · ')+'</div><div class="quant-insight warn">'+(kellyReplayScope.value==='full'?'Lines continue through all trades; values after an FTMO outcome are hypothetical. ':'')+'Kelly fractions are uncapped stress tests, not FTMO-approved trade sizes. CSV close dates are assumed to match FTMO CE(S)T days. Floating equity, overlapping positions, exact intraday order, and official compliance cannot be verified.</div></div>';
+    quantKellyReplaySummary.innerHTML='<div class="quant-insights"><div class="quant-insight"><strong>'+AUDIT_PRESETS[currentAudit.presetKey].name+' first modeled outcome:</strong> '+sized.map(s=>s.name+' '+pct(s.fraction*100,2)+' · '+s.status+(s.stopTrade?' at trade '+s.stopTrade:'')).join(' · ')+'</div><div class="quant-insight warn">'+(kellyReplayScope.value==='full'?'Lines continue through all trades; values after a modeled outcome are hypothetical. ':'')+'Kelly fractions are uncapped stress tests, not approved trade sizes. CSV close dates are assumed to match the selected firm’s reset days; overnight equity is unavailable. Floating equity, overlapping positions, exact intraday order, and official compliance cannot be verified.</div></div>';
     const legendDot=s=>'<i style="display:inline-block;width:9px;height:9px;margin-right:6px;border-radius:50%;background:'+s.color+'"></i>';
     quantKellyEquityLegend.innerHTML=series.map(s=>'<span class="quant-chart-key">'+legendDot(s)+s.name+' <strong>'+s.ending.toFixed(2)+'</strong></span>').join('');
     quantKellyDDLegend.innerHTML=series.map(s=>'<span class="quant-chart-key">'+legendDot(s)+s.name+' <strong>'+pct(s.maxDD,1)+'</strong></span>').join('');
     const zoom=kellyReplayScope.value==='stop'&&kellyReplayRange.value==='outcome';
     const chartEnd=qKellyChartEnd(series,zoom);
     qDrawMultiLine(quantKellyEquityChart,series,'path',v=>v.toFixed(0),chartEnd);qDrawMultiLine(quantKellyDDChart,series,'dd',v=>v.toFixed(2)+'%',chartEnd);
-    quantKellyEquityNote.textContent='Each path starts at 100. Actual uses imported dollar P/L. Kelly uses '+(kellyReplaySizing.value==='initial'?'a fixed fraction of the initial deposit':'a fraction of the balance before each trade')+'. Dots mark the first modeled FTMO outcome; '+(kellyReplayScope.value==='full'?'later trades are hypothetical.':'paths end there.');
+    quantKellyEquityNote.textContent='Each path starts at 100. Actual uses imported dollar P/L. Kelly uses '+(kellyReplaySizing.value==='initial'?'a fixed fraction of the initial deposit':'a fraction of the balance before each trade')+'. Dots mark the first modeled plan outcome; '+(kellyReplayScope.value==='full'?'later trades are hypothetical.':'paths end there.');
     if(zoom)quantKellyEquityNote.textContent+=' Chart zoom: trades 0–'+chartEnd+'. Actual is cropped to this window; its legend and comparison bars retain full CSV results.';
     quantKellyDDNote.textContent='Maximum drawdown for every path is shown in the legend. '+(zoom?'Chart zoom: trades 0–'+chartEnd+'; Actual legend retains full CSV drawdown. ':'')+'Historical replay is not out-of-sample evidence.';
   }
@@ -3423,6 +3392,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   }
   function drawQuantCharts(q){
     qDrawDistribution(q);qDrawRolling(q);qDrawDrawdown(q);drawKellyReplay(q);
+    if(window.renderFirmComparison)window.renderFirmComparison(q,currentAudit,auditPrivacy,selectAuditPreset);
     if(typeof window.renderAdvancedQuantLab==='function')window.renderAdvancedQuantLab(q,currentAudit);
     qDrawScatter(quantLotScatter,q.trades.filter(t=>t.lots>0).map(t=>({x:t.lots,y:t.net})),'Lot size','Net P/L',v=>Number(v).toFixed(2));
     qDrawScatter(quantHoldScatter,q.trades.map(t=>({x:t.minutes,y:t.net})),'Holding time (log scale)','Net P/L',v=>qDuration(Math.expm1(v)),v=>Math.log1p(v));
@@ -3501,7 +3471,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       ['Quarter Kelly',k.usable?pct(k.quarter*100,2):'—','Conservative Kelly fraction'],
       ['95% stressed Kelly',k.usable?pct(k.conservative*100,2):'—','Wilson lower-bound win rate; payoff unchanged'],
       ['Prop-aware cross-check',k.usable&&paceCap>0?pct(propCap*100,2):'0.00%','Lower of quarter Kelly and current pace-coach cap']
-    ])+'<div class="quant-insights"><div class="quant-insight '+(k.conservative>0&&s.n>=30?'good':'warn')+'"><strong>'+kellyStatus+'.</strong> Observed p = '+pct(k.p*100,1)+', 95% lower-bound p = '+pct(k.pLower*100,1)+', payoff b = '+(Number.isFinite(k.b)?k.b.toFixed(2)+'×':'—')+'. Kelly assumes the edge and payoff remain stable, trades are independent, and losses are limited to the measured average. FTMO drawdown rules can bind long before Kelly\'s long-run optimum becomes relevant.</div></div>';
+    ])+'<div class="quant-insights"><div class="quant-insight '+(k.conservative>0&&s.n>=30?'good':'warn')+'"><strong>'+kellyStatus+'.</strong> Observed p = '+pct(k.p*100,1)+', 95% lower-bound p = '+pct(k.pLower*100,1)+', payoff b = '+(Number.isFinite(k.b)?k.b.toFixed(2)+'×':'—')+'. Kelly assumes the edge and payoff remain stable, trades are independent, and losses are limited to the measured average. Prop firm drawdown rules can bind long before Kelly\'s long-run optimum becomes relevant.</div></div>';
     quantFingerprints.innerHTML=q.fingerprints.map(f=>'<div class="quant-fingerprint"><div class="quant-fingerprint-head"><span class="quant-fingerprint-name">'+f.name+'</span><span class="quant-fingerprint-score">'+f.score+'%</span></div><div class="quant-fingerprint-track"><div class="quant-fingerprint-fill" style="width:'+f.score+'%"></div></div><div class="quant-fingerprint-evidence">'+f.evidence+'</div></div>').join('');
     const breakeven=Number.isFinite(s.payoff)?100/(1+s.payoff):0;
     quantEdge.innerHTML=qTable(['Metric','Result','Context'],[
@@ -3595,7 +3565,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       const open=auditDate(r['Open Date']), close=auditDate(r['Close Date']);
       const profit=Number(r.Profit),commission=Number(r.Commission||0),swap=Number(r.Swap||0);
       const lots=Number(r['Units/Lots']);
-      return {open,close,commissionSwap:(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),net:profit+(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),lots:Number.isFinite(lots)?lots:0};
+      return {open,close,symbol:String(r.Symbol||'Unknown'),direction:String(r.Action).toLowerCase(),commissionSwap:(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),net:profit+(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),lots:Number.isFinite(lots)?lots:0};
     }).filter(t=>t.open&&t.close&&Number.isFinite(t.net)).sort((a,b)=>a.close-b.close);
     if(!trades.length) throw new Error('No closed Buy or Sell trades were found in this CSV.');
 
@@ -3606,7 +3576,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     let worstMaxLoss={buffer:initial*p.max/100,balance:initial,floor:initial*(1-p.max/100),day:dayKey(trades[0].open),time:'Starting deposit'};
     let breachDaily=null,breachMax=null,positiveDays=0,positiveDaysProfit=0,bestDay=0;
     for(const [day,dayTrades] of groups){
-      const dayStart=balance, dailyFloor=dayStart-initial*p.daily/100;
+      const dayStart=balance, dailyFloor=PropRules.dailyFloor(p,initial,dayStart);
       const maxFloor=(p.trailing?Math.max(initial,peakEod):initial)-initial*p.max/100;
       let dayLow=0;
       for(const t of dayTrades){
@@ -3615,9 +3585,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         dayLow=Math.min(dayLow,balance-dayStart);
         peakClosed=Math.max(peakClosed,balance);
         maxClosedDD=Math.min(maxClosedDD,balance-peakClosed);
-        if(!breachDaily&&balance<dailyFloor) breachDaily={day,balance,floor:dailyFloor};
+        if(!breachDaily&&PropRules.hit(balance,dailyFloor,p)) breachDaily={day,balance,floor:dailyFloor};
         if(balance-maxFloor<worstMaxLoss.buffer)worstMaxLoss={buffer:balance-maxFloor,balance,floor:maxFloor,day,time:String(t.close.getHours()).padStart(2,'0')+':'+String(t.close.getMinutes()).padStart(2,'0')};
-        if(!breachMax&&balance<maxFloor) breachMax={day,balance,floor:maxFloor};
+        if(!breachMax&&PropRules.hit(balance,maxFloor,p)) breachMax={day,balance,floor:maxFloor};
       }
       const dayPnl=balance-dayStart;
       if(dayLow<worstDayExcursion){worstDayExcursion=dayLow;worstDayExcursionDay=day;}
@@ -3630,9 +3600,12 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const dailyFloorNow=balance-initial*p.daily/100;
     const maxFloorNow=(p.trailing?Math.max(initial,peakEod):initial)-initial*p.max/100;
     const bestDayShare=positiveDaysProfit>0?bestDay/positiveDaysProfit*100:NaN;
-    const failed=Boolean(breachDaily||breachMax);
+    const ideaGroups=PropRules.ideaLosses(trades);
+    const breachedIdea=p.ideaRisk?ideaGroups.find(x=>-x.net>initial*p.ideaRisk/100+1e-9):null;
+    const breachIdea=breachedIdea?{day:dayKey(breachedIdea.last.close),loss:-breachedIdea.net}:null;
+    const failed=Boolean(breachDaily||breachMax||breachIdea);
     const minDaysMet=tradingDays>=p.minDays;
-    const bestDayMet=!p.bestDay||bestDayShare<=50;
+    const bestDayMet=PropRules.consistent(p,bestDay,positiveDaysProfit,balance-initial);
     const targetMet=balance>=targetBalance;
     const passedClosed=!failed&&targetMet&&minDaysMet&&bestDayMet;
     const wins=trades.filter(t=>t.net>0),losses=trades.filter(t=>t.net<0);
@@ -3646,9 +3619,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     for(let i=trades.length-1;i>=0&&trades[i].net<0;i--)currentLossStreak++;
     const observedLots=trades.map(t=>t.lots).filter(v=>v>0).sort((x,y)=>x-y);
     const medianObservedLot=observedLots.length?observedLots[Math.floor(observedLots.length/2)]:0;
-    return {presetKey,preset:p.name,initial,balance,net:balance-initial,returnPct:(balance/initial-1)*100,trades:trades.length,tradingDays,
+    return {presetKey,preset:p.name,rules:p,initial,balance,net:balance-initial,returnPct:(balance/initial-1)*100,trades:trades.length,tradingDays,
       firstDate:trades[0].open.toISOString(),lastDate:trades[trades.length-1].close.toISOString(),peakEod,maxClosedDD,worstDayExcursion,worstMaxLoss,
-      winningNet:grossWin,losingNet:grossLoss,commissionSwap:trades.reduce((n,t)=>n+t.commissionSwap,0),worstDayExcursionDay,worstDayNet,breachDaily,breachMax,positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed,
+      winningNet:grossWin,losingNet:grossLoss,commissionSwap:trades.reduce((n,t)=>n+t.commissionSwap,0),worstDayExcursionDay,worstDayNet,breachDaily,breachMax,breachIdea,worstIdeaLoss:Math.max(0,...ideaGroups.map(x=>-x.net)),positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed,
       wins:wins.length,losses:losses.length,winRate:wins.length/trades.length*100,profitFactor,recentProfitFactor,currentLossStreak,medianObservedLot,balancePath};
   }
 
@@ -3676,6 +3649,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     if(p.bestDay){
       const share=Number.isFinite(a.bestDayShare)?a.bestDayShare:0,dilution=Math.max(0,2*a.bestDay-a.positiveDaysProfit);
       card4=objectiveCard('Best Day consistency',Number.isFinite(a.bestDayShare)?pct(share,2):'—','share of positive-day profit',a.bestDayMet?'safe':'watch',a.bestDayMet?'Within 50%':'Above 50%',share/50*100,[['Extra positive profit needed',amt(dilution)],['Best day net profit',amt(a.bestDay)],['All positive-day profit',amt(a.positiveDaysProfit)],['Best day ceiling · 50%',amt(a.positiveDaysProfit*.5)]],'Positive-day profit sums profitable days only. The extra amount assumes the existing best day stays unchanged; a larger new best day raises the requirement.');
+    }else if(p.ideaRisk){
+      const cap=a.initial*p.ideaRisk/100;
+      card4=objectiveCard('Trade-idea risk',amt(cap),p.ideaRisk+'% of initial capital',a.breachIdea?'failed':'watch',a.breachIdea?'Realized loss exceeds cap':'Verification incomplete',a.worstIdeaLoss/cap*100,[['Worst realized idea loss',amt(a.worstIdeaLoss)],['Combined idea allowance',amt(cap)],['Grouping','Same symbol / direction / exact close time']],'Closed losses can expose a violation, but planned risk and concurrent floating exposure are missing. A profitable close does not prove the risk limit was respected. Live sizing subtracts already committed idea risk from this allowance.');
     }else{
       card4=objectiveCard('Minimum trading days',a.tradingDays+' days',a.tradingDays+' / '+p.minDays+' required','progress',a.minDaysMet?'Requirement met':'In progress',p.minDays?a.tradingDays/p.minDays*100:100,[['Days still needed',String(Math.max(0,p.minDays-a.tradingDays))],['Count basis','Distinct position-opening dates']],'Reaching the profit target alone does not satisfy the minimum-day condition.');
     }
@@ -3693,6 +3669,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     lotInitialCapitalEl.value=a.initial.toFixed(2);
     lotCurrentEquityEl.value=a.balance.toFixed(2);
     lotDayStartBalanceEl.value=a.balance.toFixed(2);
+    document.getElementById('lotDayStartEquity').value=a.balance.toFixed(2);
+    document.getElementById('lotIdeaRisk').value='0';
     lotHighestEodEl.value=a.peakEod.toFixed(2);
     lotPositiveDaysProfitEl.value=a.positiveDaysProfit.toFixed(2);
     lotBestDayProfitEl.value=a.bestDay.toFixed(2);
@@ -3724,21 +3702,21 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const maxUse=Math.max(0,maxReference-a.balance)/(a.initial*p.max/100)*100;
     const reasons=[];
     let mode='maintain',riskLow=.3,riskHigh=.4;
-    if(a.failed){mode='stop';riskLow=0;riskHigh=0;reasons.push('The imported history contains an FTMO breach.');}
+    if(a.failed){mode='stop';riskLow=0;riskHigh=0;reasons.push('The imported history contains a selected-plan breach.');}
     else if(a.profitFactor<1||a.recentProfitFactor<1||a.currentLossStreak>=3||a.trades<30||dailyUse>=50||maxUse>=50){
       mode='slow';riskLow=.2;riskHigh=.3;
       if(a.trades<30)reasons.push('Only '+a.trades+' closed trades: the edge estimate is still fragile.');
       if(a.recentProfitFactor<1)reasons.push('Recent-10 profit factor is '+pfText(a.recentProfitFactor)+', below break-even.');
       if(a.currentLossStreak>=3)reasons.push('The current losing streak is '+a.currentLossStreak+' trades.');
       if(a.profitFactor<1)reasons.push('Full-sample profit factor is below 1.00.');
-      if(dailyUse>=50||maxUse>=50)reasons.push('At least half of an FTMO loss budget has been consumed.');
+      if(dailyUse>=50||maxUse>=50)reasons.push('At least half of a selected-plan loss budget has been consumed.');
     }else if(a.trades>=60&&a.profitFactor>=1.3&&a.recentProfitFactor>=1.15&&a.currentLossStreak<3&&dailyUse<35&&maxUse<35){
-      mode='accelerate';riskLow=.4;riskHigh=.5;reasons.push('The sample, recent regime, and FTMO buffers all support one small risk step-up.');
+      mode='accelerate';riskLow=.4;riskHigh=.5;reasons.push('The sample, recent regime, and plan buffers all support one small risk step-up.');
     }else reasons.push('The edge is positive, but it has not cleared every acceleration gate.');
 
     const dailyAllowance=a.initial*p.daily/100;
     const maxBuffer=Math.max(0,a.balance-a.maxFloorNow);
-    const bufferSafeRisk=Math.min(dailyAllowance,maxBuffer)*.20;
+    const bufferSafeRisk=Math.min(Math.min(dailyAllowance,maxBuffer)*.20,p.ideaRisk?a.initial*p.ideaRisk/100:Infinity);
     const recommendedRiskDollar=Math.min(a.balance*riskHigh/100,bufferSafeRisk);
     const selectedRiskDollar=Math.min(a.balance*selectedRisk/100,bufferSafeRisk);
     const costPerLot=(sl+spread)*(pip001*100)+commission;
@@ -3810,7 +3788,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const lotDisplay=auditPrivacy?plan.riskHigh.toFixed(1)+'% risk cap':plan.recLot.toFixed(plan.decimals)+' lot';
     const setupDisplay=auditPrivacy?'Percentage-only privacy mode':plan.sl.toFixed(0)+' pip SL · '+plan.spread.toFixed(0)+' pip spread · $'+plan.commission.toFixed(1)+'/lot commission · $'+plan.pip001.toFixed(3)+'/pip per 0.01 lot';
     auditPrintReport.innerHTML=
-      '<div class="print-head"><div><div class="print-brand">FTMO JOURNEY AUDIT</div><div class="print-subtitle">MT5-style closed-trade evaluation report · educational planning output</div></div><div class="print-meta"><b>'+escapeHTML(a.preset)+'</b><br>'+escapeHTML(auditFileName||'Myfxbook CSV')+'<br>Generated '+new Date().toLocaleString()+(auditPrivacy?'<br><b>PRIVACY: PERCENTAGES ONLY</b>':'')+'</div></div>'+
+      '<div class="print-head"><div><div class="print-brand">PROP FIRM JOURNEY AUDIT</div><div class="print-subtitle">MT5-style closed-trade evaluation report · educational planning output</div></div><div class="print-meta"><b>'+escapeHTML(a.preset)+'</b><br>'+escapeHTML(auditFileName||'Myfxbook CSV')+'<br>Generated '+new Date().toLocaleString()+(auditPrivacy?'<br><b>PRIVACY: PERCENTAGES ONLY</b>':'')+'</div></div>'+
       '<div class="print-status"><strong>'+status+'</strong><span>Closed trades only · floating-equity compliance cannot be certified</span></div>'+
       '<div class="print-section"><div class="print-section-title">Account Summary</div><table class="print-table">'+
         reportRow('Initial capital',auditAmount(a.initial,a.initial),'Current balance',auditAmount(a.balance,a.initial))+
@@ -3823,7 +3801,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           reportRow('Recent-10 PF',pfText(a.recentProfitFactor),'Wins / losses',a.wins+' / '+a.losses)+
           reportRow('Current loss streak',String(a.currentLossStreak),'Closed drawdown',auditAmount(a.maxClosedDD,a.initial))+
           reportRow('Median observed lot',auditPrivacy?'Hidden':a.medianObservedLot.toFixed(2),'Return',pct(a.returnPct))+'</table></div>'+
-        '<div class="print-section"><div class="print-section-title">FTMO Objectives</div><table class="print-table">'+
+        '<div class="print-section"><div class="print-section-title">Plan Objectives</div><table class="print-table">'+
           reportRow('Profit target',pct(a.returnPct)+' / '+p.target+'%','Target remaining',auditAmount(Math.max(0,a.targetBalance-a.balance),a.initial))+
           reportRow('Daily-loss use',pct(dailyUse,1),'Daily cushion',auditAmount(dailyAllowance-dailyUsed,a.initial))+
           reportRow('Maximum-loss use',pct(maxUse,1),'Maximum cushion',auditAmount(a.balance-a.maxFloorNow,a.initial))+
@@ -3832,8 +3810,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       '<div class="print-section"><div class="print-section-title">XAU/USD Pace &amp; Sizing Plan</div><div class="print-pace"><div class="print-pace-head"><strong>'+escapeHTML(paceSummary.textContent)+'</strong><span class="print-pace-badge">'+escapeHTML(paceBadge.textContent)+'</span></div><table class="print-table">'+
         reportRow('Suggested risk',plan.mode==='stop'?'0%':plan.riskLow.toFixed(1)+'–'+plan.riskHigh.toFixed(1)+'%','Maximum size',lotDisplay)+
         reportRow('Session stop',plan.mode==='stop'?'No trading':auditAmount(plan.dailyStop,a.initial),'Selected risk',plan.selectedRisk.toFixed(1)+'%')+
-        reportRow('Sizing setup',setupDisplay,'Buffer cap','20% of tighter FTMO buffer')+'</table><ul class="print-actions">'+actions+'</ul></div></div>'+
-      '<div class="print-foot"><b>Method:</b> closed balance is reconstructed from the imported Myfxbook CSV. FTMO evaluates equity continuously, including open P/L, swaps and commissions, and resets daily limits at 00:00 CE(S)T. This report cannot verify missing floating equity or timezone alignment. It is not financial advice and is not affiliated with FTMO.</div>';
+        reportRow('Sizing setup',setupDisplay,'Buffer cap','20% of tighter plan buffer')+'</table><ul class="print-actions">'+actions+'</ul></div></div>'+
+      '<div class="print-foot"><b>Method:</b> closed balance is reconstructed from the imported Myfxbook CSV. The selected plan may evaluate floating equity and combined trade-idea risk. Firm reset timezone and source assumptions are shown in the audit. This report cannot verify missing floating equity or timezone alignment. It is not financial advice and is not official compliance verification.</div>';
   }
 
   function generateAuditCanvas(a){
@@ -3847,7 +3825,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const section=(title,y)=>{ctx.fillStyle=blue;ctx.fillRect(M,y,W-M*2,42);write(title.toUpperCase(),M+14,y+29,19,700,'#fff');return y+42;};
     const table=(rows,y)=>{const col=(W-M*2)/2;for(const [i,row] of rows.entries()){const yy=y+i*54;ctx.fillStyle=i%2?'#f7f8fa':'#fff';ctx.fillRect(M,yy,W-M*2,54);ctx.strokeStyle=line;ctx.strokeRect(M,yy,W-M*2,54);ctx.beginPath();ctx.moveTo(M+col,yy);ctx.lineTo(M+col,yy+54);ctx.stroke();write(row[0],M+14,yy+22,16,400,muted);write(row[1],M+col-14,yy+39,21,700,ink,'right');write(row[2],M+col+14,yy+22,16,400,muted);write(row[3],W-M-14,yy+39,21,700,ink,'right');}return y+rows.length*54;};
     ctx.fillStyle='#fff';ctx.fillRect(0,0,W,canvas.height);
-    write('FTMO JOURNEY AUDIT',M,92,38,700,blue);write('MT5-style closed-trade evaluation report',M,124,18,400,muted);
+    write('PROP FIRM JOURNEY AUDIT',M,92,38,700,blue);write('MT5-style closed-trade evaluation report',M,124,18,400,muted);
     write(a.preset,W-M,82,20,700,ink,'right');write(new Date().toLocaleDateString(),W-M,112,17,400,muted,'right');
     ctx.fillStyle=blue;ctx.fillRect(M,145,W-M*2,5);
     const status=a.failed?'FAILED — CLOSED-HISTORY BREACH':a.passedClosed?'TARGET REACHED — NO CLOSED BREACH':'STILL ACTIVE — NO FAILURE FOUND';
@@ -3860,7 +3838,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     y=section('Closed balance curve',y);const chartY=y+16,chartH=190;ctx.fillStyle='#fbfcfd';ctx.fillRect(M,chartY,W-M*2,chartH);ctx.strokeStyle=line;ctx.strokeRect(M,chartY,W-M*2,chartH);
     const vals=a.balancePath.map(v=>(v/a.initial-1)*100),vmin=Math.min(...vals),vmax=Math.max(...vals),span=Math.max(.25,vmax-vmin),pad=22;
     ctx.strokeStyle=blue;ctx.lineWidth=4;ctx.beginPath();vals.forEach((v,i)=>{const x=M+pad+(W-M*2-pad*2)*(i/Math.max(1,vals.length-1)),py=chartY+chartH-pad-(chartH-pad*2)*((v-vmin)/span);i?ctx.lineTo(x,py):ctx.moveTo(x,py);});ctx.stroke();write(pct(vmax,2),M+12,chartY+25,16,700,blue);write(pct(vmin,2),M+12,chartY+chartH-10,16,700,blue);y=chartY+chartH+28;
-    y=section('FTMO objectives',y);
+    y=section('Plan objectives',y);
     const dailyAllowance=a.initial*p.daily/100,dailyUsed=Math.abs(Math.min(0,a.worstDayExcursion)),maxRef=p.trailing?Math.max(a.initial,a.peakEod):a.initial,maxUsed=Math.max(0,maxRef-a.balance),best=p.bestDay?(Number.isFinite(a.bestDayShare)?pct(a.bestDayShare,1)+' / 50%':'No positive day'):a.tradingDays+' / '+p.minDays+' days';
     y=table([
       ['Profit target',pct(a.returnPct)+' / '+p.target+'%','Target remaining',auditAmount(Math.max(0,a.targetBalance-a.balance),a.initial)],
@@ -3874,7 +3852,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     write('Suggested risk',M+18,y+137,16,400,muted);write(plan.mode==='stop'?'0%':plan.riskLow.toFixed(1)+'–'+plan.riskHigh.toFixed(1)+'%',M+250,y+137,22,700,ink);
     write('Maximum size',M+570,y+137,16,400,muted);write(maxSize,W-M-18,y+137,22,700,ink,'right');
     const action=[...paceActions.querySelectorAll('li')].slice(0,2).map(li=>li.textContent);action.forEach((t,i)=>wrap('• '+t,M+18,y+181+i*37,W-M*2-36,25,17,400,ink,1));y+=290;
-    ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();wrap('Closed-trade planning aid. Floating equity, exact CE(S)T reset alignment and execution conditions cannot be verified from this CSV. Not affiliated with FTMO.',M,y+31,W-M*2,24,15,400,muted,2);
+    ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(M,y);ctx.lineTo(W-M,y);ctx.stroke();wrap('Closed-trade planning aid. Floating equity, exact CE(S)T reset alignment and execution conditions cannot be verified from this CSV. Not official compliance verification.',M,y+31,W-M*2,24,15,400,muted,2);
     if(auditPrivacy){write('PRIVACY MODE · PERCENTAGES ONLY',W-M,canvas.height-38,16,700,blue,'right');}
     return canvas;
   }
@@ -3894,9 +3872,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const p=AUDIT_PRESETS[a.presetKey];
     auditEmpty.hidden=true;auditResults.hidden=false;
     auditStatus.className='audit-status '+(a.failed?'fail':'safe');
-    auditHeadline.textContent=a.failed?'FAILED — breach found in closed history':a.passedClosed?'Target reached — no closed-history breach':'STILL ACTIVE — no failure found';
+    auditHeadline.textContent=a.failed?'FAILED — breach found in closed history':a.passedClosed?(p.firm==='WeMasterTrade'?'Payout target reached — verification incomplete':'Target reached — no closed-history breach'):'STILL ACTIVE — no failure found';
     auditStatusCopy.textContent=a.failed
-      ? 'The imported CSV contains a definite closed-balance rule breach. Review the dated objective below.'
+      ? 'The imported CSV contains a recorded loss-rule breach. Review the dated objective below.'
       : 'Your forward test has not failed '+a.preset+' based on closed trades. This is an ongoing journey audit, not a pass prediction or official verification; floating intraday equity is unavailable.';
     auditMetrics.innerHTML=
       metric('Current balance',auditAmount(a.balance,a.initial),auditAmount(a.net,a.initial)+' · '+pct(a.returnPct))+
@@ -3908,6 +3886,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     document.getElementById('auditCashSummary').innerHTML='<div class="objective-cash-summary"><div><span>Net P/L</span><strong class="'+(a.net>=0?'earned':'lost')+'">'+auditSignedAmount(a.net,a.initial)+'</strong><small>'+pct(a.returnPct)+' return · '+a.trades+' trades</small></div><div><span>Profits · winning trades</span><strong class="earned">'+auditSignedAmount(a.winningNet,a.initial)+'</strong><small>'+a.wins+' winners · net of costs</small></div><div><span>Losses · losing trades</span><strong class="lost">'+auditSignedAmount(-a.losingNet,a.initial)+'</strong><small>'+a.losses+' losers · net of costs</small></div></div>';
     document.getElementById('auditCostSummary').textContent='Reported commissions & swaps: '+auditSignedAmount(a.commissionSwap,a.initial)+' · already included in net P/L. Loss totals measure money lost; objective buffers measure distance to a rule floor.';
     document.getElementById('ledgerRuleSummary').textContent=p.name+' · Target '+p.target+'% · Daily loss '+p.daily+'% · Maximum loss '+p.max+'% ('+(p.trailing?'EOD trailing':'fixed floor')+') · '+(p.bestDay?'Best Day ≤ 50%':p.minDays+' minimum trading days')+'. Switching rules replays the entire imported history.';
+    document.getElementById('firmRuleNote').textContent=p.name+' · '+p.stage+' · Checked '+p.checked+' · Reset: '+p.reset+'. '+(p.note||'Closed-trade results cannot certify floating equity compliance.');
     syncAuditPresetControls(a.presetKey);
     journeyFlow.textContent='CSV loaded · '+a.trades+' closed trades · '+p.name+' rules applied';
     document.getElementById('auditContext').innerHTML=metric('Current balance',auditAmount(a.balance,a.initial),'As of '+a.lastDate.slice(0,10))+metric('Trading activity',a.trades+' trades',a.tradingDays+' position-opening days');
@@ -3920,7 +3899,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       rule('Profit target',a.targetMet?'Met':'In progress · '+pct(a.returnPct)+' / '+p.target+'%',a.targetMet?'safe':'warn')+
       (p.minDays?rule('Minimum trading days',a.minDaysMet?'Met · '+a.tradingDays+' / '+p.minDays:'In progress · '+a.tradingDays+' / '+p.minDays,a.minDaysMet?'safe':'warn'):'')+
       (p.bestDay?rule('Best Day consistency',Number.isFinite(a.bestDayShare)?pct(a.bestDayShare)+' / 50%':'No positive day yet',a.bestDayMet?'safe':'warn'):'')+
-      rule('Floating equity / exact CE(S)T reset','Cannot verify from this CSV','warn');
+      (p.ideaRisk?rule('Trade-idea risk · '+p.ideaRisk+'% initial',a.breachIdea?'Realized loss exceeds cap · '+a.breachIdea.day:'Planned / floating combined risk unverified',a.breachIdea?'fail':'warn'):'')+
+      rule('Floating equity / exact firm reset','Cannot verify from this CSV','warn');
     const cp=checkpoint();
     if(cp){
       const tradeDelta=a.trades-cp.trades,balanceDelta=a.balance-cp.balance,ddDelta=a.maxClosedDD-cp.maxClosedDD;
@@ -3937,7 +3917,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   function runJourneyAudit(){
     if(!auditRows)return;
     try{currentAudit=analyzeJourney(auditRows,auditPreset);renderAudit(currentAudit);renderQuant(auditRows);tabBtnQuant.hidden=false;journeyFlow.classList.add('has-data');}
-    catch(err){journeyFlow.textContent='CSV could not be audited · review the statement';document.getElementById('jaAnalytics').hidden=true;currentAudit=null;tabBtnQuant.hidden=true;journeyFlow.classList.remove('has-data');if(tabQuant.classList.contains('active'))switchTab('audit');saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditImageBtn.disabled=true;auditResults.hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
+    catch(err){journeyFlow.textContent='CSV could not be audited · review the statement';document.getElementById('jaAnalytics').hidden=true;currentAudit=null;tabBtnQuant.hidden=true;journeyFlow.classList.remove('has-data');if(tabQuant.classList.contains('active'))switchTab('audit');saveCheckpointBtn.disabled=true;auditPrintBtn.disabled=true;auditImageBtn.disabled=true;auditResults.hidden=true;document.getElementById('firmCompare').hidden=true;auditEmpty.hidden=false;auditEmpty.textContent=err.message;}
   }
   function loadAuditFile(file){
     if(!file)return;
@@ -3968,7 +3948,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     tabAudit.classList.toggle('audit-private',auditPrivacy);
     refreshCheckpointNote();
     if(currentAudit)renderAudit(currentAudit);
-    if(currentQuant){drawKellyReplay(currentQuant);if(typeof window.renderJourneyAnalytics==='function')window.renderJourneyAnalytics(currentQuant,currentAudit,AUDIT_PRESETS[currentAudit.presetKey],auditPrivacy);}
+    if(currentQuant){if(window.renderFirmComparison)window.renderFirmComparison(currentQuant,currentAudit,auditPrivacy,selectAuditPreset);drawKellyReplay(currentQuant);if(typeof window.renderJourneyAnalytics==='function')window.renderJourneyAnalytics(currentQuant,currentAudit,AUDIT_PRESETS[currentAudit.presetKey],auditPrivacy);}
   });
   auditPrintBtn.addEventListener('click',()=>{if(!currentAudit)return;renderPrintReport(currentAudit);window.print();});
   auditImageBtn.addEventListener('click',openAuditImage);
@@ -3976,7 +3956,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   auditImageModal.addEventListener('click',e=>{if(e.target===auditImageModal)closeAuditImage();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!auditImageModal.hidden)closeAuditImage();});
   auditDownloadImageBtn.addEventListener('click',()=>{if(!auditImageBlob)return;const link=document.createElement('a');link.href=auditImageUrl;link.download=auditImageFile().name;link.click();});
-  auditNativeShareBtn.addEventListener('click',async()=>{if(!auditImageBlob||!navigator.share)return;try{await navigator.share({files:[auditImageFile()],title:'FTMO Journey Audit',text:'My FTMO journey audit'});}catch(err){if(err.name!=='AbortError')auditNativeShareBtn.textContent='sharing unavailable';}});
+  auditNativeShareBtn.addEventListener('click',async()=>{if(!auditImageBlob||!navigator.share)return;try{await navigator.share({files:[auditImageFile()],title:'Prop Firm Journey Audit',text:'My prop firm journey audit'});}catch(err){if(err.name!=='AbortError')auditNativeShareBtn.textContent='sharing unavailable';}});
   saveCheckpointBtn.addEventListener('click',()=>{if(!currentAudit)return;localStorage.setItem(AUDIT_CHECKPOINT_KEY,JSON.stringify({...currentAudit,savedAt:new Date().toISOString()}));refreshCheckpointNote();renderAudit(currentAudit);});
   clearCheckpointBtn.addEventListener('click',()=>{localStorage.removeItem(AUDIT_CHECKPOINT_KEY);refreshCheckpointNote();if(currentAudit)renderAudit(currentAudit);});
   refreshCheckpointNote();
@@ -3991,5 +3971,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 </script>
 <script src="quant-lab.js"></script>
 <script src="journey-analytics.js"></script>
+<script src="firm-comparison.js"></script>
 </body>
 </html>
+

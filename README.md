@@ -191,3 +191,26 @@ The top toolbar includes **1-Step**, **2-Step** (Challenge) and **Verification**
 ### Full-width Journey Audit workspace
 
 A compact top toolbar holds CSV loading/replacement, file metadata and a single evaluation-rule selector. CSV requirements are expandable. A small loaded-status line replaces the four-step banner. Survival status and the sizing coach sit side by side on desktop; sizing actions and evidence are available under **Sizing details & rationale**. The full-width P/L summary and four objective cards follow, with account details, checkpoint actions and exports below. Objective cards use four columns on wide screens, two on tablets/phones and one on very narrow screens; the decision panels and footer stack on mobile. The audit and sizing transitions are static.
+
+
+## Multi-firm comparison — September 2026
+
+`prop-rules.js` is the shared source for the simulation, imported-history audit, Kelly replay, advanced quantitative simulations, day-bootstrap forecast and lot calculator. It contains FTMO 1-Step, FTMO 2-Step Challenge, FTMO Verification and **WeMasterTrade NoPC–EU Instant**. Other WMT packages and regions are deliberately not represented by the NoPC–EU preset.
+
+The WMT preset uses a 6% payout target, 2% daily allowance, fixed 4% total-loss floor, no profit consistency and a 1% initial-capital limit per trade idea. Sources and their 2026-09-30 verification date appear under the comparison. Daily allowance is fixed against initial capital, while the daily reference is the greater of day-start balance and equity. Live sizing accepts both values and subtracts existing same-idea risk before sizing another position.
+
+**Unresolved official wording:** WMT's package comparison describes balance-based total loss while its general FAQ describes equity-based total loss. Both imply a fixed initial-capital floor; the live calculator monitors equity conservatively. WMT's reset timezone remains unverified. CSV close-date days are assumed to align with the firm's reset. Closed records cannot certify overnight floating equity, planned risk, overlapping idea risk, or payout approval. The preset uses the FAQ's reached-or-surpassed language at loss-limit boundaries.
+
+Load one complete Myfxbook CSV with its initial Deposit row. The comparison preserves the same reported dollar P/L, costs and trade order for every plan. It shows the first modeled target or breach, current target progress and buffers, and worst historical buffers. Later full-history breaches remain visible after an earlier target. FTMO Challenge and Verification are independent comparisons of the same history; they are not an automatically completed two-stage evaluation. The WMT outcome is **payout target reached**, not challenge passed or payout approved.
+
+Known realized trade-idea losses are grouped by symbol, direction and exact closing timestamp. Losses exceeding the WMT idea cap are recorded as violations. Grouping is a limited reconstruction: incomplete symbols, timestamps, profitable closes and missing floating exposure prevent full risk-consistency verification. Live sizing needs the user's combined committed exposure, not merely the next position's risk.
+
+The shared monthly calendar includes expandable daily comparisons across all plans. Percentage-only privacy mode also covers comparison tables and day details. The collapsible risk sweep uses 600 identical seeded binary-outcome paths per plan and risk setting over 90 modeled active days. Risk compounds from current balance; rule allowances and the WMT idea cap stay based on initial capital. Above-cap planned entries fail before their modeled win/loss result. The fixed-dollar day-bootstrap forecast can detect known realized idea-loss violations but cannot infer planned risk.
+
+Run the rule regression checks with:
+
+```sh
+node tests/prop-rules.test.cjs
+```
+
+Keep `prop-rules.js`, `firm-comparison.js`, `quant-lab.js` and `journey-analytics.js` alongside `index.html` when deploying.
