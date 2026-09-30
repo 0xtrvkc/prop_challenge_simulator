@@ -23,7 +23,7 @@ The audit reconstructs closed balance, daily closed P/L, maximum closed-balance 
 - **Target reached — no closed-history breach**: closed trades meet the preset objectives, subject to the verification limitation below.
 - **Failed — breach found in closed history**: the imported data itself contains a definite daily-loss or maximum-loss breach.
 
-Animated objective meters make the remaining room visible at a glance: profit-target progress, the largest share of the daily-loss budget consumed so far, current maximum-loss budget consumed, and either Best Day concentration or minimum-trading-day progress. Green, amber, and red zones show increasing breach danger; motion is disabled automatically when the browser requests reduced motion.
+The static objective ledger shows net profit earned, required profit and remaining target, the largest observed within-day closed loss in money and percent of allowance, current maximum-loss buffer usage and floor, and either the Best Day profit numerator and positive-day denominator or minimum trading days. A compact summary separates net profits from winners, net losses from losers, total net P/L and included reported commissions/swaps. Thin flat bars are rendered immediately without animation, gradients, glow or sheen. Historical breach status remains visible after recovery. All money values follow percentage-only privacy mode.
 
 ### Pace and sizing coach
 

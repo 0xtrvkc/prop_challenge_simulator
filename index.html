@@ -237,23 +237,17 @@ body{
 .audit-metric-value{font-size:20.80px;font-weight:700;color:var(--text);overflow-wrap:anywhere;}
 .audit-metric-sub{font-size:13.00px;color:var(--text-dim);margin-top:4px;line-height:1.45;}
 .audit-visuals{display:grid;gap:9px;margin:0 0 13px;}
-.risk-meter{position:relative;overflow:hidden;border:1px solid var(--border);border-radius:8px;background:var(--surface-2);padding:14px;}
-.risk-meter-head,.risk-meter-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;}
-.risk-meter-title{font-size:15.60px;font-weight:700;color:var(--text);line-height:1.35;}
-.risk-meter-reading{font-size:16.90px;font-weight:700;color:var(--green);text-align:right;white-space:nowrap;}
-.risk-meter.watch .risk-meter-reading{color:var(--amber)}.risk-meter.danger .risk-meter-reading,.risk-meter.failed .risk-meter-reading{color:var(--red)}
-.risk-meter.progress .risk-meter-reading{color:var(--text)}
-.risk-meter-sub{font-size:13.65px;color:var(--text-dim);margin-top:4px;line-height:1.45;}
-.risk-track{position:relative;height:15px;border-radius:999px;margin:13px 0 8px;overflow:hidden;background:var(--border-soft);border:1px solid var(--border);box-shadow:inset 0 2px 4px rgba(0,0,0,.24);}
-.risk-fill{position:relative;height:100%;width:0;border-radius:inherit;background-image:linear-gradient(90deg,var(--green) 0%,var(--amber) 68%,var(--red) 100%);background-repeat:no-repeat;box-shadow:0 0 13px color-mix(in srgb,var(--green) 42%,transparent);transition:width .8s cubic-bezier(.2,.8,.2,1);animation:risk-pulse 2s ease-in-out infinite;overflow:hidden;}
-.risk-meter.progress .risk-fill{background-image:linear-gradient(90deg,var(--red) 0%,var(--amber) 45%,var(--green) 100%);box-shadow:0 0 13px color-mix(in srgb,var(--amber) 42%,transparent)}
-.risk-fill::after{content:"";position:absolute;top:0;bottom:0;width:42%;left:-52%;background:linear-gradient(105deg,transparent 0%,rgba(255,255,255,.08) 25%,rgba(255,255,255,.65) 50%,rgba(255,255,255,.08) 75%,transparent 100%);animation:risk-sheen 1.65s linear infinite;pointer-events:none;}
-.risk-meter-foot{align-items:center;font-size:10.40px;color:var(--text-faint);}
-.risk-meter-foot strong{font-size:11.70px;color:var(--text-dim);font-weight:500;}
-.risk-scale{display:flex;justify-content:space-between;font-size:12.35px;color:var(--text-dim);margin-top:-1px;}
-@keyframes risk-sheen{from{left:-52%}to{left:112%}}
-@keyframes risk-pulse{0%,100%{filter:brightness(.9)}50%{filter:brightness(1.18)}}
-@media(prefers-reduced-motion:reduce){.risk-fill,.risk-fill::after{animation-duration:4s}.risk-fill{transition:none}}
+/* Static objective ledger: flat fills, no transitions or animation. */
+.risk-meter{border:1px solid var(--border);border-radius:6px;background:var(--surface-2);padding:16px;overflow:hidden;min-width:0}
+.risk-meter-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.risk-meter-title{font-size:13px;font-weight:600;color:var(--text);line-height:1.4}
+.risk-badge{font-size:9px;text-transform:uppercase;letter-spacing:.06em;padding:4px 6px;border:1px solid var(--border);border-radius:3px;color:var(--text-dim);white-space:nowrap}
+.risk-meter.failed .risk-badge{color:var(--red);border-color:var(--red)}.risk-meter.watch .risk-badge,.risk-meter.danger .risk-badge{color:var(--amber)}
+.risk-primary{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}.risk-primary strong{font-size:23px;letter-spacing:-.05em;color:var(--text)}.risk-primary span{font-size:11px;color:var(--text-dim)}
+.risk-track{height:4px;background:var(--border-soft);overflow:hidden;margin:12px 0;border-radius:2px;box-shadow:none;border:0}
+.risk-fill{height:100%;background:var(--green);animation:none;transition:none;box-shadow:none;border-radius:0}.risk-meter.progress .risk-fill{background:var(--blue)}.risk-meter.watch .risk-fill,.risk-meter.danger .risk-fill{background:var(--amber)}.risk-meter.failed .risk-fill{background:var(--red)}.risk-fill::after{content:none;animation:none}
+.risk-detail-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;font-size:11px;line-height:1.55;padding:5px 0;color:var(--text-dim)}.risk-detail-row strong{font-size:12px;font-weight:500;color:var(--text);text-align:right}.risk-detail-row+.risk-detail-row{border-top:1px solid var(--border-soft)}
+.risk-note{font-size:10px;line-height:1.6;color:var(--text-faint);margin:10px 0 0}.objective-cash-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:12px 0 16px;border-bottom:1px solid var(--border);margin-bottom:4px}.objective-cash-summary div{display:flex;flex-direction:column;gap:6px;min-width:0}.objective-cash-summary span{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint)}.objective-cash-summary strong{font-size:17px;color:var(--text);letter-spacing:-.04em;overflow-wrap:anywhere}.objective-cash-summary small{font-size:10px;color:var(--text-faint);line-height:1.6}.objective-cash-summary .earned{color:var(--green)}.objective-cash-summary .lost{color:var(--red)}.objective-ledger-note{font-size:10px;color:var(--text-faint);line-height:1.6;margin:0 0 8px}@media(max-width:480px){.risk-primary strong{font-size:20px}.objective-cash-summary{gap:8px}.objective-cash-summary strong{font-size:14px}.risk-detail-row{font-size:10px}}
 .audit-list{display:grid;gap:7px;}
 .audit-rule{display:flex;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border-soft);padding:10px 0;font-size:14.95px;line-height:1.5;}
 .audit-rule:last-child{border-bottom:0}.audit-rule span:first-child{color:var(--text-dim)}.audit-rule strong{text-align:right;color:var(--text)}
@@ -1047,8 +1041,9 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
               </div>
             </div>
 
-            <p class="panel-label" style="margin-top:18px;">objective buffers</p>
+            <p class="panel-label" style="margin-top:18px;">profit &amp; loss · objective ledger</p>
             <div class="audit-metrics" id="auditMetrics"></div>
+            <div id="auditCashSummary"></div>
             <div class="audit-visuals" id="auditVisuals"></div>
             <div class="audit-list" id="auditRules"></div>
             <div class="rule-note" id="auditDelta" style="margin-top:13px;"></div>
@@ -3543,13 +3538,13 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       const open=auditDate(r['Open Date']), close=auditDate(r['Close Date']);
       const profit=Number(r.Profit),commission=Number(r.Commission||0),swap=Number(r.Swap||0);
       const lots=Number(r['Units/Lots']);
-      return {open,close,net:profit+(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),lots:Number.isFinite(lots)?lots:0};
+      return {open,close,commissionSwap:(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),net:profit+(Number.isFinite(commission)?commission:0)+(Number.isFinite(swap)?swap:0),lots:Number.isFinite(lots)?lots:0};
     }).filter(t=>t.open&&t.close&&Number.isFinite(t.net)).sort((a,b)=>a.close-b.close);
     if(!trades.length) throw new Error('No closed Buy or Sell trades were found in this CSV.');
 
     const groups=new Map();
     trades.forEach(t=>{const k=dayKey(t.close);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(t);});
-    let balance=initial,peakEod=initial,peakClosed=initial,maxClosedDD=0,worstDayExcursion=0;
+    let balance=initial,peakEod=initial,peakClosed=initial,maxClosedDD=0,worstDayExcursion=0,worstDayExcursionDay='',worstDayNet=0;
     const balancePath=[initial];
     let breachDaily=null,breachMax=null,positiveDays=0,positiveDaysProfit=0,bestDay=0;
     for(const [day,dayTrades] of groups){
@@ -3566,7 +3561,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
         if(!breachMax&&balance<maxFloor) breachMax={day,balance,floor:maxFloor};
       }
       const dayPnl=balance-dayStart;
-      worstDayExcursion=Math.min(worstDayExcursion,dayLow);
+      if(dayLow<worstDayExcursion){worstDayExcursion=dayLow;worstDayExcursionDay=day;}
+      worstDayNet=Math.min(worstDayNet,dayPnl);
       if(dayPnl>0){positiveDays++;positiveDaysProfit+=dayPnl;bestDay=Math.max(bestDay,dayPnl);}
       peakEod=Math.max(peakEod,balance);
     }
@@ -3593,19 +3589,35 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     const medianObservedLot=observedLots.length?observedLots[Math.floor(observedLots.length/2)]:0;
     return {presetKey,preset:p.name,initial,balance,net:balance-initial,returnPct:(balance/initial-1)*100,trades:trades.length,tradingDays,
       firstDate:trades[0].open.toISOString(),lastDate:trades[trades.length-1].close.toISOString(),peakEod,maxClosedDD,worstDayExcursion,
-      breachDaily,breachMax,positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed,
+      winningNet:grossWin,losingNet:grossLoss,commissionSwap:trades.reduce((n,t)=>n+t.commissionSwap,0),worstDayExcursionDay,worstDayNet,breachDaily,breachMax,positiveDays,positiveDaysProfit,bestDay,bestDayShare,dailyFloorNow,maxFloorNow,targetBalance,targetMet,minDaysMet,bestDayMet,failed,passedClosed,
       wins:wins.length,losses:losses.length,winRate:wins.length/trades.length*100,profitFactor,recentProfitFactor,currentLossStreak,medianObservedLot,balancePath};
   }
 
   function metric(label,value,sub){return '<div class="audit-metric"><div class="audit-metric-label">'+label+'</div><div class="audit-metric-value">'+value+'</div><div class="audit-metric-sub">'+sub+'</div></div>';}
   function rule(label,value,state){return '<div class="audit-rule"><span>'+label+'</span><strong class="'+state+'">'+value+'</strong></div>';}
   function riskState(value){return value>=100?'failed':value>=75?'danger':value>=50?'watch':'safe';}
-  function meter(title,reading,sub,value,kind,left,right){
+  function objectiveCard(title,primary,reading,state,badge,value,rows,note){
     const width=Math.max(0,Math.min(100,value));
-    const state=kind==='progress'?'progress':riskState(value);
-    return '<div class="risk-meter '+state+'"><div class="risk-meter-head"><div><div class="risk-meter-title">'+title+'</div><div class="risk-meter-sub">'+sub+'</div></div><div class="risk-meter-reading">'+reading+'</div></div><div class="risk-track"><div class="risk-fill" data-width="'+width.toFixed(2)+'"></div></div><div class="risk-scale"><span>'+left+'</span><span>'+right+'</span></div></div>';
+    return '<section class="risk-meter '+state+'"><div class="risk-meter-head"><div class="risk-meter-title">'+title+'</div><span class="risk-badge">'+badge+'</span></div><div class="risk-primary"><strong>'+primary+'</strong><span>'+reading+'</span></div><div class="risk-track" role="progressbar" aria-label="'+title+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+width.toFixed(2)+'" aria-valuetext="'+reading+'"><div class="risk-fill" style="width:'+width.toFixed(2)+'%"></div></div>'+rows.map(([label,val])=>'<div class="risk-detail-row"><span>'+label+'</span><strong>'+val+'</strong></div>').join('')+'<p class="risk-note">'+note+'</p></section>';
   }
-  function pfText(v){return Number.isFinite(v)?v.toFixed(2):'∞';}
+  function objectiveLedger(a,p){
+    const amt=v=>auditAmount(v,a.initial),signed=v=>auditSignedAmount(v,a.initial);
+    const dailyAllowance=a.initial*p.daily/100,dailyUsed=Math.abs(Math.min(0,a.worstDayExcursion)),dailyPct=dailyUsed/dailyAllowance*100;
+    const maxAllowance=a.initial*p.max/100,maxReference=p.trailing?Math.max(a.initial,a.peakEod):a.initial,maxUsed=Math.max(0,maxReference-a.balance),maxPct=maxUsed/maxAllowance*100;
+    const targetProfit=a.targetBalance-a.initial,progress=Math.max(0,a.net)/targetProfit*100;
+    const badge=(breach,value)=>breach?'Breached in history':value>=75?'Tight buffer':value>=50?'Monitor':'Within limit';
+    const card1=objectiveCard('Profit target',signed(a.net),pct(a.returnPct)+' return','progress',a.targetMet?'Target reached':'In progress',progress,[['Required net profit',amt(targetProfit)],['Still to earn',amt(Math.max(0,a.targetBalance-a.balance))],['Current / target balance',amt(a.balance)+' / '+amt(a.targetBalance)]],pct(Math.max(0,a.net)/targetProfit*100,1)+' of the profit target earned. Eligibility also depends on the remaining objectives.');
+    const card2=objectiveCard('Daily loss · worst observed',amt(dailyUsed),pct(dailyPct,1)+' of allowance used',a.breachDaily?'failed':riskState(dailyPct),badge(a.breachDaily,dailyPct),dailyPct,[['Daily loss allowance',amt(dailyAllowance)],['Buffer at worst point',signed(dailyAllowance-dailyUsed)],['Worst day ending net P/L',signed(a.worstDayNet)]],(a.worstDayExcursionDay?'Lowest point: '+a.worstDayExcursionDay+'. ':'No negative closed P/L excursion observed. ')+'Used amount is the largest closed loss from that day’s starting balance; it can differ from the final daily loss.');
+    const card3=objectiveCard('Maximum loss · current',amt(maxUsed),pct(maxPct,1)+' of allowance used',a.breachMax?'failed':riskState(maxPct),badge(a.breachMax,maxPct),maxPct,[['Maximum loss allowance',amt(maxAllowance)],['Remaining buffer',signed(a.balance-a.maxFloorNow)],['Reference / loss floor',amt(maxReference)+' / '+amt(a.maxFloorNow)]],(p.trailing?'Reference follows the highest end-of-day balance.':'Reference is the initial deposit.')+' Used amount is current shortfall from that reference; realized losing trades are shown separately above.'+(a.breachMax?' A past breach remains a failure even after recovery.':''));
+    let card4='';
+    if(p.bestDay){
+      const share=Number.isFinite(a.bestDayShare)?a.bestDayShare:0,dilution=Math.max(0,2*a.bestDay-a.positiveDaysProfit);
+      card4=objectiveCard('Best Day consistency',amt(a.bestDay),Number.isFinite(a.bestDayShare)?pct(share,2)+' of positive-day profit':'No positive days',a.bestDayMet?'safe':'watch',a.bestDayMet?'Within 50%':'Above 50%',share/50*100,[['All positive-day profit',amt(a.positiveDaysProfit)],['Best day ceiling · 50%',amt(a.positiveDaysProfit*.5)],['Extra positive profit needed',amt(dilution)]],'Positive-day profit sums profitable days only. The extra amount assumes the existing best day stays unchanged; a larger new best day raises the requirement.');
+    }else{
+      card4=objectiveCard('Minimum trading days',a.tradingDays+' days',a.tradingDays+' / '+p.minDays+' required','progress',a.minDaysMet?'Requirement met':'In progress',p.minDays?a.tradingDays/p.minDays*100:100,[['Days still needed',String(Math.max(0,p.minDays-a.tradingDays))],['Count basis','Distinct position-opening dates']],'Reaching the profit target alone does not satisfy the minimum-day condition.');
+    }
+    return card1+card2+card3+card4;
+  }
   function pacePlanCard(kind,label,risk,lot,stop,riskWidth){return '<div class="pace-plan '+kind+'"><div class="pace-plan-label">'+label+'</div><div class="pace-plan-row"><span>Risk / trade</span><strong>'+risk+'</strong></div><div class="pace-plan-row"><span>Max lot</span><strong>'+lot+'</strong></div><div class="pace-plan-row"><span>2-loss stop</span><strong>'+stop+'</strong></div><div class="pace-risk-track"><div class="pace-risk-fill" style="width:'+Math.max(0,Math.min(100,riskWidth)).toFixed(0)+'%"></div></div></div>';}
   function floorToStep(value,step){return Math.max(0,Math.floor(value/step+1e-9)*step);}
   function lotDecimals(step){return step<.1?2:step<1?1:0;}
@@ -3829,34 +3841,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       metric('Closed drawdown',auditAmount(a.maxClosedDD,a.initial),pct(a.maxClosedDD/a.initial*100)+' from closed peak')+
       metric('Next daily cushion',auditAmount(a.balance-a.dailyFloorNow,a.initial),p.daily+'% initial capital')+
       metric('Max-loss cushion',auditAmount(a.balance-a.maxFloorNow,a.initial),p.trailing?'EOD trailing floor':'static floor');
-    const dailyAllowance=a.initial*p.daily/100;
-    const dailyUsed=Math.abs(Math.min(0,a.worstDayExcursion));
-    const dailyUsePct=a.breachDaily?Math.max(100,dailyUsed/dailyAllowance*100):dailyUsed/dailyAllowance*100;
-    const maxAllowance=a.initial*p.max/100;
-    const maxReference=p.trailing?Math.max(a.initial,a.peakEod):a.initial;
-    const maxUsed=Math.max(0,maxReference-a.balance);
-    const maxUsePct=a.breachMax?Math.max(100,maxUsed/maxAllowance*100):maxUsed/maxAllowance*100;
-    const targetProgress=Math.max(0,Math.min(100,a.net/(a.targetBalance-a.initial)*100));
-    let objectiveMeter='';
-    if(p.bestDay){
-      const bestUse=Number.isFinite(a.bestDayShare)?a.bestDayShare/50*100:0;
-      objectiveMeter=meter('Best Day concentration',Number.isFinite(a.bestDayShare)?pct(a.bestDayShare)+' of 50%':'No positive day','Lower is safer · share of positive-day profit',bestUse,'risk','0% concentrated','50% limit');
-    }else{
-      const daysProgress=Math.min(100,a.tradingDays/p.minDays*100);
-      objectiveMeter=meter('Minimum trading days',a.tradingDays+' of '+p.minDays+' days','Required before this phase can pass',daysProgress,'progress','0 days',p.minDays+' days');
-    }
-    auditVisuals.innerHTML=
-      meter('Profit target progress',pct(a.returnPct)+' of '+p.target+'%',auditAmount(Math.max(0,a.targetBalance-a.balance),a.initial)+' remaining',targetProgress,'progress','Start',auditAmount(a.targetBalance,a.initial))+
-      meter('Daily-loss danger · closest observed',pct(dailyUsePct,1)+' used',auditAmount(Math.max(0,dailyAllowance-dailyUsed),a.initial)+' remained at the closest closed-trade point',dailyUsePct,'risk','0% used','Breach at 100%')+
-      meter('Maximum-loss danger · current',pct(maxUsePct,1)+' used',auditAmount(a.balance-a.maxFloorNow,a.initial)+' current cushion above '+auditAmount(a.maxFloorNow,a.initial)+' floor',maxUsePct,'risk','0% used','Breach at 100%')+
-      objectiveMeter;
-    requestAnimationFrame(()=>auditVisuals.querySelectorAll('.risk-fill').forEach(el=>{
-      const width=Number(el.dataset.width)||0;
-      // Keep each fill mapped to the full 0–100 scale so its visible end has the
-      // correct red/amber/green colour instead of squeezing the whole gradient.
-      el.style.backgroundSize=(10000/Math.max(.1,width))+'% 100%';
-      el.style.width=width+'%';
-    }));
+    document.getElementById('auditCashSummary').innerHTML='<div class="objective-cash-summary"><div><span>Winning trades · net</span><strong class="earned">'+auditSignedAmount(a.winningNet,a.initial)+'</strong><small>'+a.wins+' winning trades</small></div><div><span>Losing trades · net</span><strong class="lost">'+auditSignedAmount(-a.losingNet,a.initial)+'</strong><small>'+a.losses+' losing trades</small></div><div><span>Total net P/L</span><strong>'+auditSignedAmount(a.net,a.initial)+'</strong><small>'+pct(a.returnPct)+' on initial deposit</small></div></div><p class="objective-ledger-note">Reported commissions & swaps: '+auditSignedAmount(a.commissionSwap,a.initial)+' · already included in net P/L. Loss totals measure money lost; objective buffers measure rule capacity used.</p>';
+    auditVisuals.innerHTML=objectiveLedger(a,p);
     const dailyState=a.breachDaily?'fail':'safe', maxState=a.breachMax?'fail':'safe';
     auditRules.innerHTML=
       rule('Maximum Daily Loss',a.breachDaily?'BREACHED '+a.breachDaily.day:'No closed-trade breach',dailyState)+
