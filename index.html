@@ -862,7 +862,6 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 #robustChronological .quant-table,#robustCosts .quant-table{min-width:600px}
 #robustnessChecks .quant-table td{font-variant-numeric:tabular-nums}
 </style>
-<link rel="stylesheet" href="jev/style.css">
 </head>
 <body>
 <div class="app">
@@ -1209,7 +1208,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     </div>
 
     <!-- QUANT ANALYSIS TAB: revealed after a valid CSV import -->
-    <div class="tab-panel" id="tabQuant"><div id="jevMount"></div>
+    <div class="tab-panel" id="tabQuant">
       <div class="firm-brand-label" id="brandQuant" aria-live="polite"></div>
       <div class="intro">
         <p class="prompt">diagnose --closed-trades</p>
@@ -3601,7 +3600,6 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     requestAnimationFrame(()=>drawQuantCharts(q));
   }
 
-  window.JevApp = { journalMetrics: () => currentQuant ? { trades: currentQuant.s.n, profitFactor: Number.isFinite(currentQuant.s.pf) ? currentQuant.s.pf : null, closedHistoryOnly: true, preset: currentAudit?.presetKey } : { closedHistoryOnly: true, imported: false } };
   function parseCSV(text){
     const rows=[]; let row=[], field='', quoted=false;
     for(let i=0;i<text.length;i++){
@@ -4064,10 +4062,5 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 <script src="robustness.js"></script>
 <script src="journey-analytics.js"></script>
 <script src="firm-comparison.js"></script>
-<script src="jev/config.js"></script>
-<script src="jev/contract.js"></script>
-<script src="jev/feature.js"></script>
-<script src="jev/client.js"></script>
-<script src="jev/adapter.js"></script>
 </body>
 </html>
