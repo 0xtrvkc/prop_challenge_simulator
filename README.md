@@ -232,3 +232,10 @@ Deploy **`robustness.js`** alongside the existing HTML and JavaScript files. Run
 ```sh
 node --test tests/*.test.cjs
 ```
+
+
+## Optional Jev upgrade
+
+**Plan-adherence journal review.** In Quant Analysis after importing a statement, enter a written plan including permitted exceptions, then up to 20 trade notes, one per line. Jev compares each note with the plan and labels plan followed, documented exception, unplanned departure, or insufficient evidence. Use the result filter to focus on one label. The request includes only a small aggregate context (trade count, profit factor, preset and closed-history limitation), not the original CSV. It does not infer trader intent from P/L, change FTMO status, adjust lot size, or replace the numerical coach.
+
+See [JEV.md](JEV.md) for browser-first setup, privacy, input limits, tests and live-evaluation limitations. Existing functionality works without Jev configuration.

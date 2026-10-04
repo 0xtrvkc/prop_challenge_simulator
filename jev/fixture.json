@@ -1,0 +1,9 @@
+{
+  "plan": "Enter only after the setup closes. No exceptions.",
+  "notes": [
+    "Entered before the setup closed to chase the price."
+  ],
+  "metrics": {
+    "closedHistoryOnly": true
+  }
+}
