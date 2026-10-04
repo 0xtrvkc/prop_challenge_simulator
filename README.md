@@ -214,3 +214,21 @@ node tests/prop-rules.test.cjs
 ```
 
 Keep `prop-rules.js`, `firm-comparison.js`, `quant-lab.js` and `journey-analytics.js` alongside `index.html` when deploying.
+
+## PyBroker-inspired robustness checks
+
+Import a complete CSV, open **quant_analysis.sh**, and expand **Robustness checks** in Advanced Quant Lab. These checks update with every import and evaluation-rule change. They run in the browser; Python and PyBroker are not required.
+
+- **Trading-day block bootstrap:** 600 seeded resamples of consecutive three-active-day blocks, retaining within-day trade order. Shows 95% percentile intervals for net expectancy and profit factor, the 95th percentile of maximum closed-balance drawdown, and the share of resamples with positive expectancy. Requires six active closing days. Resamples keep the original day count; trade counts can vary when days contain different numbers of positions. No-loss samples retain infinite profit factor; all-zero samples have undefined PF. This preserves some local dependence but assumes observed day blocks remain representative.
+- **Chronological edge validation:** uses the first half of active closing days as an initial baseline and checks three separate later periods against expanding earlier history. Requires twelve active closing days. Test days never enter their own earlier baseline. This is a descriptive chronological check; it does not fit a model, optimize parameters, or turn previously inspected history into untouched out-of-sample evidence.
+- **Execution-cost stress:** enter an extra flat cost per trade as a percentage of initial capital (default 0.01%). Compare recorded net results with that surcharge and twice that surcharge. Each scenario uses the shared selected prop rules and shows the first modeled outcome separately from later historical breaches. Reported commissions/swaps are already included; the surcharge represents additional execution friction. The break-even extra cost equals positive observed mean net P/L per trade. No lot-aware fill or slippage model is inferred from the CSV.
+
+All monetary diagnostics in this section use percentages of initial capital. Drawdown percentages use the running closed-balance peak. History is grouped by the CSV's local closing dates; the existing reset-timezone and floating-equity limitations still apply. Fixed observed net amounts are used, without position resizing.
+
+Inspired by PyBroker's [bootstrap evaluation](https://www.pybroker.com/en/latest/notebooks/3.%20Evaluating%20with%20Bootstrap%20Metrics.html), [walkforward model validation](https://www.pybroker.com/en/latest/notebooks/6.%20Training%20a%20Model.html), and [slippage modeling](https://www.pybroker.com/en/latest/notebooks/14.%20Modeling%20Slippage.html). This app uses percentile day-block bootstrapping, not PyBroker's per-bar BCa intervals, and it does not execute the PyBroker engine. A positive-resample share is not a posterior probability that an edge exists.
+
+Deploy **`robustness.js`** alongside the existing HTML and JavaScript files. Run all numerical and rule regressions with:
+
+```sh
+node --test tests/*.test.cjs
+```

@@ -855,6 +855,12 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 .ja-day-popover{position:fixed;z-index:1000;width:540px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);box-sizing:border-box;overflow:hidden;padding:12px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:7px;box-shadow:0 8px 28px #0003;font-size:11px}.ja-day-popover[hidden]{display:none}.ja-pop-heading{display:flex;justify-content:space-between;align-items:center}.ja-pop-heading button{border:0;background:transparent;color:var(--text-dim);font:inherit;font-size:19px;cursor:pointer;padding:0 4px}.ja-pop-net{margin:8px 0;font-weight:bold}.ja-pop-net small{color:var(--text-dim);font-weight:normal}.ja-pop-scroll{max-height:240px;overflow:auto}.ja-day-popover .quant-table{font-size:10px;width:100%}.ja-day-popover .quant-table th,.ja-day-popover .quant-table td{padding:6px 4px}.ja-day-popover td:last-child{text-align:right;white-space:nowrap}.ja-day-popover td small{color:var(--text-faint)}.ja-forecast-card{background:var(--surface);padding:12px;border-top:3px solid var(--plan-color);min-width:0;display:flex;flex-direction:column;gap:9px;font-size:12px}.ja-forecast-card>strong{color:var(--plan-color)}.ja-forecast-card small,.ja-forecast-card p{font-size:10px;line-height:1.6;color:var(--text-dim);margin:0}.ja-forecast-values{display:flex;flex-wrap:wrap;gap:10px;font-size:10px}.ja-forecast-values span{display:grid;gap:4px}.ja-forecast-values b{font-size:14px;color:var(--text)}.ja-forecast-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:var(--text-dim)}.ja-forecast-legend span{display:flex;gap:5px;align-items:center}.ja-forecast-legend button{display:flex;gap:5px;align-items:center;padding:3px 0;background:transparent;border:0;color:var(--text-dim);font:inherit;cursor:pointer}.ja-forecast-legend button[aria-pressed="false"]{opacity:.45}.ja-forecast-legend button:disabled{cursor:default;opacity:.6}.ja-forecast-legend i{width:9px;height:9px;border-radius:2px}.ja-day{transition:none}
 
 .ja-day-popover{--day-tone:var(--text-dim)}.ja-day-popover.profit{--day-tone:var(--green)}.ja-day-popover.loss{--day-tone:var(--red)}.ja-day-popover.profit,.ja-day-popover.loss{background:color-mix(in srgb,var(--day-tone) 7%,var(--surface));border-color:color-mix(in srgb,var(--day-tone) 65%,var(--border));border-top-width:3px}.ja-day-popover .ja-pop-net{color:var(--day-tone);font-size:15px}.ja-pop-body{max-height:calc(100dvh - 84px);overflow-y:auto;overscroll-behavior:contain}.ja-pop-scroll{max-height:130px}.ja-pop-allowances h4{font-size:11px;margin:12px 0 8px;display:flex;justify-content:space-between;gap:8px}.ja-pop-allowances h4 small{color:var(--text-faint);font-size:9px;font-weight:normal}.ja-pop-plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.ja-pop-plan{min-width:0;padding:9px;border:1px solid var(--border-soft);border-radius:5px;background:color-mix(in srgb,var(--surface) 75%,transparent)}.ja-pop-plan>.firm-row-label{font-size:9px;display:inline-block;max-width:100%}.ja-pop-meters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}.ja-mini-meter>div:first-child{display:flex;justify-content:space-between;gap:3px;font-size:9px}.ja-mini-meter .day-meter-track{height:5px;margin:5px 0}.ja-mini-meter.normal .day-meter-track>span{background:var(--day-tone)}.ja-mini-meter.watch .day-meter-track>span{background:var(--amber)}.ja-mini-meter.danger .day-meter-track>span{background:var(--red)}.ja-mini-meter small{font-size:8px;line-height:1.5;display:block;color:var(--text-dim);overflow-wrap:anywhere}.ja-mini-meter.danger small{color:var(--red)}.ja-pop-exact{margin-top:10px;font-size:10px}.ja-pop-exact summary{cursor:pointer;color:var(--text)}.ja-pop-floor-scroll{overflow-x:auto}.ja-pop-floor-scroll td:nth-child(n+2){white-space:nowrap}.ja-pop-method{font-size:9px;line-height:1.6;color:var(--text-faint);margin:8px 0 0}@media(max-width:500px){.ja-pop-plans{grid-template-columns:1fr}.ja-pop-meters{margin-top:6px}.ja-pop-plan{padding:7px}.ja-pop-floor-scroll .quant-table{min-width:430px}}
+/* Keep wide diagnostic tables within their own scroll area on phones. */
+#robustnessChecks summary{cursor:pointer;color:var(--text);font-weight:700}
+#robustnessChecks .quant-grid{margin-top:12px}
+#robustBootstrap,#robustChronological,#robustCosts{overflow-x:auto}
+#robustChronological .quant-table,#robustCosts .quant-table{min-width:600px}
+#robustnessChecks .quant-table td{font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -1254,6 +1260,20 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
           <div class="quant-chart-head"><div><h3>Advanced Quant Lab</h3><span>Prop survival · edge stability · sequence and behavior stress</span></div></div>
           <p class="quant-copy">All modules recalculate from the uploaded closed-trade history. Simulated results are diagnostic ranges—not forecasts—and floating-equity breaches cannot be fully reconstructed from a closed-trade CSV.</p>
           <div class="quant-score" id="aqlHeadline"></div>
+          <details class="quant-card" id="robustnessChecks" open>
+            <summary>Robustness checks · PyBroker-inspired</summary>
+            <p class="quant-copy">Does the edge survive clustered days, later periods and extra execution costs? All P/L metrics here use percentages of initial capital.</p>
+            <div class="quant-grid">
+              <section class="quant-card"><h3>Trading-day block bootstrap</h3><div id="robustBootstrap"></div><p class="quant-chart-note">Consecutive 3-day blocks preserve within-day trade order and some local dependence. Intervals use percentile resampling of net closed P/L, not PyBroker’s per-bar BCa method. Positive-resample share is not the probability that your strategy has a true edge.</p></section>
+              <section class="quant-card"><h3>Chronological edge validation</h3><div id="robustChronological"></div><p class="quant-chart-note" id="robustSummary"></p><p class="quant-chart-note">First half of active closing days forms the initial baseline; the remaining days form three non-overlapping test periods. No model fitting or parameter selection occurs. Previously viewed history is not untouched out-of-sample evidence.</p></section>
+            </div>
+            <section class="quant-card"><h3>Execution-cost stress · selected evaluation rules</h3>
+              <label for="robustExtraCost" class="quant-copy">Extra cost per trade · % of initial capital</label>
+              <input id="robustExtraCost" class="input-field" type="number" min="0" max="1" step="0.005" value="0.01" style="max-width:180px">
+              <p class="quant-chart-note">Compare recorded costs with this extra amount and double this amount. Each scenario replays the shared daily, total-loss, consistency and realized trade-idea rules; floating equity remains unavailable.</p>
+              <div id="robustCosts"></div><p class="quant-chart-note" id="robustCostNote"></p>
+            </section>
+          </details>
           <div class="quant-chart-grid">
             <section class="quant-chart-card"><div class="quant-chart-head"><h3>Monte Carlo survival</h3><span>Bootstrap fan · 10th–90th percentile</span></div><canvas class="quant-chart" id="aqlFanChart"></canvas><p class="quant-chart-note" id="aqlFanNote"></p></section>
             <section class="quant-chart-card"><div class="quant-chart-head"><h3>Risk versus outcome</h3><span>Pass and breach probabilities</span></div><canvas class="quant-chart" id="aqlRiskChart"></canvas><p class="quant-chart-note" id="aqlRiskNote"></p></section>
@@ -3457,6 +3477,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     qDrawDistribution(q);qDrawRolling(q);qDrawDrawdown(q);drawKellyReplay(q);
     if(window.renderFirmComparison)window.renderFirmComparison(q,currentAudit,auditPrivacy,selectAuditPreset);
     if(typeof window.renderAdvancedQuantLab==='function')window.renderAdvancedQuantLab(q,currentAudit);
+    if(typeof window.renderRobustness==='function')window.renderRobustness(q,currentAudit);
     qDrawScatter(quantLotScatter,q.trades.filter(t=>t.lots>0).map(t=>({x:t.lots,y:t.net})),'Lot size','Net P/L',v=>Number(v).toFixed(2));
     qDrawScatter(quantHoldScatter,q.trades.map(t=>({x:t.minutes,y:t.net})),'Holding time (log scale)','Net P/L',v=>qDuration(Math.expm1(v)),v=>Math.log1p(v));
     const excursions=q.trades.filter(t=>Number.isFinite(t.maxUSD)&&Number.isFinite(t.minUSD)).map(t=>({x:Math.abs(t.minUSD),y:Math.max(0,t.maxUSD),net:t.net}));
@@ -4038,9 +4059,8 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 })();
 </script>
 <script src="quant-lab.js"></script>
+<script src="robustness.js"></script>
 <script src="journey-analytics.js"></script>
 <script src="firm-comparison.js"></script>
 </body>
 </html>
-
-
