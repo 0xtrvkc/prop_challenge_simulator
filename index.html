@@ -2022,18 +2022,41 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 
   let simulationGeneration = 0;
 
+  let simulationWorker = null;
+  let cancelSimulation = null;
+
   async function simulate(cfg, generation){
+    if(cancelSimulation)cancelSimulation();
+    cfg.seed=crypto.getRandomValues(new Uint32Array(1))[0];
+    if(typeof Worker==='function'&&location.protocol!=='file:'){
+      return new Promise((resolve,reject)=>{
+        let worker;
+        const finish=(error,result)=>{
+          if(simulationWorker===worker){simulationWorker=null;cancelSimulation=null;}
+          if(worker)worker.terminate();
+          error?reject(error):resolve(result);
+        };
+        try{
+          worker=new Worker('simulation-worker.js');
+          simulationWorker=worker;
+          cancelSimulation=()=>finish(null,null);
+          worker.onmessage=({data})=>data.error?finish(new Error(data.error)):finish(null,data.result);
+          worker.onerror=()=>finish(new Error('Background simulation could not start. Refresh the page and try again.'));
+          worker.onmessageerror=()=>finish(new Error('Background simulation returned unreadable results.'));
+          worker.postMessage(cfg);
+        }catch(err){finish(err);}
+      });
+    }
+    // Local-file / older-browser fallback: yield only after a short time budget.
     const base=PropRules.presets[cfg.preset]||PropRules.presets.ftmo1;
     const rules={...base,target:cfg.target,max:cfg.maxLoss,daily:cfg.dailyLoss,trailing:cfg.maxLossMode==='eodTrailing',minDays:cfg.minDays,bestDay:cfg.bestDay,ideaRisk:cfg.preset==='custom'?undefined:base.ideaRisk};
-    const seed=crypto.getRandomValues(new Uint32Array(1))[0];
     const totals={pass:0,failMax:0,failDaily:0,timeout:0,ideaFailure:0,curves:[]};
-    let passCount=0,passDays=0;
-    // Yield between small batches so controls and progress remain responsive.
+    let passCount=0,passDays=0,sliceStart=performance.now();
+    await new Promise(resolve=>setTimeout(resolve,0));
     for(let start=0;start<cfg.iterations;start+=100){
-      await new Promise(resolve=>setTimeout(resolve,0));
       if(generation!==simulationGeneration)return null;
       const paths=Math.min(100,cfg.iterations-start);
-      const result=PropRules.simulate({rules,payoff:cfg.RR,winRate:cfg.p,risk:cfg.risk,tradesPerDay:cfg.tpd,horizon:cfg.horizon*cfg.tpd,paths,seed:(seed+start*7919)>>>0,compound:false});
+      const result=PropRules.simulate({rules,payoff:cfg.RR,winRate:cfg.p,risk:cfg.risk,tradesPerDay:cfg.tpd,horizon:cfg.horizon*cfg.tpd,paths,seed:(cfg.seed+start*7919)>>>0,compound:false});
       const weight=paths/cfg.iterations;
       totals.pass+=result.pass*weight;
       totals.failMax+=(result.max+result.idea)*weight;
@@ -2043,7 +2066,10 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
       passCount+=result.passTimes.length;
       passDays+=result.passTimes.reduce((sum,t)=>sum+Math.ceil(t/cfg.tpd),0);
       for(let i=0;i<result.curves.length&&totals.curves.length<MAX_SAMPLE_CURVES;i++)totals.curves.push({points:result.curves[i],outcome:result.curveOutcomes[i]});
-      runBtn.textContent='running… '+Math.round((start+paths)/cfg.iterations*100)+'%';
+      if(performance.now()-sliceStart>=12){
+        await new Promise(resolve=>setTimeout(resolve,0));
+        sliceStart=performance.now();
+      }
     }
     totals.avgDays=passCount?passDays/passCount:null;
     return totals;
@@ -2061,7 +2087,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
     };
     runBtn.disabled=true;
     runBtn.setAttribute('aria-busy','true');
-    runBtn.textContent='running… 0%';
+    runBtn.textContent=RUN_LABEL;
     runBtn.style.opacity='0.6';
     try{
       if(!Number.isFinite(cfg.RR)||cfg.RR<=0)throw new Error('Enter a positive reward-to-risk ratio.');
