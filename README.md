@@ -76,6 +76,12 @@ Simulation output is deterministic for the same uploaded history. It uses a seed
 
 Distribution statistics include standard deviation, ±1σ coverage, worst-trade z-score, skewness, excess kurtosis, percentiles, and a Jarque–Bera shape-deviation diagnostic. Small-sample warnings remain visible because a fitted normal curve does not prove trade returns are normally distributed.
 
+### Kelly × prop rules matrix
+
+Inside **quant_analysis.sh**, the *Kelly × prop rules · does it fail yet?* card replays the imported win/loss order at 1/16, 1/8, 1/4, 1/3, 1/2, 3/4, 1, and 1.5× full Kelly against **every** firm preset at once (FTMO 1-Step, 2-Step Challenge, 2-Step Verification, WMT NoPC–EU). Each cell reports the first modeled outcome (target reached, daily-loss breach, max-loss breach, per-trade risk cap, or still alive), the trade and day it happened, any later breach after an earlier target, the peak share of each loss limit used, and a seeded Monte Carlo forward cross-check.
+
+Charts: outcome strips on a log ratio axis (0.01×–3×) showing exactly where each plan flips from pass to fail, daily-loss and total-loss limit usage curves, time-to-outcome, focus-plan equity against target and floor, and forward odds by ratio. Risk can be sized from the initial deposit or the current balance. The engine lives in `kelly-rules-matrix.js` and is covered by `tests/kelly-rules-matrix.test.cjs`. Like the existing Kelly replay, it is a stress test on one historical sequence, not out-of-sample evidence.
+
 All on-screen typography is enlarged by 30% for improved readability. Print-report typography remains independently sized so the audit still fits on one A4 page.
 
 A Myfxbook trade CSV does not contain continuous combined floating equity. It therefore cannot prove official compliance with FTMO's equity-based drawdown checks, and the app labels this limitation separately instead of incorrectly treating it as a failure. Daily grouping assumes the export timestamps already match FTMO's CE(S)T day.

@@ -1238,6 +1238,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
             <section class="quant-chart-card"><div class="quant-chart-head"><h3>Balance change by Kelly ratio</h3><span>Return on CSV starting deposit</span></div><div class="kelly-bars" id="quantKellyReturnBars"></div><div class="kelly-bar-axis" id="quantKellyReturnAxis"></div><p class="quant-chart-note" id="quantKellyReturnNote"></p></section>
           </div>
         </section>
+        <div id="kellyRulesMount" hidden></div>
         <section class="quant-card"><h3>Strategy fingerprints</h3><p class="quant-copy">Pattern matches, not declarations of intent. Market-price context is not present in the CSV.</p><div class="quant-fingerprint-grid" id="quantFingerprints"></div></section>
         <div class="quant-chart-grid">
           <section class="quant-chart-card"><div class="quant-chart-head"><h3>Trade-return distribution</h3><span>Histogram + fitted normal curve</span></div><canvas class="quant-chart" id="quantDistributionChart"></canvas><div class="quant-chart-legend"><span class="quant-chart-key">Observed trades</span><span class="quant-chart-key green">Normal model</span><span class="quant-chart-key amber">Mean and σ bands</span></div><p class="quant-chart-note" id="quantDistributionChartNote"></p></section>
@@ -3531,6 +3532,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
   }
   function drawQuantCharts(q){
     qDrawDistribution(q);qDrawRolling(q);qDrawDrawdown(q);drawKellyReplay(q);
+    if(typeof window.renderKellyRulesMatrix==='function')window.renderKellyRulesMatrix(q,currentAudit);
     if(window.renderFirmComparison)window.renderFirmComparison(q,currentAudit,auditPrivacy,selectAuditPreset);
     if(typeof window.renderAdvancedQuantLab==='function')window.renderAdvancedQuantLab(q,currentAudit);
     if(typeof window.renderRobustness==='function')window.renderRobustness(q,currentAudit);
@@ -4118,5 +4120,6 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--green);outline
 <script src="robustness.js"></script>
 <script src="journey-analytics.js"></script>
 <script src="firm-comparison.js"></script>
+<script src="kelly-rules-matrix.js"></script>
 </body>
 </html>
