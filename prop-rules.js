@@ -46,23 +46,29 @@
   }
   function seeded(seed){return ()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
   /* Identical seeds yield identical win/loss draws across rule sets, even after an early stop. */
-  function simulate({rules,payoff,winRate,risk,paths=400,horizon=200,tradesPerDay=1,seed=713,compound=true}){
+  /* lean:true is for very large runs (the 100k-path Kelly benchmark). It skips the per-path arrays, ends and curves and
+     instead returns raw counts plus two histograms indexed by trade number (passHist / failHist) in `raw`.
+     The random draws and rule checks are identical, so lean and full runs agree path for path. */
+  function simulate({rules,payoff,winRate,risk,paths=400,horizon=200,tradesPerDay=1,seed=713,compound=true,lean=false}){
     let pass=0,daily=0,max=0,idea=0;const ends=[],dds=[],times=[],passTimes=[],curves=[],curveOutcomes=[];
+    const passHist=lean?new Uint32Array(horizon+1):null,failHist=lean?new Uint32Array(horizon+1):null;
+    const note=(t,passed)=>{if(lean){(passed?passHist:failHist)[t]++;}else{times.push(t);if(passed)passTimes.push(t);}};
     for(let n=0;n<paths;n++){
-      const random=seeded(seed+n*7919);let balance=100,peak=100,peakEod=100,dayStart=100,positive=0,best=0,dd=0,done=false,arr=[100],outcome='timeout';
+      const random=seeded(seed+n*7919);let balance=100,peak=100,peakEod=100,dayStart=100,positive=0,best=0,dd=0,done=false,arr=lean?null:[100],outcome='timeout';
       for(let i=0;i<horizon;i++){
         if(i%tradesPerDay===0)dayStart=balance;
         const riskAmount=(compound?balance:100)*risk/100;
-        if(rules.ideaRisk&&riskAmount>rules.ideaRisk+1e-9){idea++;times.push(i+1);done=true;outcome='failMax';break;}
-        balance+=random()<winRate?riskAmount*payoff:-riskAmount;arr.push(balance);peak=Math.max(peak,balance);dd=Math.min(dd,(balance/peak-1)*100);
-        if(hit(balance,dailyFloor(rules,100,dayStart),rules)){daily++;times.push(i+1);done=true;outcome='failDaily';break;}
-        if(hit(balance,maxFloor(rules,100,peakEod),rules)){max++;times.push(i+1);done=true;outcome='failMax';break;}
+        if(rules.ideaRisk&&riskAmount>rules.ideaRisk+1e-9){idea++;note(i+1,false);done=true;outcome='failMax';break;}
+        balance+=random()<winRate?riskAmount*payoff:-riskAmount;if(arr)arr.push(balance);peak=Math.max(peak,balance);dd=Math.min(dd,(balance/peak-1)*100);
+        if(hit(balance,dailyFloor(rules,100,dayStart),rules)){daily++;note(i+1,false);done=true;outcome='failDaily';break;}
+        if(hit(balance,maxFloor(rules,100,peakEod),rules)){max++;note(i+1,false);done=true;outcome='failMax';break;}
         if((i+1)%tradesPerDay===0||i===horizon-1){const pnl=balance-dayStart;if(pnl>0){positive+=pnl;best=Math.max(best,pnl);}peakEod=Math.max(peakEod,balance);
-          if(balance>=100+rules.target&&Math.ceil((i+1)/tradesPerDay)>=rules.minDays&&consistent(rules,best,positive,balance-100)){pass++;times.push(i+1);passTimes.push(i+1);done=true;outcome='pass';break;}}
+          if(balance>=100+rules.target&&Math.ceil((i+1)/tradesPerDay)>=rules.minDays&&consistent(rules,best,positive,balance-100)){pass++;note(i+1,true);done=true;outcome='pass';break;}}
       }
-      ends.push(balance);dds.push(dd);if(n<250){curves.push(arr);curveOutcomes.push(outcome);}
+      if(!lean){ends.push(balance);dds.push(dd);if(n<250){curves.push(arr);curveOutcomes.push(outcome);}}
     }
-    return {pass:pass/paths*100,daily:daily/paths*100,max:max/paths*100,idea:idea/paths*100,unfinished:(paths-pass-daily-max-idea)/paths*100,ends,dds,times,passTimes,curves,curveOutcomes,horizon,risk};
+    return {pass:pass/paths*100,daily:daily/paths*100,max:max/paths*100,idea:idea/paths*100,unfinished:(paths-pass-daily-max-idea)/paths*100,ends,dds,times,passTimes,curves,curveOutcomes,horizon,risk,
+      raw:lean?{paths,pass,daily,max,idea,passHist,failHist}:undefined};
   }
   const api={presets,get,hit,dailyFloor,maxFloor,consistent,replay,simulate,group,key,ideaLosses};
   if(typeof module!=='undefined')module.exports=api;

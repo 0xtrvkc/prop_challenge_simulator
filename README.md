@@ -78,9 +78,24 @@ Distribution statistics include standard deviation, ±1σ coverage, worst-trade 
 
 ### Kelly × prop rules matrix
 
-Inside **quant_analysis.sh**, the *Kelly × prop rules · does it fail yet?* card replays the imported win/loss order at 1/16, 1/8, 1/4, 1/3, 1/2, 3/4, 1, and 1.5× full Kelly against **every** firm preset at once (FTMO 1-Step, 2-Step Challenge, 2-Step Verification, WMT NoPC–EU). Each cell reports the first modeled outcome (target reached, daily-loss breach, max-loss breach, per-trade risk cap, or still alive), the trade and day it happened, any later breach after an earlier target, the peak share of each loss limit used, and a seeded Monte Carlo forward cross-check.
+Inside **quant_analysis.sh**, the *Kelly × prop rules · does it fail yet?* card replays the imported win/loss order at 1/16, 1/8, 1/4, 1/3, 1/2, 3/4, 1, and 1.5× full Kelly against **every** firm preset at once (FTMO 1-Step, 2-Step Challenge, 2-Step Verification, WMT NoPC–EU). Each cell reports the first modeled outcome (target reached, daily-loss breach, max-loss breach, per-trade risk cap, or still alive), the trade and day it happened, any later breach after an earlier target, the peak share of each loss limit used, and a seeded Monte Carlo forward cross-check (a quick 300-path preview that is replaced by the 100,000-path benchmark below as each cell finishes). Each cell is one table cell that is coloured edge to edge: green for target first, red for a breach, orange for the per-trade risk cap, amber for target pending other rules and blue for no outcome yet.
 
 Charts: outcome strips on a log ratio axis (0.01×–3×) showing exactly where each plan flips from pass to fail, daily-loss and total-loss limit usage curves, time-to-outcome, focus-plan equity against target and floor, and forward odds by ratio. Risk can be sized from the initial deposit or the current balance. The engine lives in `kelly-rules-matrix.js` and is covered by `tests/kelly-rules-matrix.test.cjs`. Like the existing Kelly replay, it is a stress test on one historical sequence, not out-of-sample evidence.
+
+#### 100,000-path Monte Carlo benchmark
+
+Beneath the charts, **Monte Carlo benchmark · 100,000 paths per ratio** runs every Kelly ratio (1/16 through 1.5×) against every firm preset: 8 ratios × 4 plans = 32 cells × 100,000 seeded paths = 3,200,000 paths. Paths draw wins and losses independently from the imported win rate and average payoff, use the history's trades per active day, and run for 90 active days at the same Kelly-sized risk as the replay (fixed or compounding, following the sizing selector). The same seed is reused for every ratio, so the first 300 paths of each cell are exactly the quick preview.
+
+Each cell reports target-first, breach (split into daily loss, total loss and per-trade risk cap), unfinished share and the median active days to pass, and is coloured by its most likely outcome. The analysis above the table is computed from the finished numbers:
+
+- **Best pass odds** per plan with a 95% binomial interval, attempts per pass and median time to pass, and a note when the peak sits on the smallest tested ratio.
+- **Same odds, less risk**: the range of ratios statistically level with the peak and the lowest-breach point inside it.
+- **Where breach overtakes target**, the full-Kelly outcome against the peak, and when a ratio is too small to finish within 90 active days.
+- **Plan spread** and the **best single ratio across all plans** (the ratio that maximises the weakest plan's pass odds), plus an explicit precision statement.
+
+The summary table lists those figures for each plan. Work runs in a pool of up to four Web Workers (`kelly-benchmark-worker.js`) and streams in cell by cell with a progress bar; when Workers are unavailable (for example a `file://` page) the same chunks run on the main thread and yield between chunks. Results are cached by history content, so resizing, theme changes or rule edits never restart it, and switching sizing mode back and forth reuses finished cells. Like the replay, this is a model of the stated win rate and payoff, not a forecast of future results.
+
+The engine (`benchSpec`, `benchRun`, `benchFinish`, `analyzeBenchmark`, `benchInsights`) lives in `kelly-rules-matrix.js` and is covered by `tests/kelly-rules-matrix.test.cjs`, including a real worker-thread run of the benchmark worker. `PropRules.simulate` gained an opt-in `lean` mode for runs this large; its results are identical to the full mode.
 
 All on-screen typography is enlarged by 30% for improved readability. Print-report typography remains independently sized so the audit still fits on one A4 page.
 
