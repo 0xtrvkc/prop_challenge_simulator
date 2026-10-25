@@ -46,12 +46,16 @@
   }
   function seeded(seed){return ()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
   /* Identical seeds yield identical win/loss draws across rule sets, even after an early stop. */
+  /* Bin widths for the lean percentile histograms: final balance 0–300 and drawdown depth 0–100, both in index points / percent. */
+  const LEAN_BINS={step:.25,endBins:1200,ddBins:400};
   /* lean:true is for very large runs (the 100k-path Kelly benchmark). It skips the per-path arrays, ends and curves and
      instead returns raw counts plus two histograms indexed by trade number (passHist / failHist) in `raw`.
+     It also bins every path's final balance (endHist) and max drawdown depth (ddHist) so percentiles are available without storing paths.
      The random draws and rule checks are identical, so lean and full runs agree path for path. */
   function simulate({rules,payoff,winRate,risk,paths=400,horizon=200,tradesPerDay=1,seed=713,compound=true,lean=false}){
     let pass=0,daily=0,max=0,idea=0;const ends=[],dds=[],times=[],passTimes=[],curves=[],curveOutcomes=[];
     const passHist=lean?new Uint32Array(horizon+1):null,failHist=lean?new Uint32Array(horizon+1):null;
+    const endHist=lean?new Uint32Array(LEAN_BINS.endBins):null,ddHist=lean?new Uint32Array(LEAN_BINS.ddBins):null;
     const note=(t,passed)=>{if(lean){(passed?passHist:failHist)[t]++;}else{times.push(t);if(passed)passTimes.push(t);}};
     for(let n=0;n<paths;n++){
       const random=seeded(seed+n*7919);let balance=100,peak=100,peakEod=100,dayStart=100,positive=0,best=0,dd=0,done=false,arr=lean?null:[100],outcome='timeout';
@@ -65,12 +69,13 @@
         if((i+1)%tradesPerDay===0||i===horizon-1){const pnl=balance-dayStart;if(pnl>0){positive+=pnl;best=Math.max(best,pnl);}peakEod=Math.max(peakEod,balance);
           if(balance>=100+rules.target&&Math.ceil((i+1)/tradesPerDay)>=rules.minDays&&consistent(rules,best,positive,balance-100)){pass++;note(i+1,true);done=true;outcome='pass';break;}}
       }
-      if(!lean){ends.push(balance);dds.push(dd);if(n<250){curves.push(arr);curveOutcomes.push(outcome);}}
+      if(lean){endHist[Math.min(LEAN_BINS.endBins-1,Math.max(0,Math.floor(balance/LEAN_BINS.step)))]++;ddHist[Math.min(LEAN_BINS.ddBins-1,Math.floor(-dd/LEAN_BINS.step))]++;}
+      else{ends.push(balance);dds.push(dd);if(n<250){curves.push(arr);curveOutcomes.push(outcome);}}
     }
     return {pass:pass/paths*100,daily:daily/paths*100,max:max/paths*100,idea:idea/paths*100,unfinished:(paths-pass-daily-max-idea)/paths*100,ends,dds,times,passTimes,curves,curveOutcomes,horizon,risk,
-      raw:lean?{paths,pass,daily,max,idea,passHist,failHist}:undefined};
+      raw:lean?{paths,pass,daily,max,idea,passHist,failHist,endHist,ddHist}:undefined};
   }
-  const api={presets,get,hit,dailyFloor,maxFloor,consistent,replay,simulate,group,key,ideaLosses};
+  const api={presets,get,hit,dailyFloor,maxFloor,consistent,replay,simulate,group,key,ideaLosses,LEAN_BINS};
   if(typeof module!=='undefined')module.exports=api;
   root.PropRules=api;
 })(typeof window!=='undefined'?window:globalThis);

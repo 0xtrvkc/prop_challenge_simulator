@@ -103,10 +103,15 @@
     return R.simulate({rules:spec.rules,payoff:spec.b,winRate:spec.p,risk:benchRisk(spec),paths:count,horizon:MC_DAYS*spec.tpd,tradesPerDay:spec.tpd,
       seed:(spec.seed+start*7919)|0,compound:spec.compound,lean:true}).raw;
   }
-  function benchEmpty(spec){const n=MC_DAYS*spec.tpd+1;return {paths:0,pass:0,daily:0,max:0,idea:0,passHist:new Uint32Array(n),failHist:new Uint32Array(n)};}
+  function benchEmpty(spec){
+    const n=MC_DAYS*spec.tpd+1,B=R.LEAN_BINS;
+    return {paths:0,pass:0,daily:0,max:0,idea:0,passHist:new Uint32Array(n),failHist:new Uint32Array(n),endHist:new Uint32Array(B.endBins),ddHist:new Uint32Array(B.ddBins)};
+  }
   function benchAdd(acc,raw){
     acc.paths+=raw.paths;acc.pass+=raw.pass;acc.daily+=raw.daily;acc.max+=raw.max;acc.idea+=raw.idea;
     for(let i=0;i<raw.passHist.length;i++){acc.passHist[i]+=raw.passHist[i];acc.failHist[i]+=raw.failHist[i];}
+    for(let i=0;i<raw.endHist.length;i++)acc.endHist[i]+=raw.endHist[i];
+    for(let i=0;i<raw.ddHist.length;i++)acc.ddHist[i]+=raw.ddHist[i];
     return acc;
   }
   function benchRun(spec){
@@ -115,15 +120,24 @@
     return acc;
   }
   const histQuantile=(hist,total,q)=>{if(!total)return null;const need=Math.ceil(total*q);let c=0;for(let i=0;i<hist.length;i++){c+=hist[i];if(c>=need)return i;}return null;};
-  /* Percentages of all paths, a 95% binomial half-width for the pass rate (in points), and median / 90th-percentile times in active days. */
+  /* Percentages of all paths, a 95% binomial half-width for the pass rate (in points), and the spread of outcomes:
+     end    = account index (start 100) when each path ended — at target, at a breach, or on day 90 — as P10 / P50 / P90 values,
+     dd     = deepest peak-to-trough drop of each path in percent (negative numbers; P10 is the deep, bad end),
+     days   = active days to pass among the paths that passed (P10 is the fast end).
+     Percentiles come from fixed-width bins (0.25 points), so they are exact to that resolution. */
   function benchFinish(spec,acc){
     const n=acc.paths||1,share=x=>x/n*100,fails=acc.daily+acc.max+acc.idea,pass=share(acc.pass),days=t=>t===null?null:Math.ceil(t/spec.tpd);
     return {id:spec.id,ratioIndex:spec.ratioIndex,ratio:spec.ratio,riskPct:benchRisk(spec),paths:acc.paths,tpd:spec.tpd,
       pass,daily:share(acc.daily),max:share(acc.max),idea:share(acc.idea),breach:share(fails),unfinished:share(acc.paths-acc.pass-fails),
       ci:1.96*Math.sqrt(Math.max(0,pass/100*(1-pass/100))/n)*100,
       medPassDays:days(histQuantile(acc.passHist,acc.pass,.5)),p90PassDays:days(histQuantile(acc.passHist,acc.pass,.9)),medFailDays:days(histQuantile(acc.failHist,fails,.5)),
-      attempts:acc.pass?acc.paths/acc.pass:null};
+      attempts:acc.pass?acc.paths/acc.pass:null,
+      end:{p10:binValue(acc.endHist,acc.paths,.1,1),p50:binValue(acc.endHist,acc.paths,.5,1),p90:binValue(acc.endHist,acc.paths,.9,1)},
+      dd:{p10:binValue(acc.ddHist,acc.paths,.9,-1),p50:binValue(acc.ddHist,acc.paths,.5,-1),p90:binValue(acc.ddHist,acc.paths,.1,-1)},
+      days:{p10:days(histQuantile(acc.passHist,acc.pass,.1)),p50:days(histQuantile(acc.passHist,acc.pass,.5)),p90:days(histQuantile(acc.passHist,acc.pass,.9))}};
   }
+  /* Centre of the bin holding quantile q; sign -1 turns a depth histogram into negative drawdown values. */
+  const binValue=(hist,total,q,sign)=>{const i=histQuantile(hist,total,q);return i===null?null:sign*(i+.5)*R.LEAN_BINS.step;};
 
   /* ---- analysis of a finished (or partly finished) benchmark ----
      cells[id] is an array of benchFinish() results indexed like RATIOS. A plan is analysed once all its ratios are in. */
@@ -178,7 +192,8 @@
     const tone=benchTone(s),cls={pass:'kr-pass',fail:'kr-fail',idea:'kr-idea',live:'kr-live'}[tone],glyph={pass:'✓',fail:'✕',idea:'✕',live:'●'}[tone];
     return '<td class="kr-cell '+cls+'"><div class="kr-inner"><div class="kr-top"><span class="kr-glyph" aria-hidden="true">'+glyph+'</span><b class="kr-big">'+pct(s.pass)+' target first</b></div>'
       +'<small>breach '+pct(s.breach)+' · daily '+pct(s.daily)+' · total '+pct(s.max)+(s.idea>0?' · risk cap '+pct(s.idea):'')+'</small>'
-      +'<small>unfinished '+pct(s.unfinished)+(s.medPassDays!==null?' · median pass '+s.medPassDays+' d':'')+'</small></div></td>';
+      +'<small>unfinished '+pct(s.unfinished)+(s.medPassDays!==null?' · median pass '+s.medPassDays+' d':'')+'</small>'
+      +(s.end?'<small>ending equity P10 '+s.end.p10.toFixed(1)+' · P50 '+s.end.p50.toFixed(1)+' · P90 '+s.end.p90.toFixed(1)+'</small><small>max drawdown typical '+s.dd.p50.toFixed(1)+'% · bad case '+s.dd.p10.toFixed(1)+'%</small>':'')+'</div></td>';
   }
   function benchTableHtml(cells,ids,compound){
     const head='<thead><tr><th>Kelly ratio</th>'+ids.map(id=>'<th>'+planName(id)+'</th>').join('')+'</tr></thead>';
@@ -209,6 +224,7 @@
       }else{
         out.push({cls:pk.pass>=60?'good':pk.pass>=25?'':'warn',html:'<strong>Best pass odds · '+nm+':</strong> '+rn(pk)+' (risk '+pct(pk.riskPct,2)+' per loss) reaches the target first in '+pct(pk.pass)+' ±'+pk.ci.toFixed(2)+' of paths, breaches in '+pct(pk.breach)+' and leaves '+pct(pk.unfinished)+' unfinished. About '+attemptsText(pk.attempts)+' per pass'+(pk.medPassDays!==null?', median '+pk.medPassDays+' active days to pass':'')+'.'
           +(pk.ratioIndex===0?' The peak is the smallest ratio tested, so an even smaller fraction may do better still.':'')});
+        if(pk.end)out.push({cls:'',html:'<strong>Spread at '+rn(pk)+':</strong> the bottom 10% of paths end the run at or below '+pk.end.p10.toFixed(1)+', the middle path at '+pk.end.p50.toFixed(1)+' and the top 10% at '+pk.end.p90.toFixed(1)+' (start 100). Median max drawdown is '+Math.abs(pk.dd.p50).toFixed(1)+'% and the worst 10% fall '+Math.abs(pk.dd.p10).toFixed(1)+'% or more'+(pk.days&&pk.days.p50!==null?'; passes arrive in '+pk.days.p10+' / '+pk.days.p50+' / '+pk.days.p90+' active days (fastest 10% / median / slowest 10%)':'')+'.'});
         if(P.safest.ratioIndex<pk.ratioIndex&&pk.breach-P.safest.breach>.5){
           const lo=P.plateau[0],hi=P.plateau[P.plateau.length-1];
           out.push({cls:'good',html:'<strong>Same odds, less risk:</strong> pass odds are level within noise from '+rn(lo)+' to '+rn(hi)+'. '+rn(P.safest)+' gives '+pct(P.safest.pass)+' pass with '+pct(P.safest.breach)+' breach, against '+pct(pk.breach)+' breach at the peak.'});
@@ -274,6 +290,9 @@
 .kr-cell small{display:block;font-size:11.2px;line-height:1.4;color:var(--text-dim)}
 .kr-bench{min-width:900px}.kr-bench td.kr-cell{min-width:200px}
 .kr-bench-summary{min-width:640px}.kr-bench-summary th{white-space:normal;vertical-align:bottom}.kr-bench-summary td{padding:9px;font-size:12.5px;font-variant-numeric:tabular-nums}.kr-bench-summary td small{display:inline;color:var(--text-faint)}
+.kr-heat{min-width:640px}.kr-heat th{text-align:center;white-space:nowrap}.kr-heat th:first-child{text-align:left}
+.kr-heat td{text-align:center;padding:10px 6px;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text);background:var(--surface-2)}
+.kr-heat td.kr-rowhead{text-align:left;background:transparent}.kr-heat td.kr-best{font-weight:700;box-shadow:inset 0 0 0 2px var(--text)}
 .kr-progress{height:6px;margin:4px 0 12px;border-radius:3px;background:var(--border);overflow:hidden}
 .kr-progress i{display:block;height:100%;width:0;background:var(--blue);transition:width .25s}
 .kr-pass{background:var(--surface-2)}.kr-fail{background:var(--surface-2)}.kr-idea{background:var(--surface-2)}.kr-pend{background:var(--surface-2)}.kr-live{background:var(--surface-2)}
@@ -325,7 +344,24 @@
       <section class="quant-chart-card kr-wide" id="krBenchCard"><div class="quant-chart-head"><h3>Monte Carlo benchmark · 100,000 paths per ratio</h3><span id="krBenchSub">Every Kelly ratio × every plan</span></div>
         <div class="kr-progress" id="krBenchProgress" role="progressbar" aria-label="Monte Carlo benchmark progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="krBenchBar"></i></div>
         <div id="krBenchInsight" class="quant-insights"></div>
-        <div class="kr-scroll" id="krBenchSummary"></div>
+        <div class="kr-scroll" id="krBenchSummary"></div></section>
+      <section class="quant-chart-card kr-wide"><div class="quant-chart-head"><h3>Pass odds by Kelly ratio</h3><span>Every plan · 100,000 paths per point</span></div>
+        <canvas class="quant-chart" id="krCurve" aria-label="Chance of reaching the target first at each Kelly ratio, one line per plan"></canvas>
+        <div class="quant-chart-legend" id="krCurveLegend"></div><div class="kr-readout" id="krCurveReadout">Hover or tap the chart to read every plan at one ratio.</div>
+        <p class="quant-chart-note">Each point is the share of 100,000 paths that reach the target before any breach. The ring marks each plan’s best ratio; the dashed line is full Kelly. Odds rise while sizing is too small to finish in time, then fall once daily and total loss limits start to bite.</p></section>
+      <section class="quant-chart-card kr-wide"><div class="quant-chart-head"><h3>Pass-odds heatmap</h3><span>Ratio × plan · darker green = better odds</span></div>
+        <div class="kr-scroll" id="krHeat"></div>
+        <p class="quant-chart-note">Same numbers as the curve, as a grid. The outlined cell is each plan’s best ratio. Cells fill in as the benchmark finishes.</p></section>
+      <section class="quant-chart-card"><div class="quant-chart-head"><h3>Ending equity spread</h3><span id="krSpreadEqSub">Focus plan · P10 / P50 / P90</span></div>
+        <canvas class="quant-chart" id="krSpreadEq"></canvas><div class="quant-chart-legend" id="krSpreadEqLegend"></div>
+        <p class="quant-chart-note">Account index (start 100) when each path ended: at target, at a breach, or on day 90. The bar runs from the bottom 10% of paths to the top 10%; the tick is the middle path. Bars pile up on the target or floor line once most paths stop there.</p></section>
+      <section class="quant-chart-card"><div class="quant-chart-head"><h3>Max drawdown spread</h3><span id="krSpreadDdSub">Focus plan · P10 / P50 / P90</span></div>
+        <canvas class="quant-chart" id="krSpreadDd"></canvas><div class="quant-chart-legend" id="krSpreadDdLegend"></div>
+        <p class="quant-chart-note">Deepest peak-to-trough drop of each path. The bar runs from the worst 10% (deepest) to the mildest 10%; the tick is the middle path. The dashed line is the plan’s total-loss allowance.</p></section>
+      <section class="quant-chart-card kr-wide"><div class="quant-chart-head"><h3>Days to pass spread</h3><span id="krSpreadDaysSub">Focus plan · paths that passed</span></div>
+        <canvas class="quant-chart" id="krSpreadDays"></canvas><div class="quant-chart-legend" id="krSpreadDaysLegend"></div>
+        <p class="quant-chart-note">Active days needed by the paths that passed: fastest 10%, median and slowest 10%. Ratios where nothing passes show no bar.</p></section>
+      <section class="quant-chart-card kr-wide" id="krBenchTableCard"><div class="quant-chart-head"><h3>All benchmark cells</h3><span>Every Kelly ratio × every plan</span></div>
         <div class="kr-scroll" id="krBenchTable"></div>
         <p class="quant-chart-note" id="krBenchNote"></p></section>
     </div>
@@ -334,7 +370,7 @@
 </section>`;
 
   const state={compound:false,focus:null,focusPinned:false};
-  let last=null,cache=null,mcToken=0,barcodeLayout=null;
+  let last=null,cache=null,mcToken=0,barcodeLayout=null,curveLayout=null;
 
   function injectStyles(){
     if($('krStyles'))return;
@@ -355,6 +391,15 @@
       $('krReadout').innerHTML='<strong>'+esc(R.presets[id].name)+'</strong> · '+times(r.ratio)+' (risk '+pct(r.riskPct,2)+' per loss) → <strong>'+esc(r.label)+'</strong>'+(r.trade?' · trade '+r.trade+' · '+esc(r.day):'')+(r.laterBreach?' · later breach: '+esc(r.laterBreach.reason)+' at trade '+r.laterBreach.trade:'');
     };
     cv.addEventListener('pointermove',probe);cv.addEventListener('pointerdown',probe);
+    const cc=$('krCurve');
+    const curveProbe=e=>{
+      if(!cache||!cache.bench||!curveLayout)return;
+      const rect=cc.getBoundingClientRect(),x=e.clientX-rect.left,L=curveLayout;
+      const i=Math.round(L.x0+(x-L.l)/L.pw*(L.x1-L.x0));
+      if(x<L.l||x>L.l+L.pw||i<0||i>=RATIOS.length){$('krCurveReadout').textContent='Hover or tap the chart to read every plan at one ratio.';return;}
+      $('krCurveReadout').innerHTML='<strong>'+RATIO_NAMES[i]+'</strong> · '+cache.ids.map(id=>{const c=cache.bench.cells[id]&&cache.bench.cells[id][i];return esc(short(id))+' <strong>'+(c?pct(c.pass):'…')+'</strong> pass'+(c?' / '+pct(c.breach)+' breach':'');}).join(' · ');
+    };
+    cc.addEventListener('pointermove',curveProbe);cc.addEventListener('pointerdown',curveProbe);
   }
 
   function compute(q,audit){
@@ -607,6 +652,77 @@
     $('krMcNote').textContent=paths+' seeded paths per bar'+(src.bench?' (±'+Math.max(...rows.map(m=>m.ci)).toFixed(2)+' points at 95% on the target share)':' as a quick preview; the 100,000-path benchmark below replaces it as it finishes')+' · '+m0.tpd+' trades per active day · 90 active days · observed win rate and average payoff · '+(data.compound?'compounding':'fixed')+' risk. Forward-looking counterpart to the one-sequence replay above; the same seed is reused for every ratio.';
   }
 
+  /* ---- benchmark charts: pass-odds curve, heatmap and P10/P50/P90 spread bars ---- */
+  const ratioShort=i=>RATIO_NAMES[i].replace(' Kelly','');
+  const toneColor=(s,c)=>({pass:c.green,fail:c.red,idea:ORANGE,live:c.blue})[benchTone(s)];
+  function drawCurve(data){
+    const cv=$('krCurve'),s=setup(cv);if(!s)return;
+    const {ctx,c}=s,cells=data.bench.cells,have=data.ids.some(id=>cells[id]&&cells[id].some(Boolean));
+    if(!have){txt(ctx,'Benchmark running…',s.w/2,s.h/2,c.faint,'center',13);return;}
+    const f=frame(s,{x0:-.5,x1:RATIOS.length-.5,y0:0,y1:100,xt:RATIOS.map((_,i)=>i),yt:[0,25,50,75,100],xf:ratioShort,yf:v=>v+'%'});
+    curveLayout={l:f.l,pw:f.pw,x0:-.5,x1:RATIOS.length-.5};
+    ctx.save();ctx.beginPath();ctx.rect(f.l,f.t-4,f.pw,f.ph+8);ctx.clip();
+    ctx.strokeStyle=c.dim;ctx.globalAlpha=.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(f.X(RATIOS.indexOf(1)),f.t);ctx.lineTo(f.X(RATIOS.indexOf(1)),f.t+f.ph);ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+    data.ids.forEach((id,k)=>{
+      const row=cells[id]||[],col=palette(id,k);let started=false;
+      ctx.strokeStyle=col;ctx.lineWidth=2.2;ctx.beginPath();
+      row.forEach((r,i)=>{if(!r)return;const x=f.X(i),y=f.Y(r.pass);started?ctx.lineTo(x,y):ctx.moveTo(x,y);started=true;});ctx.stroke();
+      let best=null;row.forEach((r,i)=>{if(!r)return;if(!best||r.pass>best.r.pass+1e-9)best={r,i};ctx.beginPath();ctx.arc(f.X(i),f.Y(r.pass),3.4,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();});
+      if(best&&best.r.pass>0&&RATIOS.every((_,i)=>row[i])){ctx.beginPath();ctx.arc(f.X(best.i),f.Y(best.r.pass),7,0,Math.PI*2);ctx.lineWidth=2;ctx.strokeStyle=c.text;ctx.stroke();}
+    });
+    ctx.restore();
+    txt(ctx,'Full Kelly',f.X(RATIOS.indexOf(1))+5,f.t+8,c.dim,'left',10);
+    $('krCurveLegend').innerHTML=data.ids.map((id,k)=>keySwatch(palette(id,k),short(id),true)).join('')+'<span class="quant-chart-key kr-key"><i style="background:none;border:2px solid var(--text);border-radius:50%;width:8px;height:8px"></i>best ratio</span>';
+  }
+  function renderHeat(data){
+    const cells=data.bench.cells,head='<thead><tr><th>Plan</th>'+RATIOS.map((_,i)=>'<th>'+ratioShort(i)+'</th>').join('')+'</tr></thead>';
+    const body=data.ids.map(id=>{
+      const row=cells[id]||[],full=RATIOS.every((_,i)=>row[i]);let bi=-1;
+      if(full)row.forEach((r,i)=>{if(bi<0||r.pass>row[bi].pass+1e-9)bi=i;});
+      return '<tr><td class="kr-rowhead"><b>'+esc(R.presets[id].name)+'</b></td>'+RATIOS.map((_,i)=>{
+        const r=row[i];if(!r)return '<td>…</td>';
+        const w=Math.round(Math.min(100,r.pass)*.78);
+        return '<td class="'+(i===bi&&r.pass>0?'kr-best':'')+'" style="background:var(--surface-2);background:color-mix(in srgb,var(--green) '+w+'%,var(--bg))" title="'+esc(RATIO_NAMES[i])+': '+pct(r.pass)+' pass · '+pct(r.breach)+' breach">'+pct(r.pass,1)+'</td>';
+      }).join('')+'</tr>';
+    }).join('');
+    $('krHeat').innerHTML='<table class="quant-table kr-matrix kr-heat">'+head+'<tbody>'+body+'</tbody></table>';
+  }
+  /* One vertical bar per ratio from the P10 to the P90 value, a tick at the median, coloured by that cell's most likely outcome. */
+  function drawSpread(canvasId,legendId,data,focus,cfg){
+    const s=setup($(canvasId));if(!s)return;
+    const {ctx,c}=s,row=(data.bench.cells[focus]||[]),pts=RATIOS.map((_,i)=>row[i]&&cfg.get(row[i])).map(v=>v&&v.p10!==null&&v.p90!==null?v:null);
+    if(!pts.some(Boolean)){txt(ctx,row.some(Boolean)?cfg.empty:'Benchmark running…',s.w/2,s.h/2,c.faint,'center',13);$(legendId).innerHTML='';return;}
+    let lo=Infinity,hi=-Infinity;pts.forEach(v=>{if(v){lo=Math.min(lo,v.p10);hi=Math.max(hi,v.p90);}});
+    cfg.refs.forEach(r=>{lo=Math.min(lo,r.v);hi=Math.max(hi,r.v);});
+    const span=(hi-lo)||1,y0=cfg.floor!==undefined?cfg.floor:lo-span*.08,y1=cfg.ceil!==undefined?cfg.ceil:hi+span*.1,step=cfg.step(y1-y0),yt=[];
+    for(let v=Math.ceil(y0/step)*step;v<=y1+1e-9;v+=step)yt.push(v);
+    const f=frame(s,{x0:0,x1:RATIOS.length,y0,y1,xt:[],yt,xf:()=>'',yf:cfg.fmt,l:56}),slot=f.pw/RATIOS.length,bw=Math.min(34,slot*.5);
+    ctx.save();ctx.beginPath();ctx.rect(f.l,f.t-2,f.pw,f.ph+4);ctx.clip();
+    cfg.refs.forEach(r=>{ctx.strokeStyle=r.color(c);ctx.lineWidth=1.3;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(f.l,f.Y(r.v));ctx.lineTo(f.l+f.pw,f.Y(r.v));ctx.stroke();ctx.setLineDash([]);});
+    pts.forEach((v,i)=>{
+      if(!v)return;
+      const cx=f.l+slot*(i+.5),yTop=f.Y(v.p90),yBot=f.Y(v.p10),h=Math.max(3,yBot-yTop),col=toneColor(row[i],c);
+      ctx.globalAlpha=.35;ctx.fillStyle=col;ctx.fillRect(cx-bw/2,yTop,bw,h);ctx.globalAlpha=1;
+      ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.strokeRect(cx-bw/2,yTop,bw,h);
+      ctx.strokeStyle=c.text;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(cx-bw/2-3,f.Y(v.p50));ctx.lineTo(cx+bw/2+3,f.Y(v.p50));ctx.stroke();
+    });
+    ctx.restore();
+    pts.forEach((v,i)=>{if(v)txt(ctx,cfg.fmt(v.p50),f.l+slot*(i+.5),Math.max(f.t+6,f.Y(v.p90)-9),c.dim,'center',10);});
+    RATIOS.forEach((_,i)=>txt(ctx,ratioShort(i),f.l+slot*(i+.5),f.t+f.ph+16,c.faint,'center',10.5));
+    $(legendId).innerHTML=keySwatch(c.green,'target most likely')+keySwatch(c.red,'breach most likely')+keySwatch(ORANGE,'risk cap')+keySwatch(c.blue,'unfinished most likely')+cfg.refs.map(r=>keySwatch(r.color(c),r.label,true)).join('')+'<span class="quant-chart-key">tick and number = middle path</span>';
+  }
+  function drawBenchCharts(data){
+    if(!data.bench)return;
+    const focus=state.focus,rules=R.presets[focus],name=rules.name;
+    $('krSpreadEqSub').textContent=name+' · P10 / P50 / P90';$('krSpreadDdSub').textContent=name+' · P10 / P50 / P90';$('krSpreadDaysSub').textContent=name+' · fastest 10% / median / slowest 10% of passes';
+    drawCurve(data);renderHeat(data);
+    drawSpread('krSpreadEq','krSpreadEqLegend',data,focus,{get:r=>r.end,empty:'No data',fmt:v=>String(Math.round(v)),step:sp=>sp>40?10:sp>16?5:2,
+      refs:[{v:100+rules.target,label:'target',color:c=>c.green},{v:100-rules.max,label:rules.trailing?'starting floor':'floor',color:c=>c.red}]});
+    drawSpread('krSpreadDd','krSpreadDdLegend',data,focus,{get:r=>r.dd,empty:'No data',fmt:v=>(Math.round(v*10)/10)+'%',step:sp=>sp>30?10:sp>12?5:2,ceil:1,
+      refs:[{v:-rules.max,label:'total-loss allowance',color:c=>c.red}]});
+    drawSpread('krSpreadDays','krSpreadDaysLegend',data,focus,{get:r=>r.days&&r.days.p10!==null?r.days:null,empty:'No path passes at any ratio',fmt:v=>String(Math.round(v))+'d',step:sp=>sp>60?20:sp>30?10:5,floor:0,ceil:MC_DAYS+3,refs:[]});
+  }
+
   /* ---- tables and summaries ---- */
   function renderChips(data){
     $('krChips').innerHTML=data.ids.map(id=>{
@@ -653,7 +769,7 @@
   }
   function paintBench(){
     if(!last||!cache||!cache.bench)return;
-    renderMatrix(cache);renderBench(cache);drawMc(cache,state.focus);
+    renderMatrix(cache);renderBench(cache);drawMc(cache,state.focus);drawBenchCharts(cache);
   }
 
   function paint(){
@@ -667,7 +783,7 @@
     $('krTimeLegend').innerHTML=keySwatch('var(--green)','Target')+keySwatch('var(--red)','Breach')+keySwatch(ORANGE,'Risk cap')+keySwatch('var(--amber)','Pending')+keySwatch('var(--blue)','No outcome');
     $('krTimeSub').textContent=rules.name+' · trade number of first outcome';
     $('krEqSub').textContent=rules.name+' · indexed to 100';
-    drawBarcode(data);drawUsage(data,'peakDaily','krDaily');drawUsage(data,'peakMax','krMax');drawTime(data,focus);drawEquity(data,focus);drawMc(data,focus);
+    drawBarcode(data);drawUsage(data,'peakDaily','krDaily');drawUsage(data,'peakMax','krMax');drawTime(data,focus);drawEquity(data,focus);drawMc(data,focus);drawBenchCharts(data);
   }
 
   function render(q,audit){

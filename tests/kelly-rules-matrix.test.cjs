@@ -71,7 +71,8 @@ const hist=h=>[...h].reduce((a,b)=>a+b,0);
 const history=()=>{const t=[];for(let d=1;d<=30;d++){t.push(trade(d,d%2?10:-8,10));t.push(trade(d,d%3?9:-8,15));}return t;};
 const benchKelly={usable:true,p:.55,b:1.2,full:.2};
 const mk=(i,pass,breach,o={})=>({id:o.id||'x',ratioIndex:i,ratio:K.RATIOS[i],riskPct:K.RATIOS[i]*20,paths:100000,tpd:2,pass,breach,daily:o.daily??breach,max:o.max??0,idea:o.idea??0,
-  unfinished:100-pass-breach,ci:o.ci??.3,medPassDays:o.med??10,p90PassDays:20,medFailDays:5,attempts:pass>0?100/pass:null});
+  unfinished:100-pass-breach,ci:o.ci??.3,medPassDays:o.med??10,p90PassDays:20,medFailDays:5,attempts:pass>0?100/pass:null,
+  end:{p10:92,p50:104,p90:110},dd:{p10:-8,p50:-3,p90:-1},days:pass>0?{p10:4,p50:10,p90:20}:{p10:null,p50:null,p90:null}});
 
 test('benchmark chunks add up to one run: chunking never changes the result',()=>{
   const spec=K.benchSpec(history(),benchKelly,'ftmo2',3,{paths:1000});
@@ -174,4 +175,30 @@ test('insights say so when the peak sits on the smallest ratio and when the per-
   assert.equal(w.cls,'risk');assert.match(w.html,/per-trade risk cap \(1% of the deposit\) is exceeded on the first trade/);
   const first=K.RATIOS.map((_,i)=>mk(i,0,100,{id:'ftmo1'}));
   assert.match(K.benchInsights(K.analyzeBenchmark({ftmo1:first},['ftmo1']),['ftmo1'],'ftmo1').map(x=>x.html).join(' '),/closest is 1\/16 Kelly/);
+});
+
+test('the lean run also bins final equity and drawdown, and chunking keeps them identical',()=>{
+  const spec=K.benchSpec(history(),benchKelly,'ftmo2',3,{paths:1000});
+  const whole=K.benchRun(spec),parts=K.benchEmpty(spec);
+  K.benchAdd(parts,K.benchChunk(spec,0,250));K.benchAdd(parts,K.benchChunk(spec,250,750));
+  assert.equal(hist(whole.endHist),1000);assert.equal(hist(whole.ddHist),1000);
+  assert.deepEqual([...parts.endHist],[...whole.endHist]);assert.deepEqual([...parts.ddHist],[...whole.ddHist]);
+});
+test('spread percentiles are ordered and match the full engine within one bin',()=>{
+  const trades=history(),spec=K.benchSpec(trades,benchKelly,'ftmo2',2,{paths:4000});
+  const r=K.benchFinish(spec,K.benchRun(spec));
+  assert.ok(r.end.p10<=r.end.p50&&r.end.p50<=r.end.p90);
+  assert.ok(r.dd.p10<=r.dd.p50&&r.dd.p50<=r.dd.p90&&r.dd.p90<=0);
+  if(r.days.p50!==null)assert.ok(r.days.p10<=r.days.p50&&r.days.p50<=r.days.p90);
+  const full=R.simulate({rules:spec.rules,payoff:spec.b,winRate:spec.p,risk:spec.full*spec.ratio*100,paths:4000,horizon:90*spec.tpd,tradesPerDay:spec.tpd,seed:spec.seed,compound:false});
+  const sorted=[...full.ends].sort((a,b)=>a-b),ddSorted=[...full.dds].sort((a,b)=>a-b),q=(a,p)=>a[Math.min(a.length-1,Math.ceil(a.length*p)-1)];
+  const bin=R.LEAN_BINS.step;
+  assert.ok(Math.abs(r.end.p50-q(sorted,.5))<=bin,'median ending equity');assert.ok(Math.abs(r.end.p10-q(sorted,.1))<=bin,'P10 ending equity');assert.ok(Math.abs(r.end.p90-q(sorted,.9))<=bin,'P90 ending equity');
+  assert.ok(Math.abs(r.dd.p50-q(ddSorted,.5))<=bin,'median drawdown');assert.ok(Math.abs(r.dd.p10-q(ddSorted,.1))<=bin,'worst-10% drawdown');
+});
+test('benchmark cells and insights show the spread when it is available',()=>{
+  assert.match(K.benchCellHtml(mk(2,80,10)),/ending equity P10 92\.0 · P50 104\.0 · P90 110\.0/);
+  assert.match(K.benchCellHtml(mk(2,80,10)),/max drawdown typical -3\.0% · bad case -8\.0%/);
+  const an=K.analyzeBenchmark({a:[40,62,81,70,60,30,5,0].map((p,i)=>mk(i,p,10,{id:'a'}))},['a']);
+  assert.match(K.benchInsights(an,['a'],'a').map(i=>i.html).join(' '),/Spread at 1\/4 Kelly:.*bottom 10% of paths end the run at or below 92\.0.*4 \/ 10 \/ 20 active days/);
 });
