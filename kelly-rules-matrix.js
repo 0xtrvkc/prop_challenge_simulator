@@ -134,7 +134,27 @@
       attempts:acc.pass?acc.paths/acc.pass:null,
       end:{p10:binValue(acc.endHist,acc.paths,.1,1),p50:binValue(acc.endHist,acc.paths,.5,1),p90:binValue(acc.endHist,acc.paths,.9,1)},
       dd:{p10:binValue(acc.ddHist,acc.paths,.9,-1),p50:binValue(acc.ddHist,acc.paths,.5,-1),p90:binValue(acc.ddHist,acc.paths,.1,-1)},
-      days:{p10:days(histQuantile(acc.passHist,acc.pass,.1)),p50:days(histQuantile(acc.passHist,acc.pass,.5)),p90:days(histQuantile(acc.passHist,acc.pass,.9))}};
+      days:{p10:days(histQuantile(acc.passHist,acc.pass,.1)),p50:days(histQuantile(acc.passHist,acc.pass,.5)),p90:days(histQuantile(acc.passHist,acc.pass,.9))},
+      dist:distStats(acc.endHist,acc.paths)};
+  }
+  /* Moments of the 100k ending-equity distribution, from the 0.25-point bins, plus how much of it a normal curve would put within 1σ and 2σ. */
+  function distStats(hist,total){
+    if(!total)return null;
+    const step=R.LEAN_BINS.step,at=i=>(i+.5)*step;
+    let m=0;for(let i=0;i<hist.length;i++)m+=hist[i]*at(i);m/=total;
+    let v=0,m3=0,m4=0;for(let i=0;i<hist.length;i++){const d=at(i)-m,h=hist[i];v+=h*d*d;m3+=h*d*d*d;m4+=h*d*d*d*d;}
+    v/=total;const sd=Math.sqrt(v);
+    let w1=0,w2=0;if(sd>0)for(let i=0;i<hist.length;i++){const z=Math.abs(at(i)-m)/sd;if(z<=1)w1+=hist[i];if(z<=2)w2+=hist[i];}
+    return {mean:m,sd,skew:sd>0?m3/total/(sd*sd*sd):0,exKurt:sd>0?m4/total/(v*v)-3:0,within1:sd>0?w1/total*100:100,within2:sd>0?w2/total*100:100,hist,total};
+  }
+  const normCdf=z=>{const t=1/(1+.2316419*Math.abs(z)),d=.3989423*Math.exp(-z*z/2),p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p;};
+  /* Plain-language read of the fit; target is the plan's target index (100 + target %). */
+  function distFit(d,target,pass,breach){
+    if(!d)return null;
+    const bad=Math.abs(d.skew)>.5||Math.abs(d.exKurt)>1,normalPass=d.sd>0?(1-normCdf((target-d.mean)/d.sd))*100:(d.mean>=target?100:0);
+    return {normal:!bad,verdict:bad?'not close to normal':'close to normal',normalPass,gap:normalPass-pass,
+      text:'Mean '+d.mean.toFixed(1)+', σ '+d.sd.toFixed(1)+', skew '+d.skew.toFixed(2)+', excess kurtosis '+d.exKurt.toFixed(2)+'. A normal curve puts 68.3% of paths within ±1σ and 95.4% within ±2σ; here it is '+d.within1.toFixed(1)+'% and '+d.within2.toFixed(1)+'%. A normal model would predict '+normalPass.toFixed(1)+'% reaching the target; the simulation says '+pass.toFixed(1)+'%. '
+        +(bad?'The fit is poor because '+pass.toFixed(0)+'% of paths stop on the target and '+breach.toFixed(0)+'% at a breach, which stacks ending equity on two lines a bell curve cannot reproduce.':'Few paths stop early here, so the bell shape is a reasonable summary.')};
   }
   /* Centre of the bin holding quantile q; sign -1 turns a depth histogram into negative drawdown values. */
   const binValue=(hist,total,q,sign)=>{const i=histQuantile(hist,total,q);return i===null?null:sign*(i+.5)*R.LEAN_BINS.step;};
@@ -255,7 +275,7 @@
   }
 
   const api={RATIOS,RATIO_NAMES,SCAN_LO,SCAN_MAX,SCAN_STEPS,ratioAt,LABEL,FAIL,prepare,replayKelly,scan,summarize,monteCarlo,
-    mcSetup,BENCH_PATHS,BENCH_CHUNK,benchSpec,benchChunk,benchEmpty,benchAdd,benchRun,benchFinish,analyzeBenchmark,benchInsights,benchTone,benchCellHtml,benchTableHtml,benchSummaryHtml,cellHtml};
+    mcSetup,distStats,distFit,normCdf,BENCH_PATHS,BENCH_CHUNK,benchSpec,benchChunk,benchEmpty,benchAdd,benchRun,benchFinish,analyzeBenchmark,benchInsights,benchTone,benchCellHtml,benchTableHtml,benchSummaryHtml,cellHtml};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.KellyRules=api;
   if(typeof document==='undefined')return;
@@ -293,6 +313,7 @@
 .kr-heat{min-width:640px}.kr-heat th{text-align:center;white-space:nowrap}.kr-heat th:first-child{text-align:left}
 .kr-heat td{text-align:center;padding:10px 6px;font-size:13px;font-variant-numeric:tabular-nums;color:var(--text);background:var(--surface-2)}
 .kr-heat td.kr-rowhead{text-align:left;background:transparent}.kr-heat td.kr-best{font-weight:700;box-shadow:inset 0 0 0 2px var(--text)}
+.kr-distchart{height:300px}
 .kr-progress{height:6px;margin:4px 0 12px;border-radius:3px;background:var(--border);overflow:hidden}
 .kr-progress i{display:block;height:100%;width:0;background:var(--blue);transition:width .25s}
 .kr-pass{background:var(--surface-2)}.kr-fail{background:var(--surface-2)}.kr-idea{background:var(--surface-2)}.kr-pend{background:var(--surface-2)}.kr-live{background:var(--surface-2)}
@@ -358,6 +379,11 @@
       <section class="quant-chart-card"><div class="quant-chart-head"><h3>Max drawdown spread</h3><span id="krSpreadDdSub">Focus plan · P10 / P50 / P90</span></div>
         <canvas class="quant-chart" id="krSpreadDd"></canvas><div class="quant-chart-legend" id="krSpreadDdLegend"></div>
         <p class="quant-chart-note">Deepest peak-to-trough drop of each path. The bar runs from the worst 10% (deepest) to the mildest 10%; the tick is the middle path. The dashed line is the plan’s total-loss allowance.</p></section>
+      <section class="quant-chart-card kr-wide"><div class="quant-chart-head"><h3>Ending-equity distribution</h3><span id="krDistSub">Focus plan · 100,000 paths</span></div>
+        <label class="kelly-replay-controls" for="krDistRatio">Kelly ratio <select id="krDistRatio"></select></label>
+        <canvas class="quant-chart kr-distchart" id="krDist" aria-label="Histogram of ending equity across 100,000 paths with a fitted normal curve"></canvas><div class="quant-chart-legend" id="krDistLegend"></div>
+        <div id="krDistFit" class="quant-insights"></div>
+        <p class="quant-chart-note">Each bar is the share of the 100,000 paths that ended in that one-point band of account index (start 100). The amber line is the normal curve with the same mean and σ. Dotted lines mark the mean, ±1σ and ±2σ; dashed lines mark the target and floor.</p></section>
       <section class="quant-chart-card kr-wide"><div class="quant-chart-head"><h3>Days to pass spread</h3><span id="krSpreadDaysSub">Focus plan · paths that passed</span></div>
         <canvas class="quant-chart" id="krSpreadDays"></canvas><div class="quant-chart-legend" id="krSpreadDaysLegend"></div>
         <p class="quant-chart-note">Active days needed by the paths that passed: fastest 10%, median and slowest 10%. Ratios where nothing passes show no bar.</p></section>
@@ -370,7 +396,7 @@
 </section>`;
 
   const state={compound:false,focus:null,focusPinned:false};
-  let last=null,cache=null,mcToken=0,barcodeLayout=null,curveLayout=null;
+  let last=null,cache=null,mcToken=0,barcodeLayout=null,curveLayout=null;state.distRatio='best';
 
   function injectStyles(){
     if($('krStyles'))return;
@@ -391,6 +417,8 @@
       $('krReadout').innerHTML='<strong>'+esc(R.presets[id].name)+'</strong> · '+times(r.ratio)+' (risk '+pct(r.riskPct,2)+' per loss) → <strong>'+esc(r.label)+'</strong>'+(r.trade?' · trade '+r.trade+' · '+esc(r.day):'')+(r.laterBreach?' · later breach: '+esc(r.laterBreach.reason)+' at trade '+r.laterBreach.trade:'');
     };
     cv.addEventListener('pointermove',probe);cv.addEventListener('pointerdown',probe);
+    const dsel=$('krDistRatio');dsel.innerHTML='<option value="best">Best pass odds</option>'+RATIO_NAMES.map((n,i)=>'<option value="'+i+'">'+n+'</option>').join('');
+    dsel.addEventListener('change',e=>{state.distRatio=e.target.value;if(cache)drawDist(cache,state.focus);});
     const cc=$('krCurve');
     const curveProbe=e=>{
       if(!cache||!cache.bench||!curveLayout)return;
@@ -711,11 +739,50 @@
     RATIOS.forEach((_,i)=>txt(ctx,ratioShort(i),f.l+slot*(i+.5),f.t+f.ph+16,c.faint,'center',10.5));
     $(legendId).innerHTML=keySwatch(c.green,'target most likely')+keySwatch(c.red,'breach most likely')+keySwatch(ORANGE,'risk cap')+keySwatch(c.blue,'unfinished most likely')+cfg.refs.map(r=>keySwatch(r.color(c),r.label,true)).join('')+'<span class="quant-chart-key">tick and number = middle path</span>';
   }
+  /* ---- ending-equity histogram with the fitted normal curve ---- */
+  function drawDist(data,focus){
+    const cv=$('krDist'),s=setup(cv);if(!s)return;
+    const {ctx,c}=s,row=(data.bench&&data.bench.cells[focus])||[],rules=R.presets[focus],name=rules.name;
+    let idx=-1;
+    if(state.distRatio==='best'){if(RATIOS.every((_,i)=>row[i])){row.forEach((r,i)=>{if(idx<0||r.pass>row[idx].pass+1e-9)idx=i;});}}
+    else idx=+state.distRatio;
+    const cell=idx>=0?row[idx]:null,d=cell&&cell.dist;
+    if(!d){txt(ctx,'Benchmark running…',s.w/2,s.h/2,c.faint,'center',13);$('krDistFit').innerHTML='';$('krDistLegend').innerHTML='';return;}
+    $('krDistSub').textContent=name+' · '+RATIO_NAMES[idx]+' · '+cell.paths.toLocaleString('en-US')+' paths';
+    const step=R.LEAN_BINS.step,per=Math.round(1/step),bins=[];
+    for(let i=0;i<d.hist.length;i+=per){let n=0;for(let j=i;j<Math.min(d.hist.length,i+per);j++)n+=d.hist[j];bins.push(n/d.total*100);}
+    let acc=0,lo=0,hi=bins.length-1;
+    for(let i=0;i<bins.length;i++){acc+=bins[i];if(acc>=.2){lo=i;break;}}
+    acc=0;for(let i=bins.length-1;i>=0;i--){acc+=bins[i];if(acc>=.2){hi=i;break;}}
+    const floor=100-rules.max,target=100+rules.target;
+    lo=Math.max(0,Math.floor(Math.min(lo,floor,d.mean-2.6*d.sd))-1);hi=Math.min(bins.length-1,Math.ceil(Math.max(hi,target,d.mean+2.6*d.sd))+1);
+    const pdf=x=>d.sd>0?Math.exp(-((x-d.mean)**2)/(2*d.sd*d.sd))/(d.sd*Math.sqrt(2*Math.PI))*100:0;
+    let top=0;for(let i=lo;i<=hi;i++)top=Math.max(top,bins[i],pdf(i+.5));
+    top=Math.max(1,Math.ceil(top*1.08/2)*2);
+    const xs=hi-lo+1,xstep=xs>60?10:xs>30?5:xs>14?2:1,xt=[];for(let v=Math.ceil(lo/xstep)*xstep;v<=hi+1;v+=xstep)xt.push(v);
+    const f=frame(s,{x0:lo,x1:hi+1,y0:0,y1:top,xt,yt:[0,.25,.5,.75,1].map(v=>Math.round(top*v*10)/10),xf:v=>String(v),yf:v=>v+'%',l:46});
+    ctx.save();ctx.beginPath();ctx.rect(f.l,f.t-2,f.pw,f.ph+4);ctx.clip();
+    const bw=Math.max(1,f.pw/xs-1);
+    for(let i=lo;i<=hi;i++){if(bins[i]<=0)continue;const x=f.X(i),y=f.Y(bins[i]);ctx.globalAlpha=.55;ctx.fillStyle=c.blue;ctx.fillRect(x+.5,y,bw,f.Y(0)-y);}
+    ctx.globalAlpha=1;
+    [[floor,c.red],[target,c.green]].forEach(([v,col])=>{ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(f.X(v),f.t);ctx.lineTo(f.X(v),f.t+f.ph);ctx.stroke();ctx.setLineDash([]);});
+    ctx.strokeStyle=c.dim;ctx.lineWidth=1;ctx.setLineDash([2,3]);
+    [-2,-1,0,1,2].forEach(k=>{const v=d.mean+k*d.sd;ctx.globalAlpha=k===0?.9:.5;ctx.beginPath();ctx.moveTo(f.X(v),f.t+14);ctx.lineTo(f.X(v),f.t+f.ph);ctx.stroke();});
+    ctx.setLineDash([]);ctx.globalAlpha=1;
+    ctx.strokeStyle=c.amber;ctx.lineWidth=2.4;ctx.beginPath();
+    for(let k=0;k<=160;k++){const x=lo+(hi+1-lo)*k/160,y=f.Y(Math.min(top,pdf(x)));k?ctx.lineTo(f.X(x),y):ctx.moveTo(f.X(x),y);}ctx.stroke();
+    ctx.restore();
+    [[-2,'−2σ'],[-1,'−1σ'],[0,'mean'],[1,'+1σ'],[2,'+2σ']].forEach(([k,l])=>{const v=d.mean+k*d.sd;if(v>=lo&&v<=hi+1)txt(ctx,l,f.X(v),f.t+6,c.dim,'center',10);});
+    txt(ctx,'account index at the end of the run',f.l+f.pw/2,f.t+f.ph+30,c.faint,'center',10.5);
+    $('krDistLegend').innerHTML=keySwatch(c.blue,'share of paths per one-point band')+keySwatch(c.amber,'normal curve, same mean and σ',true)+keySwatch(c.green,'target',true)+keySwatch(c.red,rules.trailing?'starting floor':'floor',true);
+    const fit=distFit(d,target,cell.pass,cell.breach);
+    $('krDistFit').innerHTML='<div class="quant-insight '+(fit.normal?'good':'warn')+'"><strong>Normal fit: '+fit.verdict+'.</strong> '+fit.text+'</div>';
+  }
   function drawBenchCharts(data){
     if(!data.bench)return;
     const focus=state.focus,rules=R.presets[focus],name=rules.name;
     $('krSpreadEqSub').textContent=name+' · P10 / P50 / P90';$('krSpreadDdSub').textContent=name+' · P10 / P50 / P90';$('krSpreadDaysSub').textContent=name+' · fastest 10% / median / slowest 10% of passes';
-    drawCurve(data);renderHeat(data);
+    drawCurve(data);renderHeat(data);drawDist(data,focus);
     drawSpread('krSpreadEq','krSpreadEqLegend',data,focus,{get:r=>r.end,empty:'No data',fmt:v=>String(Math.round(v)),step:sp=>sp>40?10:sp>16?5:2,
       refs:[{v:100+rules.target,label:'target',color:c=>c.green},{v:100-rules.max,label:rules.trailing?'starting floor':'floor',color:c=>c.red}]});
     drawSpread('krSpreadDd','krSpreadDdLegend',data,focus,{get:r=>r.dd,empty:'No data',fmt:v=>(Math.round(v*10)/10)+'%',step:sp=>sp>30?10:sp>12?5:2,ceil:1,
