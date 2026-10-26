@@ -202,3 +202,25 @@ test('benchmark cells and insights show the spread when it is available',()=>{
   const an=K.analyzeBenchmark({a:[40,62,81,70,60,30,5,0].map((p,i)=>mk(i,p,10,{id:'a'}))},['a']);
   assert.match(K.benchInsights(an,['a'],'a').map(i=>i.html).join(' '),/Spread at 1\/4 Kelly:.*bottom 10% of paths end the run at or below 92\.0.*4 \/ 10 \/ 20 active days/);
 });
+test('distribution stats recover a known normal and flag a two-spike distribution as not normal',()=>{
+  const B=R.LEAN_BINS,h=new Uint32Array(B.endBins),total=200000;
+  /* build a discretised N(100,5) by quantile-free deterministic weights */
+  const pdf=x=>Math.exp(-((x-100)**2)/(2*25));let sum=0;for(let i=0;i<h.length;i++)sum+=pdf((i+.5)*B.step);
+  for(let i=0;i<h.length;i++)h[i]=Math.round(pdf((i+.5)*B.step)/sum*total);
+  const n=K.distStats(h,hist(h));
+  assert.ok(Math.abs(n.mean-100)<.05);assert.ok(Math.abs(n.sd-5)<.05);assert.ok(Math.abs(n.skew)<.05);assert.ok(Math.abs(n.exKurt)<.1);
+  assert.ok(Math.abs(n.within1-68.3)<.5);assert.ok(Math.abs(n.within2-95.4)<.5);
+  assert.equal(K.distFit(n,110,2.3,0).normal,true);
+  assert.ok(Math.abs(K.distFit(n,110,2.3,0).normalPass-2.28)<.1);/* 1−Φ(2) */
+  const two=new Uint32Array(B.endBins);two[Math.floor(90/B.step)]=60000;two[Math.floor(110/B.step)]=40000;
+  const t=K.distStats(two,100000),fit=K.distFit(t,110,40,60);
+  assert.equal(fit.normal,false);assert.match(fit.text,/fit is poor because 40% of paths stop on the target and 60% at a breach/);
+  assert.equal(K.distStats(new Uint32Array(B.endBins),0),null);
+});
+test('every finished benchmark cell carries its distribution, and chunking does not change it',()=>{
+  const spec=K.benchSpec(history(),benchKelly,'ftmo2',2,{paths:1000}),a=K.benchFinish(spec,K.benchRun(spec));
+  assert.equal(a.dist.total,1000);assert.equal(hist(a.dist.hist),1000);assert.ok(a.dist.sd>0);
+  const p=K.benchEmpty(spec);K.benchAdd(p,K.benchChunk(spec,0,500));K.benchAdd(p,K.benchChunk(spec,500,500));
+  assert.deepEqual(K.benchFinish(spec,p).dist.hist,a.dist.hist);
+  assert.ok(Math.abs(K.normCdf(0)-.5)<1e-6&&Math.abs(K.normCdf(1.96)-.975)<1e-3);
+});
